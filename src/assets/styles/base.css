@@ -1,0 +1,189 @@
+/**
+ * Global layer: reset, page frame, and the handful of typographic utilities
+ * shared by every screen. Anything used by only one component lives in that
+ * component's scoped styles instead.
+ */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: radial-gradient(120% 90% at 50% -10%, #175333 0%, var(--bg) 55%);
+  color: var(--chalk);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  max-width: var(--app-width);
+  margin: 0 auto;
+  padding: 18px 16px 60px;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 600;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+}
+
+/* Display face — used for the clock, scores and any tabulated number. */
+.clock-face {
+  font-family: var(--font-display);
+  letter-spacing: 0.5px;
+  font-weight: 400;
+}
+
+/* Page headers */
+.eyebrow {
+  font-size: 13px;
+  color: var(--chalk-dim);
+  margin-bottom: 2px;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.sub {
+  font-size: 14px;
+  color: var(--chalk-dim);
+  margin-bottom: 18px;
+}
+
+/* Small print */
+.count-note {
+  font-size: 13px;
+  color: var(--chalk-dim);
+  margin-top: 2px;
+}
+
+.error-note {
+  font-size: 13px;
+  color: var(--alert);
+  margin-top: 8px;
+  min-height: 16px;
+}
+
+.link-inline {
+  color: var(--amber);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font: inherit;
+  padding: 0;
+}
+
+.link-back {
+  color: var(--chalk-dim);
+  font-size: 14px;
+  background: none;
+  border: none;
+  padding: 0;
+  display: inline-block;
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+
+/* Section heading inside a panel */
+.section-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.section-title h3 {
+  font-size: 15px;
+  letter-spacing: 0.2px;
+}
+
+.section-title .hint {
+  font-size: 12px;
+  color: var(--chalk-dim);
+}
+
+/* Layout helpers */
+.row {
+  display: flex;
+  gap: 10px;
+}
+
+.row > * {
+  flex: 1;
+}
+
+.btn-row {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-row > * {
+  flex: 1;
+}
+
+.action-pair {
+  display: flex;
+  gap: 8px;
+}
+
+.action-pair > * {
+  flex: 1;
+}
+
+/**
+ * Form controls. These live globally rather than in a component because inputs
+ * appear both inside `UiTextField`/`UiSelectField` and inline in composite rows
+ * (add-a-player, pick-a-scorer) where a wrapper would only get in the way.
+ */
+.field {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--field-bg);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  color: var(--chalk);
+  font-family: inherit;
+  font-size: 15px;
+}
+
+.field:focus {
+  outline: 2px solid var(--amber);
+  outline-offset: 1px;
+}
+
+select.field {
+  padding: 10px;
+}
+
+.field-label {
+  display: block;
+  font-size: 13px;
+  color: var(--chalk-dim);
+  margin-bottom: 6px;
+}
+
+.field-group {
+  margin-bottom: 14px;
+}
+
+.field-group:last-child {
+  margin-bottom: 0;
+}

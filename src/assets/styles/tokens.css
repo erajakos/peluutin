@@ -1,0 +1,25 @@
+/**
+ * Design tokens: the chalkboard-on-a-touchline palette and the two typefaces.
+ * Components reference these and never hard-code a colour.
+ */
+:root {
+  --bg: #0f3324;
+  --bg2: #154430;
+  --panel: #17492f;
+  --line: rgba(241, 250, 238, 0.18);
+  --line-strong: rgba(241, 250, 238, 0.32);
+  --chalk: #f3faf0;
+  --chalk-dim: #a9c6b6;
+  --amber: #e8a33d;
+  --amber-ink: #2a1b04;
+  --go: #5fbe8b;
+  --alert: #e9694f;
+  --yellow: #e8d23d;
+
+  --field-bg: #0e2d1f;
+  --font-body: 'Work Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Anton', sans-serif;
+  --radius: 10px;
+  --radius-sm: 7px;
+  --app-width: 520px;
+}

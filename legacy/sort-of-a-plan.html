@@ -1,0 +1,1761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Sort Of A Plan</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Work+Sans:wght@400;500;600;700&display=swap');
+
+:root{
+  --bg:#0F3324;
+  --bg2:#154430;
+  --panel:#17492F;
+  --line: rgba(241,250,238,0.18);
+  --line-strong: rgba(241,250,238,0.32);
+  --chalk:#F3FAF0;
+  --chalk-dim:#A9C6B6;
+  --amber:#E8A33D;
+  --amber-ink:#2A1B04;
+  --go:#5FBE8B;
+  --alert:#E9694F;
+  --yellow:#E8D23D;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background: radial-gradient(120% 90% at 50% -10%, #175333 0%, var(--bg) 55%);
+  color:var(--chalk);
+  font-family:'Work Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+#app{
+  max-width:520px;
+  margin:0 auto;
+  padding:18px 16px 60px;
+}
+h1,h2,h3{margin:0;font-weight:600;}
+.clock-face{
+  font-family:'Anton', sans-serif;
+  letter-spacing:0.5px;
+  font-weight:400;
+}
+.eyebrow{
+  font-size:13px;
+  color:var(--chalk-dim);
+  margin-bottom:2px;
+}
+.title{
+  font-size:22px;
+  font-weight:700;
+  margin-bottom:4px;
+}
+.sub{
+  font-size:14px;
+  color:var(--chalk-dim);
+  margin-bottom:18px;
+}
+
+/* Splash */
+@keyframes splashIn{
+  from{ opacity:0; transform:translateY(10px) scale(0.97); }
+  to{ opacity:1; transform:translateY(0) scale(1); }
+}
+.splash-wrap{
+  min-height:82vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:20px 10px 10px;
+  animation: splashIn 0.65s ease-out both;
+}
+@media (prefers-reduced-motion: reduce){
+  .splash-wrap{ animation:none; }
+}
+.logo-mark{
+  width:150px;
+  height:150px;
+  margin-bottom:22px;
+}
+.wordmark{
+  font-size:34px;
+  line-height:1.05;
+  letter-spacing:0.5px;
+  margin-bottom:10px;
+}
+.splash-tag{
+  font-size:15px;
+  color:var(--chalk-dim);
+  max-width:280px;
+  line-height:1.5;
+  margin-bottom:34px;
+}
+.splash-btn{
+  width:auto;
+  padding:14px 34px;
+}
+.lang-row{
+  display:flex;
+  gap:12px;
+}
+.lang-row .splash-btn{
+  flex:1;
+  padding:14px 20px;
+}
+
+.panel{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:16px;
+  margin-bottom:16px;
+}
+.field{
+  width:100%;
+  padding:10px 12px;
+  background:#0E2D1F;
+  border:1px solid var(--line-strong);
+  border-radius:7px;
+  color:var(--chalk);
+  font-family:inherit;
+  font-size:15px;
+}
+.field:focus{outline:2px solid var(--amber); outline-offset:1px;}
+label.field-label{
+  display:block;
+  font-size:13px;
+  color:var(--chalk-dim);
+  margin-bottom:6px;
+}
+.row{display:flex; gap:10px;}
+.row > *{flex:1;}
+.field-group{margin-bottom:14px;}
+.checkline{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  font-size:14px;
+  color:var(--chalk);
+  margin-bottom:10px;
+  cursor:pointer;
+}
+.checkline input{width:18px;height:18px;accent-color:var(--amber);}
+button{
+  font-family:inherit;
+  cursor:pointer;
+  border:none;
+}
+.btn-primary{
+  width:100%;
+  background:var(--amber);
+  color:var(--amber-ink);
+  font-weight:700;
+  font-size:16px;
+  padding:14px;
+  border-radius:8px;
+}
+.btn-primary:disabled{
+  background:#4B5A4F;
+  color:#8AA08E;
+  cursor:not-allowed;
+}
+.btn-secondary{
+  width:100%;
+  background:transparent;
+  color:var(--chalk);
+  border:1px solid var(--line-strong);
+  font-weight:600;
+  font-size:14px;
+  padding:11px;
+  border-radius:8px;
+}
+.btn-text{
+  background:none;
+  color:var(--chalk-dim);
+  font-size:14px;
+  padding:6px 0;
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+.link-back{
+  color:var(--chalk-dim);
+  font-size:14px;
+  text-decoration:none;
+  display:inline-block;
+  margin-bottom:12px;
+  cursor:pointer;
+}
+.link-inline{
+  color:var(--amber);
+  text-decoration:underline;
+  text-underline-offset:2px;
+  cursor:pointer;
+}
+.pos-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:8px;
+}
+.pos-num{
+  width:22px;
+  color:var(--chalk-dim);
+  font-size:13px;
+  text-align:right;
+}
+.roster-list{list-style:none; margin:0 0 12px; padding:0;}
+.roster-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:9px 4px;
+  border-bottom:1px solid var(--line);
+  font-size:15px;
+}
+.roster-item:last-child{border-bottom:none;}
+.rm-btn{
+  background:none;
+  color:var(--chalk-dim);
+  font-size:18px;
+  line-height:1;
+  padding:4px 6px;
+}
+.add-row{display:flex; gap:8px; margin-bottom:6px;}
+.add-row .field{flex:1;}
+.add-row button{
+  background:var(--go);
+  color:#08281A;
+  font-weight:700;
+  padding:0 16px;
+  border-radius:7px;
+  font-size:20px;
+}
+.count-note{font-size:13px; color:var(--chalk-dim); margin-top:2px;}
+.error-note{
+  font-size:13px;
+  color:var(--alert);
+  margin-top:8px;
+  min-height:16px;
+}
+
+/* Lineup */
+.slot-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:9px 0;
+  border-bottom:1px solid var(--line);
+}
+.slot-row:last-child{border-bottom:none;}
+.slot-label{
+  width:100px;
+  flex-shrink:0;
+  font-size:13px;
+  color:var(--chalk-dim);
+}
+.slot-label.gk{color:var(--amber);}
+.bench-preview{
+  font-size:14px;
+  color:var(--chalk-dim);
+  line-height:1.6;
+}
+
+/* Live */
+.timer-wrap{
+  text-align:center;
+  padding:22px 0 14px;
+}
+.timer-big{
+  font-size:62px;
+  line-height:1;
+}
+.timer-of{
+  font-size:14px;
+  color:var(--chalk-dim);
+  margin-top:4px;
+}
+.half-label{
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:0.5px;
+  text-transform:uppercase;
+  color:var(--amber);
+  margin-top:8px;
+}
+.fulltime-banner{
+  text-align:center;
+  color:var(--amber);
+  font-size:13px;
+  font-weight:600;
+  letter-spacing:0.4px;
+  margin-bottom:6px;
+}
+.timer-controls{
+  display:flex;
+  gap:10px;
+  margin-bottom:6px;
+}
+.timer-controls button{flex:1;}
+.section-title{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  margin-bottom:10px;
+}
+.section-title h3{font-size:15px; letter-spacing:0.2px;}
+.section-title .hint{font-size:12px; color:var(--chalk-dim);}
+.pitch-rule{
+  border:none;
+  border-top:1px dashed var(--line-strong);
+  margin:0 0 12px;
+}
+.player-row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:10px 0;
+  border-bottom:1px solid var(--line);
+}
+.player-row:last-child{border-bottom:none;}
+.player-row .pos{
+  width:78px;
+  flex-shrink:0;
+  font-size:12px;
+  color:var(--chalk-dim);
+}
+.player-row .pos.gk{color:var(--amber);}
+.player-row .name{
+  flex:1;
+  font-size:15px;
+  font-weight:600;
+}
+.player-row .time{
+  font-family:'Anton', sans-serif;
+  font-size:16px;
+  color:var(--chalk);
+  min-width:48px;
+  text-align:right;
+}
+.badge{
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:0.3px;
+  padding:3px 6px;
+  border-radius:4px;
+  margin-left:6px;
+}
+.badge.off{background:rgba(233,105,79,0.18); color:var(--alert);}
+.badge.on{background:rgba(95,190,139,0.18); color:var(--go);}
+.chk{width:20px;height:20px;accent-color:var(--amber); flex-shrink:0;}
+.chk:disabled{opacity:0.25;}
+
+.subbar{
+  position:sticky;
+  bottom:0;
+  background:var(--bg2);
+  border:1px solid var(--line-strong);
+  border-radius:10px;
+  padding:12px 14px;
+  margin-top:16px;
+  box-shadow:0 6px 24px rgba(0,0,0,0.35);
+}
+.subbar .status{
+  font-size:13px;
+  color:var(--chalk-dim);
+  margin-bottom:10px;
+}
+.subbar .status b{color:var(--chalk);}
+.subbar-actions{display:flex; gap:8px;}
+.subbar-actions .btn-secondary,.subbar-actions .btn-primary{flex:1;}
+
+.assign-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:8px 0;
+}
+.assign-row .from{
+  width:120px;
+  font-size:13px;
+  color:var(--chalk-dim);
+  flex-shrink:0;
+}
+select.field{padding:10px;}
+
+.end-link{
+  text-align:center;
+  margin-top:22px;
+}
+.end-link button{
+  background:none;
+  color:var(--chalk-dim);
+  font-size:13px;
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+
+/* Score panel */
+.score-line{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
+  margin-bottom:14px;
+}
+.score-side{
+  flex:1;
+  text-align:center;
+  min-width:0;
+}
+.score-num{
+  font-family:'Anton', sans-serif;
+  font-size:40px;
+  line-height:1;
+}
+.score-team-name{
+  font-size:12px;
+  color:var(--chalk-dim);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  margin-top:2px;
+}
+.score-dash{
+  font-family:'Anton', sans-serif;
+  font-size:26px;
+  color:var(--chalk-dim);
+}
+.goal-btns{display:flex; gap:8px; margin-bottom:4px;}
+.goal-row, .card-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:9px 0;
+  border-bottom:1px solid var(--line);
+  font-size:14px;
+}
+.goal-row:last-child, .card-row:last-child{border-bottom:none;}
+.goal-time, .card-time{
+  width:40px;
+  flex-shrink:0;
+  color:var(--chalk-dim);
+  font-family:'Anton', sans-serif;
+  font-size:14px;
+}
+.goal-team{
+  width:70px;
+  flex-shrink:0;
+  font-size:12px;
+  color:var(--chalk-dim);
+}
+.goal-scorer-select, .card-player-select{flex:1;}
+.card-icon{font-size:16px; flex-shrink:0;}
+.card-add-row{display:flex; gap:8px; align-items:center; margin-bottom:6px;}
+.card-add-row select{flex:1;}
+.card-add-row button{
+  flex-shrink:0;
+  width:44px;
+  height:44px;
+  border-radius:7px;
+  font-size:18px;
+  background:#0E2D1F;
+  border:1px solid var(--line-strong);
+}
+
+/* Stats */
+.stat-grid{
+  display:flex;
+  gap:10px;
+  margin-bottom:14px;
+}
+.stat-box{
+  flex:1;
+  background:#0E2D1F;
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:12px 10px;
+  text-align:center;
+}
+.stat-box .num{font-family:'Anton', sans-serif; font-size:24px;}
+.stat-box .lbl{font-size:11px; color:var(--chalk-dim); margin-top:2px;}
+.hist-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:9px 0;
+  border-bottom:1px solid var(--line);
+  font-size:14px;
+}
+.hist-row:last-child{border-bottom:none;}
+.result-tag{
+  font-size:11px;
+  font-weight:700;
+  padding:2px 7px;
+  border-radius:4px;
+  margin-left:8px;
+}
+.result-tag.w{background:rgba(95,190,139,0.18); color:var(--go);}
+.result-tag.d{background:rgba(169,198,190,0.18); color:var(--chalk-dim);}
+.result-tag.l{background:rgba(233,105,79,0.18); color:var(--alert);}
+
+/* Summary */
+.sum-table{width:100%; border-collapse:collapse; margin-bottom:8px;}
+.sum-table th{
+  text-align:left;
+  font-size:11px;
+  letter-spacing:0.3px;
+  color:var(--chalk-dim);
+  font-weight:600;
+  padding-bottom:8px;
+  border-bottom:1px solid var(--line-strong);
+}
+.sum-table td{
+  padding:10px 0;
+  border-bottom:1px solid var(--line);
+  font-size:15px;
+}
+.sum-table td.num{
+  font-family:'Anton', sans-serif;
+  text-align:right;
+}
+.delta{font-size:12px; margin-left:6px;}
+.delta.good{color:var(--go);}
+.delta.warn{color:var(--amber);}
+.delta.bad{color:var(--alert);}
+.gk-tag{
+  font-size:11px;
+  color:var(--amber);
+  display:block;
+  margin-top:1px;
+}
+.spread-note{
+  font-size:14px;
+  color:var(--chalk-dim);
+  margin:14px 0 20px;
+  line-height:1.5;
+}
+.spread-note b{color:var(--chalk);}
+.btn-row{display:flex; gap:10px;}
+.btn-row > *{flex:1;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+let S = {
+  phase: 'splash',
+  lang: null,
+  teamName: '',
+  opponentName: '',
+  gameLength: 40,
+  twoHalves: false,
+  halfLength: 20,
+  currentHalf: 1,
+  fieldSize: 5,
+  hasGK: true,
+  fixedGK: true,
+  positions: ['Playmaker','Left Midfielder','Right Midfielder','Attacker'],
+  formationId: 'diamond',
+  lastOutfieldCount: 4,
+  allowReentry: true,
+  subLimitEnabled: false,
+  subLimit: 5,
+  trackCards: false,
+  roster: [],
+  slots: [],
+  players: [],
+  matchSeconds: 0,
+  running: false,
+  timerHandle: null,
+  selOff: new Set(),
+  selOn: new Set(),
+  outForGood: new Set(),
+  subsUsed: 0,
+  pendingAssign: null,
+  goals: [],
+  pendingGoal: null,
+  cards: [],
+  matchHistory: [],
+  ended: false,
+  confirmEnd: false
+};
+let uid = 1;
+function nextId(){ return uid++; }
+
+function esc(str){
+  const d = document.createElement('div');
+  d.textContent = String(str);
+  return d.innerHTML;
+}
+function formatTime(totalSeconds){
+  const m = Math.floor(totalSeconds/60);
+  const s = totalSeconds%60;
+  return m + ':' + String(s).padStart(2,'0');
+}
+function matchTitle(){
+  return esc(S.teamName) + ' vs ' + esc(S.opponentName);
+}
+function loadTeamName(){
+  try { return window.localStorage.getItem('sortOfAPlanTeamName') || ''; } catch(e){ return ''; }
+}
+function saveTeamName(name){
+  try { window.localStorage.setItem('sortOfAPlanTeamName', name); } catch(e){ /* storage unavailable, ignore */ }
+}
+
+const I18N = {
+  en: {
+    setupEyebrow: 'Sort Of A Plan',
+    setupTitle: 'Set the squad and the shape',
+    setupSub: "Set the format once — the app tracks who's owed time as the game runs.",
+    yourTeamLabel: 'Your team',
+    changeTeamLink: 'change',
+    opponentLabel: 'Opponent',
+    opponentPlaceholder: 'e.g. Kotka United',
+    opponentRequired: "Enter the opponent's name.",
+    gameLengthLabel: 'Game length (minutes)',
+    twoHalvesLabel: 'Play in two halves',
+    halfLengthLabel: 'Length of each half (minutes)',
+    totalLengthNote: (total)=> 'Total match length: '+total+' minutes',
+    firstHalfLabel: 'First half',
+    secondHalfLabel: 'Second half',
+    halfTimeLabel: 'Half time',
+    startSecondHalfBtn: 'Start second half ▸',
+    fieldSizeLabel: 'Players on the field at once',
+    hasGKLabel: 'Includes a goalkeeper',
+    fixedGKLabel: 'Goalkeeper plays the whole match (not rotated)',
+    subsSectionLabel: 'In-game substitutions',
+    allowReentryLabel: 'A substituted player can come back on later',
+    subLimitLabel: 'Limit the total number of substitutions',
+    subLimitMaxLabel: 'Maximum substitutions for the match',
+    subLimitHintSmall: 'Larger formats (more than 5 on the field) can also cap the total number of substitutions.',
+    trackCardsLabel: 'Track yellow / red cards',
+    formationLabel: 'Formation',
+    formationSingleNote: (label,n) => label+' — the standard shape for '+n+' outfield player'+(n===1?'':'s')+'.',
+    positionsLabel: (n)=> 'Outfield positions ('+n+')',
+    squadLabel: 'Squad',
+    playerNamePlaceholder: 'Player name',
+    addPlayerAria: 'Add player',
+    removeAria: 'Remove',
+    rosterCountNote: (have,need)=> have+' player'+(have===1?'':'s')+' added · need at least '+need+' to start',
+    continueBtn: 'Choose starting lineup ▸',
+    setupErrorNote: (need,have)=> 'Add at least '+need+' players — you have '+have+'.',
+    backToSetupLink: '‹ Edit setup',
+    lineupEyebrow: 'Kickoff',
+    lineupTitle: (name)=> name+' — starting XI',
+    lineupSub: 'Assign a player to every position. Everyone else starts on the bench.',
+    choosePlayerOption: '— choose player —',
+    benchPreviewLabel: 'Starting bench',
+    benchPreviewEmpty: 'Everyone is on the field to start.',
+    kickoffBtn: 'Kick off ▸',
+    onFieldTitle: 'On the field',
+    onFieldHint: 'tap to select for sub',
+    benchTitle: 'Bench',
+    benchHint: 'sorted by rest',
+    noOneOnField: 'No one is on the field.',
+    benchEmpty: 'Bench is empty.',
+    dueOffBadge: 'DUE OFF',
+    dueOnBadge: 'DUE ON',
+    outBadge: 'OUT',
+    startBtn: 'Start',
+    resumeBtn: 'Resume',
+    pauseBtn: 'Pause',
+    fullTimeBanner: 'FULL TIME — end whenever you are ready',
+    ofLabel: (tm)=> 'of '+tm,
+    comingOffOn: (off,on)=> 'Coming off: <b>'+off+'</b> &nbsp;·&nbsp; Coming on: <b>'+on+'</b>',
+    subsUsedNote: (used,limit)=> ' &nbsp;·&nbsp; Subs used: <b>'+used+' / '+limit+'</b>',
+    clearBtn: 'Clear',
+    confirmSubBtn: 'Confirm substitution',
+    limitReachedNote: (used,limit)=> 'Substitution limit reached ('+used+'/'+limit+') — no more changes allowed.',
+    assignTitle: 'Match which player takes each spot',
+    pickIncomingOption: '— pick incoming —',
+    cancelBtn: 'Cancel',
+    applySubBtn: 'Apply substitution',
+    endMatchLink: 'End match &amp; see summary',
+    endConfirmText: "End the match now? This can't be undone.",
+    yesEndBtn: 'Yes, end match',
+    fullTimeEyebrow: 'Full time',
+    summaryTitle: (name)=> name+' — playing time',
+    tablePlayer: 'Player',
+    tableMinutes: 'Minutes',
+    gkTag: 'Goalkeeper — full match',
+    spreadNote: (spread)=> 'Spread across outfield players (excluding a fixed goalkeeper): <b>'+spread+'</b>. Under a couple of minutes is a solidly fair game.',
+    goalsTitle: 'Score',
+    whoScoredLabel: 'Who scored?',
+    unknownScorerOption: 'Unknown',
+    logGoalBtn: 'Log goal',
+    noGoalsNote: 'No goals yet.',
+    cardsTitle: 'Cards',
+    addCardPickPlayer: '— player —',
+    noCardsNote: 'No cards yet.',
+    scorersTitle: 'Goal scorers',
+    playAnotherBtn: 'Play another match ▸',
+    finishSessionBtn: 'Finish — see stats',
+    statsEyebrow: 'Season so far',
+    statsTitle: 'Stats',
+    matchesPlayedLabel: (n)=> n+' match'+(n===1?'':'es')+' played',
+    recordLabel: (w,d,l)=> w+'W '+d+'D '+l+'L',
+    goalsForAgainstLabel: (gf,ga)=> gf+'–'+ga+' goals',
+    topScorersTitle: 'Top scorers',
+    totalMinutesTitle: 'Total minutes played',
+    cardsSummaryTitle: 'Cards issued',
+    matchHistoryTitle: 'Matches',
+    noMatchesNote: 'No matches recorded yet.',
+    teamNameTitle: 'Your team',
+    teamNameSub: "Set this once — it's saved on this device and filled in automatically next time.",
+    teamNameLabel: 'Team name',
+    teamNamePlaceholder: 'e.g. FC Example',
+    teamContinueBtn: 'Continue ▸',
+    teamNameRequired: 'Enter your team name.',
+    goalkeeperLabel: 'Goalkeeper',
+    positionFallback: 'Position'
+  },
+  fi: {
+    setupEyebrow: 'Sort Of A Plan',
+    setupTitle: 'Aseta joukkue ja pelimuoto',
+    setupSub: 'Aseta muoto kerran — sovellus seuraa, kenelle peliaikaa on kertymässä.',
+    yourTeamLabel: 'Joukkueesi',
+    changeTeamLink: 'muuta',
+    opponentLabel: 'Vastustaja',
+    opponentPlaceholder: 'esim. Kotkan United',
+    opponentRequired: 'Anna vastustajan nimi.',
+    gameLengthLabel: 'Ottelun kesto (minuuttia)',
+    twoHalvesLabel: 'Pelaa kahdessa puoliajassa',
+    halfLengthLabel: 'Puoliajan pituus (minuuttia)',
+    totalLengthNote: (total)=> 'Ottelun kokonaiskesto: '+total+' minuuttia',
+    firstHalfLabel: 'Ensimmäinen puoliaika',
+    secondHalfLabel: 'Toinen puoliaika',
+    halfTimeLabel: 'Puoliaika',
+    startSecondHalfBtn: 'Aloita toinen puoliaika ▸',
+    fieldSizeLabel: 'Pelaajia kentällä yhtä aikaa',
+    hasGKLabel: 'Sisältää maalivahdin',
+    fixedGKLabel: 'Maalivahti pelaa koko ottelun (ei vaihdeta)',
+    subsSectionLabel: 'Vaihdot ottelun aikana',
+    allowReentryLabel: 'Vaihdettu pelaaja voi tulla myöhemmin takaisin kentälle',
+    subLimitLabel: 'Rajoita vaihtojen kokonaismäärää',
+    subLimitMaxLabel: 'Vaihtojen enimmäismäärä ottelussa',
+    subLimitHintSmall: 'Isommissa peleissä (yli 5 pelaajaa kentällä) voi myös rajoittaa vaihtojen kokonaismäärää.',
+    trackCardsLabel: 'Seuraa keltaisia / punaisia kortteja',
+    formationLabel: 'Pelimuoto',
+    formationSingleNote: (label,n) => label+' — vakiomuoto '+n+' kenttäpelaajalle.',
+    positionsLabel: (n)=> 'Kenttäpelaajien pelipaikat ('+n+')',
+    squadLabel: 'Joukkue',
+    playerNamePlaceholder: 'Pelaajan nimi',
+    addPlayerAria: 'Lisää pelaaja',
+    removeAria: 'Poista',
+    rosterCountNote: (have,need)=> have+' pelaaja'+(have===1?'':'a')+' lisätty · tarvitaan vähintään '+need+' aloittaakseen',
+    continueBtn: 'Valitse aloituskokoonpano ▸',
+    setupErrorNote: (need,have)=> 'Lisää vähintään '+need+' pelaajaa — nyt on '+have+'.',
+    backToSetupLink: '‹ Muokkaa asetuksia',
+    lineupEyebrow: 'Alkukokoonpano',
+    lineupTitle: (name)=> name+' — aloittava kokoonpano',
+    lineupSub: 'Aseta pelaaja jokaiselle pelipaikalle. Muut aloittavat vaihtopenkillä.',
+    choosePlayerOption: '— valitse pelaaja —',
+    benchPreviewLabel: 'Vaihtopenkki alussa',
+    benchPreviewEmpty: 'Kaikki aloittavat kentällä.',
+    kickoffBtn: 'Aloita ottelu ▸',
+    onFieldTitle: 'Kentällä',
+    onFieldHint: 'napauta valitaksesi vaihtoon',
+    benchTitle: 'Vaihtopenkki',
+    benchHint: 'järjestetty levon mukaan',
+    noOneOnField: 'Kukaan ei ole kentällä.',
+    benchEmpty: 'Vaihtopenkki on tyhjä.',
+    dueOffBadge: 'VUOROSSA POIS',
+    dueOnBadge: 'VUOROSSA SISÄÄN',
+    outBadge: 'POISSA',
+    startBtn: 'Aloita',
+    resumeBtn: 'Jatka',
+    pauseBtn: 'Tauko',
+    fullTimeBanner: 'PELI PÄÄTTYY — lopeta kun valmis',
+    ofLabel: (tm)=> '/ '+tm,
+    comingOffOn: (off,on)=> 'Pois lähtee: <b>'+off+'</b> &nbsp;·&nbsp; Sisään tulee: <b>'+on+'</b>',
+    subsUsedNote: (used,limit)=> ' &nbsp;·&nbsp; Vaihtoja käytetty: <b>'+used+' / '+limit+'</b>',
+    clearBtn: 'Tyhjennä',
+    confirmSubBtn: 'Vahvista vaihto',
+    limitReachedNote: (used,limit)=> 'Vaihtojen enimmäismäärä täynnä ('+used+'/'+limit+') — lisää vaihtoja ei sallita.',
+    assignTitle: 'Valitse, kuka pelaaja ottaa kunkin paikan',
+    pickIncomingOption: '— valitse tuleva pelaaja —',
+    cancelBtn: 'Peruuta',
+    applySubBtn: 'Vahvista vaihdot',
+    endMatchLink: 'Lopeta ottelu &amp; katso yhteenveto',
+    endConfirmText: 'Lopetetaanko ottelu nyt? Tätä ei voi perua.',
+    yesEndBtn: 'Kyllä, lopeta ottelu',
+    fullTimeEyebrow: 'Peli päättyi',
+    summaryTitle: (name)=> name+' — peliajat',
+    tablePlayer: 'Pelaaja',
+    tableMinutes: 'Minuutit',
+    gkTag: 'Maalivahti — koko ottelu',
+    spreadNote: (spread)=> 'Kenttäpelaajien peliaikojen ero (kiinteää maalivahtia lukuun ottamatta): <b>'+spread+'</b>. Alle pari minuuttia on hyvin tasapuolinen peli.',
+    goalsTitle: 'Tulos',
+    whoScoredLabel: 'Kuka teki maalin?',
+    unknownScorerOption: 'Tuntematon',
+    logGoalBtn: 'Kirjaa maali',
+    noGoalsNote: 'Ei vielä maaleja.',
+    cardsTitle: 'Kortit',
+    addCardPickPlayer: '— pelaaja —',
+    noCardsNote: 'Ei vielä kortteja.',
+    scorersTitle: 'Maalintekijät',
+    playAnotherBtn: 'Pelaa toinen ottelu ▸',
+    finishSessionBtn: 'Lopeta — näytä tilastot',
+    statsEyebrow: 'Kausi tähän mennessä',
+    statsTitle: 'Tilastot',
+    matchesPlayedLabel: (n)=> n+' ottelua pelattu',
+    recordLabel: (w,d,l)=> w+'V '+d+'T '+l+'H',
+    goalsForAgainstLabel: (gf,ga)=> gf+'–'+ga+' maalia',
+    topScorersTitle: 'Maalintekijät',
+    totalMinutesTitle: 'Peliaika yhteensä',
+    cardsSummaryTitle: 'Kortit',
+    matchHistoryTitle: 'Ottelut',
+    noMatchesNote: 'Ei vielä otteluita.',
+    teamNameTitle: 'Joukkueesi',
+    teamNameSub: 'Aseta tämä kerran — se tallennetaan tälle laitteelle ja täytetään automaattisesti jatkossa.',
+    teamNameLabel: 'Joukkueen nimi',
+    teamNamePlaceholder: 'esim. FC Esimerkki',
+    teamContinueBtn: 'Jatka ▸',
+    teamNameRequired: 'Anna joukkueen nimi.',
+    goalkeeperLabel: 'Maalivahti',
+    positionFallback: 'Pelipaikka'
+  }
+};
+function t(key, ...args){
+  const dict = I18N[S.lang] || I18N.en;
+  const val = dict[key];
+  if(typeof val === 'function') return val(...args);
+  return val !== undefined ? val : key;
+}
+const POSITION_FI = {
+  'Defender':'Puolustaja',
+  'Midfielder':'Keskikenttäpelaaja',
+  'Attacker':'Hyökkääjä',
+  'Left Wing':'Vasen laitahyökkääjä',
+  'Right Wing':'Oikea laitahyökkääjä',
+  'Left Midfielder':'Vasen laitapelaaja',
+  'Right Midfielder':'Oikea laitapelaaja',
+  'Centre Midfielder':'Keskikenttäpelaaja (keski)',
+  'Left Back':'Vasen pakki',
+  'Right Back':'Oikea pakki',
+  'Centre Back':'Keskuspuolustaja',
+  'Left Forward':'Vasen hyökkääjä',
+  'Right Forward':'Oikea hyökkääjä',
+  'Centre Forward':'Keskushyökkääjä',
+  'Left Wing Back':'Vasen laitapakki',
+  'Right Wing Back':'Oikea laitapakki',
+  'Defensive Midfielder':'Puolustava keskikenttäpelaaja',
+  'Left Attacking Mid':'Vasen hyökkäävä keskikenttäpelaaja',
+  'Centre Attacking Mid':'Hyökkäävä keskikenttäpelaaja (keski)',
+  'Right Attacking Mid':'Oikea hyökkäävä keskikenttäpelaaja',
+  'Left Winger':'Vasen laituri',
+  'Right Winger':'Oikea laituri',
+  'Striker':'Kärkipelaaja',
+  'Playmaker':'Pelinrakentaja'
+};
+const FORMATION_LABEL_FI = {
+  'Lone striker':'Yksinäinen kärki',
+  'Defender + Attacker':'Puolustaja + hyökkääjä',
+  'Triangle':'Kolmio',
+  'Diamond':'Vinoneliö',
+  'Wide five':'Leveä viisikko',
+  'Balanced':'Tasapainoinen'
+};
+function localizedPositions(f){
+  if(S.lang!=='fi') return f.positions.slice();
+  return f.positions.map(p => POSITION_FI[p] || p);
+}
+function tFormationLabel(label){
+  return S.lang==='fi' ? (FORMATION_LABEL_FI[label] || label) : label;
+}
+
+function defaultPositions(n){
+  const out=[];
+  for(let i=1;i<=n;i++) out.push(S.lang==='fi' ? ('Pelipaikka '+i) : ('Position '+i));
+  return out;
+}
+
+const FORMATIONS = {
+  1: [{id:'lone', label:'Lone striker', positions:['Attacker']}],
+  2: [{id:'two-up', label:'Defender + Attacker', positions:['Defender','Attacker']}],
+  3: [{id:'triangle', label:'Triangle', positions:['Defender','Midfielder','Attacker']}],
+  4: [{id:'diamond', label:'Diamond', positions:['Playmaker','Left Midfielder','Right Midfielder','Attacker']}],
+  5: [{id:'wide-five', label:'Wide five', positions:['Defender','Left Wing','Right Wing','Midfielder','Attacker']}],
+  6: [
+    {id:'2-3-1', label:'2-3-1', positions:['Left Back','Right Back','Left Midfielder','Centre Midfielder','Right Midfielder','Attacker']},
+    {id:'3-2-1', label:'3-2-1', positions:['Left Back','Centre Back','Right Back','Left Midfielder','Right Midfielder','Attacker']},
+    {id:'2-2-2', label:'2-2-2', positions:['Left Back','Right Back','Left Midfielder','Right Midfielder','Left Forward','Right Forward']}
+  ],
+  7: [
+    {id:'3-3-1', label:'3-3-1', positions:['Left Back','Centre Back','Right Back','Left Midfielder','Centre Midfielder','Right Midfielder','Attacker']},
+    {id:'3-1-3', label:'3-1-3', positions:['Left Back','Centre Back','Right Back','Centre Midfielder','Left Forward','Centre Forward','Right Forward']}
+  ],
+  8: [
+    {id:'3-3-2', label:'3-3-2', positions:['Left Back','Centre Back','Right Back','Left Midfielder','Centre Midfielder','Right Midfielder','Left Forward','Right Forward']},
+    {id:'3-2-3', label:'3-2-3', positions:['Left Back','Centre Back','Right Back','Left Midfielder','Right Midfielder','Left Forward','Centre Forward','Right Forward']},
+    {id:'2-3-3', label:'2-3-3', positions:['Left Back','Right Back','Left Midfielder','Centre Midfielder','Right Midfielder','Left Forward','Centre Forward','Right Forward']}
+  ],
+  9: [
+    {id:'3-4-2', label:'3-4-2', positions:['Left Back','Centre Back','Right Back','Left Midfielder','Centre Midfielder','Centre Midfielder','Right Midfielder','Left Forward','Right Forward']},
+    {id:'4-3-2', label:'4-3-2', positions:['Left Back','Centre Back','Centre Back','Right Back','Left Midfielder','Centre Midfielder','Right Midfielder','Left Forward','Right Forward']}
+  ],
+  10: [
+    {id:'4-4-2', label:'4-4-2', positions:['Left Back','Centre Back','Centre Back','Right Back','Left Midfielder','Centre Midfielder','Centre Midfielder','Right Midfielder','Striker','Striker']},
+    {id:'4-3-3', label:'4-3-3', positions:['Left Back','Centre Back','Centre Back','Right Back','Centre Midfielder','Centre Midfielder','Centre Midfielder','Left Winger','Striker','Right Winger']},
+    {id:'5-3-2', label:'5-3-2', positions:['Left Wing Back','Centre Back','Centre Back','Centre Back','Right Wing Back','Centre Midfielder','Centre Midfielder','Centre Midfielder','Striker','Striker']},
+    {id:'3-5-2', label:'3-5-2', positions:['Centre Back','Centre Back','Centre Back','Left Wing Back','Centre Midfielder','Centre Midfielder','Centre Midfielder','Right Wing Back','Striker','Striker']},
+    {id:'4-2-3-1', label:'4-2-3-1', positions:['Left Back','Centre Back','Centre Back','Right Back','Defensive Midfielder','Defensive Midfielder','Left Attacking Mid','Centre Attacking Mid','Right Attacking Mid','Striker']},
+    {id:'4-5-1', label:'4-5-1', positions:['Left Back','Centre Back','Centre Back','Right Back','Left Midfielder','Centre Midfielder','Centre Midfielder','Centre Midfielder','Right Midfielder','Striker']}
+  ]
+};
+function getFormationsFor(n){
+  return FORMATIONS[n] || [{id:'balanced', label:'Balanced', positions: defaultPositions(n)}];
+}
+
+/* ---------- SPLASH ---------- */
+function chooseLang(lang){
+  S.lang = lang;
+  const outfieldCount = Math.max(1, S.fieldSize - (S.hasGK?1:0));
+  S.lastOutfieldCount = outfieldCount;
+  const f = getFormationsFor(outfieldCount)[0];
+  S.formationId = f.id;
+  S.positions = localizedPositions(f);
+  S.phase = 'team';
+  render();
+}
+function renderSplash(){
+  return `
+    <div class="splash-wrap">
+      <svg class="logo-mark" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M20,132 C36,108 34,88 62,86 S 104,64 128,28"
+          fill="none" stroke="var(--amber)" stroke-width="3" stroke-linecap="round"
+          stroke-dasharray="9 5 7 6 5 8 3 10 2 12"/>
+        <polygon points="128,28 116,30 123,17" fill="var(--amber)"/>
+        <circle cx="80" cy="80" r="46" fill="none" stroke="var(--amber)" stroke-width="2" stroke-dasharray="3 4"/>
+        <circle cx="80" cy="80" r="30" fill="var(--chalk)"/>
+        <polygon points="80,64 91,72 87,86 73,86 69,72" fill="var(--bg)"/>
+        <path d="M80,64 L80,52" stroke="var(--bg)" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M91,72 L103,66" stroke="var(--bg)" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M87,86 L96,98" stroke="var(--bg)" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M73,86 L64,98" stroke="var(--bg)" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M69,72 L57,66" stroke="var(--bg)" stroke-width="2.4" stroke-linecap="round"/>
+      </svg>
+      <div class="wordmark clock-face">SORT OF A PLAN</div>
+      <div class="splash-tag">Valitse kieli &nbsp;·&nbsp; Choose your language</div>
+      <div class="lang-row">
+        <button class="btn-primary splash-btn" onclick="chooseLang('fi')">Suomi</button>
+        <button class="btn-primary splash-btn" onclick="chooseLang('en')">English</button>
+      </div>
+    </div>
+  `;
+}
+
+/* ---------- TEAM NAME ---------- */
+function confirmTeamName(){
+  const val = document.getElementById('teamNameInput').value.trim();
+  const errEl = document.getElementById('teamError');
+  if(!val){ errEl.textContent = t('teamNameRequired'); return; }
+  S.teamName = val;
+  saveTeamName(val);
+  S.phase = 'setup';
+  render();
+}
+function backToTeam(){
+  S.phase = 'team';
+  render();
+}
+function renderTeam(){
+  return `
+    <div class="eyebrow">${t('setupEyebrow')}</div>
+    <div class="title">${t('teamNameTitle')}</div>
+    <div class="sub">${t('teamNameSub')}</div>
+    <div class="panel">
+      <label class="field-label" for="teamNameInput">${t('teamNameLabel')}</label>
+      <input class="field" id="teamNameInput" placeholder="${esc(t('teamNamePlaceholder'))}" value="${esc(S.teamName)}">
+    </div>
+    <button class="btn-primary" onclick="confirmTeamName()">${t('teamContinueBtn')}</button>
+    <div class="error-note" id="teamError"></div>
+  `;
+}
+
+/* ---------- SETUP ---------- */
+function toggleTwoHalves(checked){
+  S.twoHalves = checked;
+  if(checked){
+    S.halfLength = Math.max(1, Math.round(S.gameLength/2));
+    S.gameLength = S.halfLength*2;
+  }
+  render();
+}
+function updateGameLength(val){
+  const n = Math.max(1, parseInt(val) || 1);
+  if(S.twoHalves){ S.halfLength = n; S.gameLength = n*2; }
+  else { S.gameLength = n; }
+  render();
+}
+function updateFieldFormat(){
+  const oppEl = document.getElementById('opponentInput');
+  if(oppEl) S.opponentName = oppEl.value;
+  const glEl = document.getElementById('gameLengthInput');
+  if(glEl){
+    const n = Math.max(1, parseInt(glEl.value) || (S.twoHalves ? S.halfLength : S.gameLength));
+    if(S.twoHalves){ S.halfLength = n; S.gameLength = n*2; }
+    else { S.gameLength = n; }
+  }
+  S.fieldSize = Math.max(1, parseInt(document.getElementById('fieldSizeInput').value) || S.fieldSize);
+  S.hasGK = document.getElementById('hasGKInput').checked;
+  const outfieldCount = Math.max(1, S.fieldSize - (S.hasGK?1:0));
+  if(outfieldCount !== S.lastOutfieldCount){
+    S.lastOutfieldCount = outfieldCount;
+    const f = getFormationsFor(outfieldCount)[0];
+    S.formationId = f.id;
+    S.positions = localizedPositions(f);
+  }
+  render();
+}
+function applyFormation(id){
+  const outfieldCount = Math.max(1, S.fieldSize - (S.hasGK?1:0));
+  const f = getFormationsFor(outfieldCount).find(x=>x.id===id) || getFormationsFor(outfieldCount)[0];
+  S.formationId = f.id;
+  S.positions = localizedPositions(f);
+  render();
+}
+function addPlayer(){
+  const inp = document.getElementById('newPlayerInput');
+  const name = inp.value.trim();
+  if(!name) return;
+  S.roster.push({id: nextId(), name});
+  inp.value = '';
+  render();
+  setTimeout(()=>{ const el=document.getElementById('newPlayerInput'); if(el) el.focus(); }, 0);
+}
+function playerKeydown(e){
+  if(e.key === 'Enter'){ e.preventDefault(); addPlayer(); }
+}
+function removePlayer(id){
+  S.roster = S.roster.filter(p=>p.id!==id);
+  render();
+}
+function goToLineup(){
+  const errEl = document.getElementById('setupError');
+  S.opponentName = document.getElementById('opponentInput').value.trim();
+  if(!S.opponentName){
+    errEl.textContent = t('opponentRequired');
+    return;
+  }
+  S.gameLength = Math.max(1, parseInt(document.getElementById('gameLengthInput').value) || (S.twoHalves ? S.halfLength : S.gameLength));
+  S.twoHalves = document.getElementById('twoHalvesInput').checked;
+  if(S.twoHalves){ S.halfLength = S.gameLength; S.gameLength = S.halfLength*2; }
+  S.fixedGK = S.hasGK ? document.getElementById('fixedGKInput').checked : false;
+  S.allowReentry = document.getElementById('allowReentryInput').checked;
+  S.trackCards = document.getElementById('trackCardsInput').checked;
+  if(S.fieldSize > 5){
+    const limEl = document.getElementById('subLimitEnabledInput');
+    S.subLimitEnabled = limEl ? limEl.checked : false;
+    const subEl = document.getElementById('subLimitInput');
+    if(subEl) S.subLimit = Math.max(1, parseInt(subEl.value) || S.subLimit);
+  } else {
+    S.subLimitEnabled = false;
+  }
+  const posInputs = document.querySelectorAll('.pos-input');
+  S.positions = Array.from(posInputs).map((i,idx)=> i.value.trim() || (t('positionFallback')+' '+(idx+1)));
+  if(S.roster.length < S.fieldSize){
+    errEl.textContent = t('setupErrorNote', S.fieldSize, S.roster.length);
+    return;
+  }
+  errEl.textContent = '';
+  S.slots = [];
+  if(S.hasGK) S.slots.push({id: nextId(), label:t('goalkeeperLabel'), isGK:true, playerId:null});
+  S.positions.forEach(label => S.slots.push({id: nextId(), label, isGK:false, playerId:null}));
+  S.phase = 'lineup';
+  render();
+}
+function renderSetup(){
+  const outfieldCount = Math.max(1, S.fieldSize - (S.hasGK?1:0));
+  const formations = getFormationsFor(outfieldCount);
+  const formationPicker = formations.length > 1
+    ? '<select class="field" id="formationInput" onchange="applyFormation(this.value)">'+
+      formations.map(f=>'<option value="'+f.id+'" '+(f.id===S.formationId?'selected':'')+'>'+esc(tFormationLabel(f.label))+'</option>').join('')+
+      '</select>'
+    : '<div class="count-note" style="margin-top:2px;">'+esc(t('formationSingleNote', tFormationLabel(formations[0].label), outfieldCount))+'</div>';
+  const posRows = S.positions.map((p,idx)=>
+    '<div class="pos-row"><span class="pos-num">'+(idx+1)+'</span>'+
+    '<input class="field pos-input" value="'+esc(p)+'" onchange="S.positions['+idx+']=this.value"></div>'
+  ).join('');
+  const rosterRows = S.roster.map(p=>
+    '<li class="roster-item"><span>'+esc(p.name)+'</span>'+
+    '<button class="rm-btn" onclick="removePlayer('+p.id+')" aria-label="'+t('removeAria')+'">&times;</button></li>'
+  ).join('');
+  return `
+    <div class="eyebrow">${t('setupEyebrow')}</div>
+    <div class="title">${t('setupTitle')}</div>
+    <div class="sub">${t('setupSub')}</div>
+
+    <div class="panel">
+      <div class="field-group">
+        <div class="count-note" style="margin-bottom:10px;">${t('yourTeamLabel')}: <b>${esc(S.teamName)}</b> &nbsp;<span class="link-inline" onclick="backToTeam()">${t('changeTeamLink')}</span></div>
+        <label class="field-label" for="opponentInput">${t('opponentLabel')}</label>
+        <input class="field" id="opponentInput" placeholder="${esc(t('opponentPlaceholder'))}" value="${esc(S.opponentName)}" onchange="S.opponentName=this.value">
+      </div>
+      <div class="field-group">
+        <label class="checkline" style="margin-bottom:10px;"><input type="checkbox" id="twoHalvesInput" ${S.twoHalves?'checked':''} onchange="toggleTwoHalves(this.checked)"> ${t('twoHalvesLabel')}</label>
+        <label class="field-label" for="gameLengthInput">${S.twoHalves ? t('halfLengthLabel') : t('gameLengthLabel')}</label>
+        <input class="field" id="gameLengthInput" type="number" min="1" value="${S.twoHalves ? S.halfLength : S.gameLength}" onchange="updateGameLength(this.value)">
+        ${S.twoHalves ? '<div class="count-note">'+t('totalLengthNote', S.halfLength*2)+'</div>' : ''}
+      </div>
+      <div class="row field-group">
+        <div>
+          <label class="field-label" for="fieldSizeInput">${t('fieldSizeLabel')}</label>
+          <input class="field" id="fieldSizeInput" type="number" min="1" value="${S.fieldSize}" onchange="updateFieldFormat()">
+        </div>
+      </div>
+      <label class="checkline"><input type="checkbox" id="hasGKInput" ${S.hasGK?'checked':''} onchange="updateFieldFormat()"> ${t('hasGKLabel')}</label>
+      ${S.hasGK ? '<label class="checkline"><input type="checkbox" id="fixedGKInput" '+(S.fixedGK?'checked':'')+'> '+t('fixedGKLabel')+'</label>' : ''}
+    </div>
+
+    <div class="panel">
+      <label class="field-label" style="margin-bottom:10px;">${t('subsSectionLabel')}</label>
+      <label class="checkline"><input type="checkbox" id="allowReentryInput" ${S.allowReentry?'checked':''} onchange="S.allowReentry=this.checked"> ${t('allowReentryLabel')}</label>
+      ${S.fieldSize > 5 ? `
+        <label class="checkline"><input type="checkbox" id="subLimitEnabledInput" ${S.subLimitEnabled?'checked':''} onchange="S.subLimitEnabled=this.checked; render();"> ${t('subLimitLabel')}</label>
+        <div class="field-group" style="margin-top:6px; ${S.subLimitEnabled?'':'display:none;'}">
+          <label class="field-label" for="subLimitInput">${t('subLimitMaxLabel')}</label>
+          <input class="field" id="subLimitInput" type="number" min="1" value="${S.subLimit}" onchange="S.subLimit=parseInt(this.value)||S.subLimit">
+        </div>
+      ` : '<div class="count-note">'+t('subLimitHintSmall')+'</div>'}
+    </div>
+
+    <div class="panel">
+      <label class="checkline" style="margin-bottom:0;"><input type="checkbox" id="trackCardsInput" ${S.trackCards?'checked':''} onchange="S.trackCards=this.checked"> ${t('trackCardsLabel')}</label>
+    </div>
+
+    <div class="panel">
+      <div class="field-group" style="margin-bottom:12px;">
+        <label class="field-label">${t('formationLabel')}</label>
+        ${formationPicker}
+      </div>
+      <div class="field-group" style="margin-bottom:0;">
+        <label class="field-label">${t('positionsLabel', outfieldCount)}</label>
+        ${posRows}
+      </div>
+    </div>
+
+    <div class="panel">
+      <label class="field-label">${t('squadLabel')}</label>
+      <div class="add-row">
+        <input class="field" id="newPlayerInput" placeholder="${esc(t('playerNamePlaceholder'))}" onkeydown="playerKeydown(event)">
+        <button onclick="addPlayer()" aria-label="${t('addPlayerAria')}">+</button>
+      </div>
+      <ul class="roster-list">${rosterRows}</ul>
+      <div class="count-note">${t('rosterCountNote', S.roster.length, S.fieldSize)}</div>
+    </div>
+
+    <button class="btn-primary" onclick="goToLineup()">${t('continueBtn')}</button>
+    <div class="error-note" id="setupError"></div>
+  `;
+}
+
+/* ---------- LINEUP ---------- */
+function assignSlot(slotId, value){
+  const slot = S.slots.find(s=>s.id===slotId);
+  slot.playerId = value ? parseInt(value) : null;
+  render();
+}
+function backToSetup(){
+  S.phase = 'setup';
+  render();
+}
+function kickOff(){
+  S.players = S.roster.map(p=>({id:p.id, name:p.name, seconds:0}));
+  S.matchSeconds = 0;
+  S.currentHalf = 1;
+  S.running = false;
+  S.selOff = new Set();
+  S.selOn = new Set();
+  S.outForGood = new Set();
+  S.subsUsed = 0;
+  S.pendingAssign = null;
+  S.goals = [];
+  S.pendingGoal = null;
+  S.cards = [];
+  S.ended = false;
+  S.confirmEnd = false;
+  S.phase = 'live';
+  render();
+}
+function renderLineup(){
+  const assignedIds = new Set(S.slots.map(s=>s.playerId).filter(Boolean));
+  const rows = S.slots.map(slot=>{
+    const options = S.roster
+      .filter(p => !assignedIds.has(p.id) || slot.playerId===p.id)
+      .map(p => '<option value="'+p.id+'" '+(slot.playerId===p.id?'selected':'')+'>'+esc(p.name)+'</option>')
+      .join('');
+    return '<div class="slot-row">'+
+      '<span class="slot-label'+(slot.isGK?' gk':'')+'">'+esc(slot.label)+'</span>'+
+      '<select class="field" onchange="assignSlot('+slot.id+', this.value)">'+
+      '<option value="">'+t('choosePlayerOption')+'</option>'+options+'</select></div>';
+  }).join('');
+  const bench = S.roster.filter(p=>!assignedIds.has(p.id));
+  const benchLine = bench.length ? bench.map(p=>esc(p.name)).join(', ') : t('benchPreviewEmpty');
+  const ready = S.slots.every(s=>s.playerId);
+  return `
+    <a class="link-back" onclick="backToSetup()">${t('backToSetupLink')}</a>
+    <div class="eyebrow">${t('lineupEyebrow')}</div>
+    <div class="title">${t('lineupTitle', matchTitle())}</div>
+    <div class="sub">${t('lineupSub')}</div>
+
+    <div class="panel">${rows}</div>
+
+    <div class="panel">
+      <label class="field-label">${t('benchPreviewLabel')}</label>
+      <div class="bench-preview">${benchLine}</div>
+    </div>
+
+    <button class="btn-primary" onclick="kickOff()" ${ready?'':'disabled'}>${t('kickoffBtn')}</button>
+  `;
+}
+
+/* ---------- LIVE ---------- */
+function toggleRun(){
+  if(S.running){
+    clearInterval(S.timerHandle);
+    S.running = false;
+  } else {
+    S.running = true;
+    S.timerHandle = setInterval(tick, 1000);
+  }
+  render();
+}
+function tick(){
+  S.matchSeconds++;
+  S.slots.forEach(sl=>{
+    if(sl.playerId){
+      const p = S.players.find(pl=>pl.id===sl.playerId);
+      if(p) p.seconds++;
+    }
+  });
+  // Don't re-render while the coach is mid-assignment — a full re-render
+  // rebuilds the <select> elements and force-closes an open dropdown.
+  if(!S.pendingAssign) render();
+}
+function startSecondHalf(){
+  S.currentHalf = 2;
+  if(!S.running){
+    S.running = true;
+    S.timerHandle = setInterval(tick, 1000);
+  }
+  render();
+}
+function toggleOff(slotId){
+  if(S.selOff.has(slotId)) S.selOff.delete(slotId); else S.selOff.add(slotId);
+  render();
+}
+function toggleOn(playerId){
+  if(S.selOn.has(playerId)) S.selOn.delete(playerId); else S.selOn.add(playerId);
+  render();
+}
+function clearSelection(){
+  S.selOff.clear(); S.selOn.clear(); S.pendingAssign = null;
+  render();
+}
+function confirmSub(){
+  const offIds = Array.from(S.selOff);
+  const onIds = Array.from(S.selOn);
+  if(offIds.length===0 || offIds.length!==onIds.length) return;
+  const remaining = S.subLimitEnabled ? Math.max(0, S.subLimit - S.subsUsed) : Infinity;
+  if(offIds.length > remaining) return;
+  if(offIds.length===1){
+    const slot = S.slots.find(s=>s.id===offIds[0]);
+    const outgoingId = slot.playerId;
+    slot.playerId = onIds[0];
+    if(!S.allowReentry) S.outForGood.add(outgoingId);
+    S.subsUsed += 1;
+    S.selOff.clear(); S.selOn.clear();
+    render();
+    return;
+  }
+  const map = {};
+  offIds.forEach((offId, idx) => {
+    if(onIds[idx] !== undefined) map[offId] = onIds[idx];
+  });
+  S.pendingAssign = { offIds, onIds, map };
+  render();
+}
+function setAssign(offId, val){
+  if(val) S.pendingAssign.map[offId] = parseInt(val);
+  else delete S.pendingAssign.map[offId];
+  render();
+}
+function applyAssign(){
+  const {offIds, map} = S.pendingAssign;
+  offIds.forEach(offId=>{
+    const slot = S.slots.find(s=>s.id===offId);
+    if(map[offId]){
+      const outgoingId = slot.playerId;
+      slot.playerId = map[offId];
+      if(!S.allowReentry) S.outForGood.add(outgoingId);
+      S.subsUsed += 1;
+    }
+  });
+  S.selOff.clear(); S.selOn.clear(); S.pendingAssign = null;
+  render();
+}
+function cancelAssign(){
+  S.pendingAssign = null; S.selOff.clear(); S.selOn.clear();
+  render();
+}
+function playerName(id){
+  const p = S.players.find(pl=>pl.id===id);
+  return p ? p.name : '';
+}
+
+/* Goals */
+function addGoal(team){
+  if(team==='opponent'){
+    S.goals.push({id: nextId(), team:'opponent', playerId:null, minute:S.matchSeconds});
+    render();
+    return;
+  }
+  S.pendingGoal = { team:'us' };
+  render();
+}
+function confirmGoal(){
+  const sel = document.getElementById('goalScorerSelect');
+  const playerId = sel && sel.value ? parseInt(sel.value) : null;
+  S.goals.push({id: nextId(), team:'us', playerId, minute:S.matchSeconds});
+  S.pendingGoal = null;
+  render();
+}
+function cancelGoal(){
+  S.pendingGoal = null;
+  render();
+}
+function removeGoal(id){
+  S.goals = S.goals.filter(g=>g.id!==id);
+  render();
+}
+function setGoalScorer(id, val){
+  const g = S.goals.find(x=>x.id===id);
+  if(g) g.playerId = val ? parseInt(val) : null;
+  render();
+}
+
+/* Cards */
+function addCard(type){
+  const sel = document.getElementById('cardPlayerSelect');
+  if(!sel || !sel.value) return;
+  S.cards.push({id: nextId(), playerId: parseInt(sel.value), type, minute:S.matchSeconds});
+  render();
+}
+function removeCard(id){
+  S.cards = S.cards.filter(c=>c.id!==id);
+  render();
+}
+
+function endMatch(){
+  S.confirmEnd = true;
+  render();
+}
+function cancelEndMatch(){
+  S.confirmEnd = false;
+  render();
+}
+function recordMatchHistory(){
+  const gkSlot = S.slots.find(s=>s.isGK);
+  const gkId = (S.hasGK && S.fixedGK && gkSlot) ? gkSlot.playerId : null;
+  const usScore = S.goals.filter(g=>g.team==='us').length;
+  const oppScore = S.goals.filter(g=>g.team==='opponent').length;
+  S.matchHistory.push({
+    id: nextId(),
+    opponent: S.opponentName,
+    usScore, oppScore,
+    players: S.players.map(p=>({id:p.id, name:p.name, seconds:p.seconds, isGK: p.id===gkId})),
+    goals: S.goals.slice(),
+    cards: S.trackCards ? S.cards.slice() : []
+  });
+}
+function doEndMatch(){
+  if(S.running){ clearInterval(S.timerHandle); S.running=false; }
+  recordMatchHistory();
+  S.ended = true;
+  S.confirmEnd = false;
+  S.phase = 'summary';
+  render();
+}
+function renderLive(){
+  const remainingSubs = S.subLimitEnabled ? Math.max(0, S.subLimit - S.subsUsed) : Infinity;
+  const limitReached = S.subLimitEnabled && remainingSubs<=0;
+  const atHalftime = S.twoHalves && S.currentHalf===1 && S.matchSeconds >= S.halfLength*60;
+
+  const fieldSlots = S.slots.filter(s=>s.playerId);
+  const selectableField = fieldSlots.filter(s=>!(s.isGK && S.fixedGK));
+  const fieldSecs = selectableField.map(s=> (S.players.find(p=>p.id===s.playerId)||{seconds:0}).seconds );
+  const maxFieldSec = fieldSecs.length ? Math.max(...fieldSecs) : null;
+  const fieldHasVariation = fieldSecs.length ? (Math.min(...fieldSecs) !== maxFieldSec) : false;
+
+  const onFieldIds = new Set(S.slots.map(s=>s.playerId).filter(Boolean));
+  const bench = S.players.filter(p=>!onFieldIds.has(p.id)).sort((a,b)=>a.seconds-b.seconds);
+  const eligibleBench = bench.filter(p=> !(!S.allowReentry && S.outForGood.has(p.id)));
+  const benchSecs = eligibleBench.map(p=>p.seconds);
+  const minBenchSec = benchSecs.length ? Math.min(...benchSecs) : null;
+  const benchHasVariation = benchSecs.length ? (Math.max(...benchSecs) !== minBenchSec) : false;
+
+  const fieldRows = S.slots.filter(s=>s.playerId).map(slot=>{
+    const p = S.players.find(pl=>pl.id===slot.playerId);
+    const selectable = !(slot.isGK && S.fixedGK) && !limitReached;
+    const isDueOff = !(slot.isGK && S.fixedGK) && fieldHasVariation && p.seconds===maxFieldSec;
+    return '<div class="player-row">'+
+      '<span class="pos'+(slot.isGK?' gk':'')+'">'+esc(slot.label)+'</span>'+
+      '<span class="name">'+esc(p.name)+(isDueOff?'<span class="badge off">'+t('dueOffBadge')+'</span>':'')+'</span>'+
+      '<span class="time">'+formatTime(p.seconds)+'</span>'+
+      '<input type="checkbox" class="chk" '+(selectable?'':'disabled')+' '+(S.selOff.has(slot.id)?'checked':'')+' onchange="toggleOff('+slot.id+')">'+
+      '</div>';
+  }).join('') || '<div class="count-note">'+t('noOneOnField')+'</div>';
+
+  const benchRows = bench.map(p=>{
+    const isOut = !S.allowReentry && S.outForGood.has(p.id);
+    const selectable = !isOut && !limitReached;
+    const isDueOn = selectable && benchHasVariation && p.seconds===minBenchSec;
+    return '<div class="player-row">'+
+      '<span class="pos"></span>'+
+      '<span class="name">'+esc(p.name)+(isOut?'<span class="badge off">'+t('outBadge')+'</span>':(isDueOn?'<span class="badge on">'+t('dueOnBadge')+'</span>':''))+'</span>'+
+      '<span class="time">'+formatTime(p.seconds)+'</span>'+
+      '<input type="checkbox" class="chk" '+(selectable?'':'disabled')+' '+(S.selOn.has(p.id)?'checked':'')+' onchange="toggleOn('+p.id+')">'+
+      '</div>';
+  }).join('') || '<div class="count-note">'+t('benchEmpty')+'</div>';
+
+  const offCount = S.selOff.size, onCount = S.selOn.size;
+  const canConfirm = offCount>0 && offCount===onCount && offCount<=remainingSubs;
+  const isFullTime = S.matchSeconds >= S.gameLength*60;
+
+  let subBarInner;
+  if(S.pendingAssign){
+    const {offIds, onIds, map} = S.pendingAssign;
+    const rows = offIds.map(offId=>{
+      const slot = S.slots.find(s=>s.id===offId);
+      const chosen = map[offId];
+      const options = onIds
+        .filter(pid => !Object.entries(map).some(([k,v])=> v===pid && parseInt(k)!==offId))
+        .map(pid => '<option value="'+pid+'" '+(chosen===pid?'selected':'')+'>'+esc(playerName(pid))+'</option>')
+        .join('');
+      return '<div class="assign-row"><span class="from">'+esc(slot.label)+' ('+esc(playerName(slot.playerId))+')</span>'+
+        '<select class="field" onchange="setAssign('+offId+', this.value)"><option value="">'+t('pickIncomingOption')+'</option>'+options+'</select></div>';
+    }).join('');
+    const allSet = offIds.every(id => map[id]);
+    subBarInner = '<div class="status">'+t('assignTitle')+'</div>'+
+      rows +
+      '<div class="subbar-actions" style="margin-top:10px;">'+
+      '<button class="btn-secondary" onclick="cancelAssign()">'+t('cancelBtn')+'</button>'+
+      '<button class="btn-primary" onclick="applyAssign()" '+(allSet?'':'disabled')+'>'+t('applySubBtn')+'</button>'+
+      '</div>';
+  } else if(limitReached){
+    subBarInner = '<div class="status" style="color:var(--alert);">'+t('limitReachedNote', S.subsUsed, S.subLimit)+'</div>';
+  } else {
+    const subsNote = S.subLimitEnabled ? t('subsUsedNote', S.subsUsed, S.subLimit) : '';
+    subBarInner = '<div class="status">'+t('comingOffOn', offCount, onCount)+subsNote+'</div>'+
+      '<div class="subbar-actions">'+
+      '<button class="btn-secondary" onclick="clearSelection()">'+t('clearBtn')+'</button>'+
+      '<button class="btn-primary" onclick="confirmSub()" '+(canConfirm?'':'disabled')+'>'+t('confirmSubBtn')+'</button>'+
+      '</div>';
+  }
+
+  const usScore = S.goals.filter(g=>g.team==='us').length;
+  const oppScore = S.goals.filter(g=>g.team==='opponent').length;
+  const rosterOptions = S.roster.map(p=>'<option value="'+p.id+'">'+esc(p.name)+'</option>').join('');
+
+  let goalPicker = '';
+  if(S.pendingGoal){
+    goalPicker = '<div class="assign-row"><span class="from">'+t('whoScoredLabel')+'</span>'+
+      '<select class="field" id="goalScorerSelect"><option value="">'+t('unknownScorerOption')+'</option>'+rosterOptions+'</select></div>'+
+      '<div class="subbar-actions" style="margin-top:6px;">'+
+      '<button class="btn-secondary" onclick="cancelGoal()">'+t('cancelBtn')+'</button>'+
+      '<button class="btn-primary" onclick="confirmGoal()">'+t('logGoalBtn')+'</button>'+
+      '</div>';
+  }
+
+  const goalRows = S.goals.map(g=>{
+    const teamLabel = g.team==='us' ? esc(S.teamName) : esc(S.opponentName);
+    const scorerCell = g.team==='us'
+      ? '<select class="field goal-scorer-select" onchange="setGoalScorer('+g.id+', this.value)"><option value="">'+t('unknownScorerOption')+'</option>'+
+        S.roster.map(p=>'<option value="'+p.id+'" '+(g.playerId===p.id?'selected':'')+'>'+esc(p.name)+'</option>').join('')+'</select>'
+      : '<span class="goal-scorer-select"></span>';
+    return '<div class="goal-row"><span class="goal-time">'+formatTime(g.minute)+'</span>'+
+      '<span class="goal-team">'+teamLabel+'</span>'+scorerCell+
+      '<button class="rm-btn" onclick="removeGoal('+g.id+')" aria-label="'+t('removeAria')+'">&times;</button></div>';
+  }).join('') || '<div class="count-note">'+t('noGoalsNote')+'</div>';
+
+  let cardsPanel = '';
+  if(S.trackCards){
+    const cardRows = S.cards.map(c=>{
+      const nm = esc(playerName(c.playerId));
+      const icon = c.type==='yellow' ? '🟨' : '🟥';
+      return '<div class="card-row"><span class="card-time">'+formatTime(c.minute)+'</span>'+
+        '<span class="card-icon">'+icon+'</span><span style="flex:1;">'+nm+'</span>'+
+        '<button class="rm-btn" onclick="removeCard('+c.id+')" aria-label="'+t('removeAria')+'">&times;</button></div>';
+    }).join('') || '<div class="count-note">'+t('noCardsNote')+'</div>';
+    cardsPanel = `
+    <div class="panel">
+      <div class="section-title"><h3>${t('cardsTitle')}</h3></div>
+      <div class="card-add-row">
+        <select class="field" id="cardPlayerSelect"><option value="">${t('addCardPickPlayer')}</option>${rosterOptions}</select>
+        <button onclick="addCard('yellow')" aria-label="yellow card">🟨</button>
+        <button onclick="addCard('red')" aria-label="red card">🟥</button>
+      </div>
+      ${cardRows}
+    </div>`;
+  }
+
+  return `
+    <div class="eyebrow">${matchTitle()}</div>
+    <div class="timer-wrap">
+      <div class="timer-big clock-face">${formatTime(S.matchSeconds)}</div>
+      <div class="timer-of">${t('ofLabel', formatTime(S.gameLength*60))}</div>
+      ${S.twoHalves ? '<div class="half-label">'+(atHalftime ? t('halfTimeLabel') : (S.currentHalf===1 ? t('firstHalfLabel') : t('secondHalfLabel')))+'</div>' : ''}
+    </div>
+    ${isFullTime ? '<div class="fulltime-banner">'+t('fullTimeBanner')+'</div>' : ''}
+    <div class="timer-controls">
+      <button class="btn-primary" onclick="toggleRun()">${S.running?t('pauseBtn'):(S.matchSeconds>0?t('resumeBtn'):t('startBtn'))}</button>
+      ${S.twoHalves && S.currentHalf===1 ? '<button class="btn-secondary" onclick="startSecondHalf()">'+t('startSecondHalfBtn')+'</button>' : ''}
+    </div>
+
+    <div class="panel">
+      <div class="section-title"><h3>${t('goalsTitle')}</h3></div>
+      <div class="score-line">
+        <div class="score-side"><div class="score-num">${usScore}</div><div class="score-team-name">${esc(S.teamName)}</div></div>
+        <div class="score-dash">–</div>
+        <div class="score-side"><div class="score-num">${oppScore}</div><div class="score-team-name">${esc(S.opponentName)}</div></div>
+      </div>
+      ${!S.pendingGoal ? `
+        <div class="goal-btns">
+          <button class="btn-secondary" onclick="addGoal('us')">⚽ ${esc(S.teamName)}</button>
+          <button class="btn-secondary" onclick="addGoal('opponent')">⚽ ${esc(S.opponentName)}</button>
+        </div>
+      ` : goalPicker}
+      ${goalRows}
+    </div>
+
+    ${cardsPanel}
+
+    <div class="panel">
+      <div class="section-title"><h3>${t('onFieldTitle')}</h3><span class="hint">${t('onFieldHint')}</span></div>
+      <hr class="pitch-rule">
+      ${fieldRows}
+    </div>
+
+    <div class="panel">
+      <div class="section-title"><h3>${t('benchTitle')}</h3><span class="hint">${t('benchHint')}</span></div>
+      <hr class="pitch-rule">
+      ${benchRows}
+    </div>
+
+    <div class="subbar">${subBarInner}</div>
+
+    <div class="end-link">${S.confirmEnd
+      ? '<div class="status" style="margin-bottom:8px;">'+t('endConfirmText')+'</div>'+
+        '<div class="subbar-actions"><button class="btn-secondary" onclick="cancelEndMatch()">'+t('cancelBtn')+'</button>'+
+        '<button class="btn-primary" onclick="doEndMatch()">'+t('yesEndBtn')+'</button></div>'
+      : '<button onclick="endMatch()">'+t('endMatchLink')+'</button>'}</div>
+  `;
+}
+
+/* ---------- SUMMARY ---------- */
+function playAnotherMatch(){
+  S.opponentName = '';
+  S.slots = []; S.players = []; S.matchSeconds = 0; S.running = false;
+  S.currentHalf = 1;
+  S.selOff = new Set(); S.selOn = new Set(); S.pendingAssign = null; S.ended = false;
+  S.confirmEnd = false;
+  S.outForGood = new Set();
+  S.subsUsed = 0;
+  S.goals = []; S.pendingGoal = null; S.cards = [];
+  S.phase = 'setup';
+  render();
+}
+function finishSession(){
+  S.phase = 'stats';
+  render();
+}
+function renderSummary(){
+  const gkSlot = S.slots.find(s=>s.isGK);
+  const gkId = (S.hasGK && S.fixedGK && gkSlot) ? gkSlot.playerId : null;
+  const rotating = S.players.filter(p=>p.id!==gkId);
+  const avg = rotating.length ? rotating.reduce((a,p)=>a+p.seconds,0)/rotating.length : 0;
+  const sorted = S.players.slice().sort((a,b)=>b.seconds-a.seconds);
+
+  const rows = sorted.map(p=>{
+    if(p.id===gkId){
+      return '<tr><td>'+esc(p.name)+'<span class="gk-tag">'+t('gkTag')+'</span></td><td class="num">'+formatTime(p.seconds)+'</td></tr>';
+    }
+    const diff = p.seconds - avg;
+    const cls = Math.abs(diff) <= 90 ? 'good' : (Math.abs(diff) <= 240 ? 'warn' : 'bad');
+    const sign = diff >= 0 ? '+' : '−';
+    return '<tr><td>'+esc(p.name)+'</td><td class="num">'+formatTime(p.seconds)+'<span class="delta '+cls+'">'+sign+formatTime(Math.abs(diff))+'</span></td></tr>';
+  }).join('');
+
+  let spreadNote = '';
+  if(rotating.length>1){
+    const secs = rotating.map(p=>p.seconds);
+    const spread = Math.max(...secs) - Math.min(...secs);
+    spreadNote = '<div class="spread-note">'+t('spreadNote', formatTime(spread))+'</div>';
+  }
+
+  const usScore = S.goals.filter(g=>g.team==='us').length;
+  const oppScore = S.goals.filter(g=>g.team==='opponent').length;
+
+  const scorerCounts = {};
+  S.goals.filter(g=>g.team==='us' && g.playerId).forEach(g=>{
+    scorerCounts[g.playerId] = (scorerCounts[g.playerId]||0) + 1;
+  });
+  const scorerEntries = Object.keys(scorerCounts).map(id=>{
+    const p = S.players.find(pl=>pl.id===parseInt(id));
+    return { name: p ? p.name : '?', count: scorerCounts[id] };
+  }).sort((a,b)=>b.count-a.count);
+  const unknownGoalsCount = S.goals.filter(g=>g.team==='us' && !g.playerId).length;
+  let scorersHtml = '';
+  if(scorerEntries.length || unknownGoalsCount){
+    const items = scorerEntries.map(e=> esc(e.name)+' ×'+e.count).concat(
+      unknownGoalsCount ? [t('unknownScorerOption')+' ×'+unknownGoalsCount] : []
+    ).join(', ');
+    scorersHtml = '<div class="panel"><label class="field-label" style="margin-bottom:6px;">'+t('scorersTitle')+'</label><div class="count-note">'+items+'</div></div>';
+  }
+
+  let cardsHtml = '';
+  if(S.trackCards && S.cards.length){
+    const rowsC = S.cards.map(c=>{
+      const icon = c.type==='yellow' ? '🟨' : '🟥';
+      return '<div class="card-row"><span class="card-time">'+formatTime(c.minute)+'</span><span class="card-icon">'+icon+'</span><span>'+esc(playerName(c.playerId))+'</span></div>';
+    }).join('');
+    cardsHtml = '<div class="panel"><label class="field-label" style="margin-bottom:6px;">'+t('cardsSummaryTitle')+'</label>'+rowsC+'</div>';
+  }
+
+  return `
+    <div class="eyebrow">${t('fullTimeEyebrow')}</div>
+    <div class="title">${t('summaryTitle', matchTitle())}</div>
+
+    <div class="panel">
+      <div class="score-line">
+        <div class="score-side"><div class="score-num">${usScore}</div><div class="score-team-name">${esc(S.teamName)}</div></div>
+        <div class="score-dash">–</div>
+        <div class="score-side"><div class="score-num">${oppScore}</div><div class="score-team-name">${esc(S.opponentName)}</div></div>
+      </div>
+    </div>
+
+    ${scorersHtml}
+    ${cardsHtml}
+
+    <div class="panel">
+      <table class="sum-table">
+        <thead><tr><th>${t('tablePlayer')}</th><th style="text-align:right;">${t('tableMinutes')}</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    ${spreadNote}
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="finishSession()">${t('finishSessionBtn')}</button>
+      <button class="btn-primary" onclick="playAnotherMatch()">${t('playAnotherBtn')}</button>
+    </div>
+  `;
+}
+
+/* ---------- STATS ---------- */
+function renderStats(){
+  const matches = S.matchHistory;
+  let wins=0, draws=0, losses=0, gf=0, ga=0;
+  const minutesMap = {};
+  const scorerMap = {};
+  let unknownGoals = 0;
+  const cardMap = {};
+
+  matches.forEach(m=>{
+    gf += m.usScore; ga += m.oppScore;
+    if(m.usScore>m.oppScore) wins++; else if(m.usScore<m.oppScore) losses++; else draws++;
+    m.players.forEach(p=>{
+      if(!minutesMap[p.id]) minutesMap[p.id] = { name:p.name, seconds:0 };
+      minutesMap[p.id].seconds += p.seconds;
+    });
+    m.goals.filter(g=>g.team==='us').forEach(g=>{
+      if(g.playerId){
+        const nm = (minutesMap[g.playerId]||{}).name || '?';
+        if(!scorerMap[g.playerId]) scorerMap[g.playerId] = { name:nm, count:0 };
+        scorerMap[g.playerId].count++;
+      } else { unknownGoals++; }
+    });
+    (m.cards||[]).forEach(c=>{
+      const nm = (minutesMap[c.playerId]||{}).name || '?';
+      if(!cardMap[c.playerId]) cardMap[c.playerId] = { name:nm, yellow:0, red:0 };
+      if(c.type==='yellow') cardMap[c.playerId].yellow++; else cardMap[c.playerId].red++;
+    });
+  });
+
+  const minutesList = Object.values(minutesMap).sort((a,b)=>b.seconds-a.seconds);
+  const scorerList = Object.values(scorerMap).sort((a,b)=>b.count-a.count);
+  const cardList = Object.values(cardMap);
+
+  const minutesRows = minutesList.map(p=>
+    '<tr><td>'+esc(p.name)+'</td><td class="num">'+formatTime(p.seconds)+'</td></tr>'
+  ).join('');
+
+  let scorersHtml = '';
+  if(scorerList.length || unknownGoals){
+    const items = scorerList.map(e=> esc(e.name)+' ×'+e.count).concat(
+      unknownGoals ? [t('unknownScorerOption')+' ×'+unknownGoals] : []
+    ).join(', ');
+    scorersHtml = '<div class="panel"><label class="field-label" style="margin-bottom:6px;">'+t('topScorersTitle')+'</label><div class="count-note">'+items+'</div></div>';
+  }
+
+  let cardsHtml = '';
+  if(cardList.length){
+    const items = cardList.map(c=> esc(c.name)+' 🟨×'+c.yellow+' 🟥×'+c.red).join(', ');
+    cardsHtml = '<div class="panel"><label class="field-label" style="margin-bottom:6px;">'+t('cardsSummaryTitle')+'</label><div class="count-note">'+items+'</div></div>';
+  }
+
+  const histRows = matches.map(m=>{
+    const cls = m.usScore>m.oppScore ? 'w' : (m.usScore<m.oppScore ? 'l' : 'd');
+    const tag = m.usScore>m.oppScore ? (S.lang==='fi'?'V':'W') : (m.usScore<m.oppScore ? (S.lang==='fi'?'H':'L') : (S.lang==='fi'?'T':'D'));
+    return '<div class="hist-row"><span>'+esc(S.teamName)+' vs '+esc(m.opponent)+'</span>'+
+      '<span>'+m.usScore+'–'+m.oppScore+'<span class="result-tag '+cls+'">'+tag+'</span></span></div>';
+  }).join('') || '<div class="count-note">'+t('noMatchesNote')+'</div>';
+
+  return `
+    <div class="eyebrow">${t('statsEyebrow')}</div>
+    <div class="title">${t('statsTitle')}</div>
+
+    <div class="stat-grid">
+      <div class="stat-box"><div class="num">${matches.length}</div><div class="lbl">${t('matchesPlayedLabel', matches.length)}</div></div>
+      <div class="stat-box"><div class="num">${t('recordLabel', wins, draws, losses)}</div><div class="lbl">&nbsp;</div></div>
+      <div class="stat-box"><div class="num">${gf}–${ga}</div><div class="lbl">${t('goalsForAgainstLabel', gf, ga)}</div></div>
+    </div>
+
+    <div class="panel">
+      <label class="field-label" style="margin-bottom:6px;">${t('matchHistoryTitle')}</label>
+      ${histRows}
+    </div>
+
+    ${scorersHtml}
+    ${cardsHtml}
+
+    <div class="panel">
+      <table class="sum-table">
+        <thead><tr><th>${t('tablePlayer')}</th><th style="text-align:right;">${t('totalMinutesTitle')}</th></tr></thead>
+        <tbody>${minutesRows}</tbody>
+      </table>
+    </div>
+
+    <button class="btn-primary" onclick="playAnotherMatch()">${t('playAnotherBtn')}</button>
+  `;
+}
+
+/* ---------- RENDER ---------- */
+function render(){
+  const app = document.getElementById('app');
+  if(S.phase==='splash') app.innerHTML = renderSplash();
+  else if(S.phase==='team') app.innerHTML = renderTeam();
+  else if(S.phase==='setup') app.innerHTML = renderSetup();
+  else if(S.phase==='lineup') app.innerHTML = renderLineup();
+  else if(S.phase==='live') app.innerHTML = renderLive();
+  else if(S.phase==='summary') app.innerHTML = renderSummary();
+  else app.innerHTML = renderStats();
+}
+S.teamName = loadTeamName();
+render();
+</script>
+</body>
+</html>
