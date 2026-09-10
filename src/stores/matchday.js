@@ -1,17 +1,17 @@
 import { defineStore } from 'pinia'
-import { createMatchRecord, seasonSummary } from '@/domain/season.js'
+import { createMatchRecord, matchdaySummary } from '@/domain/matchday.js'
 
 /**
  * Every finished match of the session. Records are snapshots — nothing here is
  * recomputed from live state, so the history cannot drift.
  */
-export const useSeasonStore = defineStore('season', {
+export const useMatchdayStore = defineStore('matchday', {
   state: () => ({
     matches: [],
   }),
 
   getters: {
-    summary: (state) => seasonSummary(state.matches),
+    summary: (state) => matchdaySummary(state.matches),
     hasMatches: (state) => state.matches.length > 0,
   },
 

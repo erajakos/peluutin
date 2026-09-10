@@ -4,8 +4,9 @@ import ScoreBoard from '@/components/live/ScoreBoard.vue'
 import PlayerPicker from '@/components/live/PlayerPicker.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiPanel from '@/components/ui/UiPanel.vue'
+import BallIcon from '@/components/ui/BallIcon.vue'
 import UiRemoveButton from '@/components/ui/UiRemoveButton.vue'
-import { TEAM_US } from '@/domain/scoring.js'
+import { TEAM_US, runningScores } from '@/domain/scoring.js'
 import { formatTime } from '@/domain/time.js'
 import { useI18n } from '@/i18n/index.js'
 import { useAppStore } from '@/stores/app.js'
@@ -40,14 +41,16 @@ function scorerLabel(goal) {
   if (goal.team !== TEAM_US) return ''
   return goal.playerId ? match.playerName(goal.playerId) : t('unknownScorerOption')
 }
+
+/** Goals newest-last, each carrying the scoreline it produced. */
+const timeline = computed(() => {
+  const scores = runningScores(match.goals)
+  return match.goals.map((goal, index) => ({ goal, score: scores[index] }))
+})
 </script>
 
 <template>
-  <UiPanel>
-    <div class="section-title">
-      <h3>{{ t('goalsTitle') }}</h3>
-    </div>
-
+  <UiPanel :title="t('goalsTitle')">
     <ScoreBoard
       :us-name="app.teamName"
       :opponent-name="setup.opponentName"
@@ -74,15 +77,19 @@ function scorerLabel(goal) {
       @cancel="editingGoalId = null"
     />
     <div v-else class="action-pair goal-buttons">
-      <UiButton variant="secondary" @click="match.beginOurGoal()">⚽ {{ app.teamName }}</UiButton>
+      <UiButton variant="secondary" @click="match.beginOurGoal()">
+        <BallIcon /> {{ app.teamName }}
+      </UiButton>
       <UiButton variant="secondary" @click="match.addOpponentGoal()">
-        ⚽ {{ setup.opponentName }}
+        <BallIcon /> {{ setup.opponentName }}
       </UiButton>
     </div>
 
-    <div v-for="goal in match.goals" :key="goal.id" class="goal-row">
+    <div v-for="{ goal, score } in timeline" :key="goal.id" class="goal-row">
+      <BallIcon />
       <span class="goal-time clock-face">{{ formatTime(goal.atSecond) }}</span>
-      <span class="goal-team">{{ goal.team === TEAM_US ? app.teamName : setup.opponentName }}</span>
+      <!-- The scoreline this goal produced, not the final one. -->
+      <span class="goal-score clock-face">{{ score.us }}–{{ score.opponent }}</span>
       <button
         v-if="goal.team === TEAM_US"
         type="button"
@@ -93,7 +100,7 @@ function scorerLabel(goal) {
       >
         {{ scorerLabel(goal) }}
       </button>
-      <span v-else class="scorer-spacer" />
+      <span v-else class="scorer scorer--opponent">{{ setup.opponentName }}</span>
       <UiRemoveButton :label="t('removeAria')" @click="match.removeGoal(goal.id)" />
     </div>
     <p v-if="!match.goals.length" class="count-note">{{ t('noGoalsNote') }}</p>
@@ -109,9 +116,9 @@ function scorerLabel(goal) {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 9px 0;
+  padding: 11px 0;
   border-bottom: 1px solid var(--line);
-  font-size: 14px;
+  font-size: 15.5px;
 }
 
 .goal-row:last-child {
@@ -119,20 +126,18 @@ function scorerLabel(goal) {
 }
 
 .goal-time {
-  width: 42px;
+  width: 44px;
   flex-shrink: 0;
   color: var(--chalk-dim);
-  font-size: 14px;
+  font-size: 15px;
 }
 
-.goal-team {
-  width: 70px;
+.goal-score {
   flex-shrink: 0;
-  font-size: 12px;
-  color: var(--chalk-dim);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  min-width: 48px;
+  font-size: 18px;
+  color: var(--chalk);
+  letter-spacing: 0.5px;
 }
 
 .scorer {
@@ -155,7 +160,12 @@ function scorerLabel(goal) {
   font-style: italic;
 }
 
-.scorer-spacer {
-  flex: 1;
+.scorer--opponent {
+  color: var(--chalk-dim);
+  font-weight: 500;
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

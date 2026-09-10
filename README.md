@@ -1,7 +1,5 @@
 # Melkein suunnitelma
 
-**Fair playing time, without the paperwork.**
-
 A small, offline web app for a youth football coach standing on the touchline.
 It tracks how long every player has actually been on the pitch, tells you who
 is due off and who is due on, and handles the score, the goals and the cards
@@ -33,8 +31,8 @@ Finnish and English. No accounts, no servers, no tracking.
 - **Score, scorers and cards** — logged against the match clock.
 - **Full-time summary** — minutes per player, each measured against the squad
   average, and the spread between the most- and least-played player.
-- **Season stats** — record, goals, top scorers, cards and total minutes across
-  every match played in the session.
+- **The day's stats** — record, goals, top scorers, cards and total minutes
+  across every match played in this session.
 
 ## Privacy
 
@@ -84,7 +82,7 @@ src/
 │   ├── playingTime.js   Fairness: averages, deltas, spread
 │   ├── rotation.js      DUE OFF / DUE ON hints
 │   ├── scoring.js       Goals, cards and their tallies
-│   ├── season.js        Immutable match records and season aggregation
+│   ├── matchday.js      Immutable match records and the day's aggregation
 │   ├── substitutions.js Limits, assignment and the swap rule
 │   └── time.js          Formatting and numeric input handling
 │
@@ -96,7 +94,7 @@ src/
 │   ├── app.js           Which screen we are on; the matchday flow
 │   ├── setup.js         Format, rules, formation and squad
 │   ├── match.js         The match being played right now
-│   └── season.js        Finished matches
+│   └── matchday.js      Finished matches
 │
 ├── i18n/            Finnish and English, one file per locale.
 │   ├── index.js         `t()`, locale state, position translation
@@ -145,7 +143,7 @@ npm test
 
 The tests cover the domain layer and the match store — the rotation hints, the
 substitution rules including limits and re-entry, the swap behaviour, playing-
-time fairness, season aggregation, the pitch layout and the catch-up clock.
+time fairness, the day's aggregation, the pitch layout and the catch-up clock.
 Components are deliberately thin enough not to need their own tests.
 
 ## Contributing and forking
@@ -159,10 +157,8 @@ page reload, exporting a summary, and more stock formations.
 
 ## Credits
 
-Vibe coded during a single practice session, with Claude, on a mobile phone, at
-the side of the pitch.
+Vibe coded during my son's football practice, with Claude, on a mobile phone,
+at the side of the pitch.
 
-By **Erkki Rajakoski** — [Studio Rajakoski](https://github.com/).
+By **Erkki Rajakoski** — [Studio Rajakoski](https://github.com/erajakos).
 
-The original single-file prototype is kept in [`legacy/`](legacy/) for
-reference; the app in `src/` supersedes it.

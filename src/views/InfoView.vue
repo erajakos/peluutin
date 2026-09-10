@@ -1,77 +1,78 @@
 <script setup>
+import BrandWordmark from '@/components/BrandWordmark.vue'
 import UiButton from '@/components/ui/UiButton.vue'
-import UiPanel from '@/components/ui/UiPanel.vue'
 import { useI18n } from '@/i18n/index.js'
 import { useAppStore } from '@/stores/app.js'
 
 const app = useAppStore()
 const { t } = useI18n()
+
+/**
+ * The page is a list of plain sections. Keeping it data-driven is what stops
+ * it drifting back into a pile of one-off headings and boxes.
+ */
+const SECTIONS = [
+  { label: 'privacyTitle', paragraphs: ['privacyBody', 'privacyNoTracking', 'privacyRefresh'] },
+  { label: 'madeTitle', paragraphs: ['madeBody'] },
+  { label: 'authorTitle', paragraphs: ['authorBody'] },
+  { label: 'licenseTitle', paragraphs: ['licenseBody'] },
+]
 </script>
 
 <template>
-  <button class="link-back" @click="app.closeInfo()">{{ t('backBtn') }}</button>
+  <BrandWordmark size="compact" class="wordmark" />
+  <p class="body intro">{{ t('infoIntro') }}</p>
 
-  <div class="eyebrow">{{ t('infoEyebrow') }}</div>
-  <h1 class="title">{{ t('infoTitle') }}</h1>
-  <p class="sub">{{ t('infoIntro') }}</p>
+  <!--
+    Two type styles for the whole page: a small amber section label and one
+    body style. No boxes, no icons, no third weight.
+  -->
+  <section v-for="section in SECTIONS" :key="section.label" class="block">
+    <h2 class="label">{{ t(section.label) }}</h2>
+    <p v-for="key in section.paragraphs" :key="key" class="body">{{ t(key) }}</p>
+  </section>
 
-  <UiPanel>
-    <h2 class="heading"><span class="icon">🔒</span>{{ t('privacyTitle') }}</h2>
-    <p class="body">{{ t('privacyBody') }}</p>
-    <p class="body body--strong">{{ t('privacyNoTracking') }}</p>
-    <p class="body body--quiet">{{ t('privacyRefresh') }}</p>
-  </UiPanel>
-
-  <UiPanel>
-    <h2 class="heading"><span class="icon">📱</span>{{ t('madeTitle') }}</h2>
-    <p class="body">{{ t('madeBody') }}</p>
-  </UiPanel>
-
-  <UiPanel>
-    <h2 class="heading"><span class="icon">✍️</span>{{ t('authorTitle') }}</h2>
-    <p class="body">{{ t('authorBody') }}</p>
-  </UiPanel>
-
-  <UiPanel>
-    <h2 class="heading"><span class="icon">🌱</span>{{ t('licenseTitle') }}</h2>
-    <p class="body">{{ t('licenseBody') }}</p>
-  </UiPanel>
-
-  <UiButton @click="app.closeInfo()">{{ t('backBtn') }}</UiButton>
+  <UiButton variant="secondary" @click="app.closeInfo()">{{ t('backBtn') }}</UiButton>
 </template>
 
 <style scoped>
-.heading {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 15px;
+.wordmark {
+  margin-top: 14px;
+}
+
+.label {
+  font-size: 13.5px;
   font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--amber-text);
   margin-bottom: 10px;
 }
 
-.icon {
-  font-size: 16px;
-}
-
 .body {
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 16.5px;
+  font-weight: 500;
+  line-height: 1.65;
   color: var(--chalk-dim);
-  margin: 0 0 10px;
+  margin: 0 0 12px;
 }
 
 .body:last-child {
   margin-bottom: 0;
 }
 
-.body--strong {
+.intro {
   color: var(--chalk);
-  font-weight: 600;
+  margin-top: 14px;
 }
 
-.body--quiet {
-  font-size: 13px;
-  opacity: 0.85;
+.block {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.block:last-of-type {
+  margin-bottom: 32px;
 }
 </style>

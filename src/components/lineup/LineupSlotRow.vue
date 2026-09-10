@@ -49,9 +49,9 @@ const options = computed(() =>
 }
 
 .slot-label {
-  width: 100px;
+  width: 104px;
   flex-shrink: 0;
-  font-size: 13px;
+  font-size: 14.5px;
   color: var(--chalk-dim);
 }
 

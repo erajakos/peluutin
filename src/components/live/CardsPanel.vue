@@ -31,11 +31,7 @@ function icon(type) {
 </script>
 
 <template>
-  <UiPanel>
-    <div class="section-title">
-      <h3>{{ t('cardsTitle') }}</h3>
-    </div>
-
+  <UiPanel :title="t('cardsTitle')">
     <PlayerPicker
       v-if="pendingType"
       :players="setup.roster"
@@ -68,9 +64,9 @@ function icon(type) {
 }
 
 .card-btn {
-  padding: 12px 10px;
+  padding: 14px 10px;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 14.5px;
   font-weight: 600;
   background: var(--field-bg);
   border: 1px solid var(--line-strong);
@@ -87,7 +83,7 @@ function icon(type) {
   gap: 10px;
   padding: 9px 0;
   border-bottom: 1px solid var(--line);
-  font-size: 14px;
+  font-size: 15.5px;
 }
 
 .card-row:last-child {
@@ -95,10 +91,10 @@ function icon(type) {
 }
 
 .card-time {
-  width: 42px;
+  width: 44px;
   flex-shrink: 0;
   color: var(--chalk-dim);
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .card-icon {

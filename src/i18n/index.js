@@ -22,6 +22,22 @@ export function currentLocale() {
   return locale.value
 }
 
+/** The locale on offer when the current one is not the reader's. */
+export function alternateLocale() {
+  return locale.value === 'fi' ? 'en' : 'fi'
+}
+
+/**
+ * Look a message up in a named locale rather than the current one — used to
+ * label the offer to switch language in the language being offered.
+ */
+export function tIn(code, key, ...args) {
+  const messages = MESSAGES[code] ?? MESSAGES[FALLBACK_LOCALE]
+  const value = messages[key] ?? MESSAGES[FALLBACK_LOCALE][key]
+  if (typeof value === 'function') return value(...args)
+  return value ?? key
+}
+
 /**
  * Look up a message. Values may be plain strings or functions taking arguments,
  * which keeps grammar (plurals, word order) inside the locale file rather than
@@ -52,9 +68,11 @@ export function tFormationLabel(label) {
 export function useI18n() {
   return {
     t,
+    tIn,
     tPosition,
     tFormationLabel,
     setLocale,
     locale: computed(() => locale.value),
+    alternate: computed(() => alternateLocale()),
   }
 }

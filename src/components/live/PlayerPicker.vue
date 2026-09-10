@@ -56,7 +56,7 @@ const { t } = useI18n()
 }
 
 .prompt {
-  font-size: 13px;
+  font-size: 14.5px;
   color: var(--chalk-dim);
   margin: 0 0 10px;
 }
@@ -68,12 +68,12 @@ const { t } = useI18n()
 }
 
 .name-chip {
-  padding: 10px 14px;
+  padding: 12px 16px;
   border-radius: 999px;
   border: 1px solid var(--line-strong);
   background: var(--panel);
   color: var(--chalk);
-  font-size: 14px;
+  font-size: 15.5px;
   font-weight: 600;
 }
 
@@ -97,7 +97,7 @@ const { t } = useI18n()
   margin-top: 12px;
   background: none;
   color: var(--chalk-dim);
-  font-size: 13px;
+  font-size: 14.5px;
   text-decoration: underline;
   text-underline-offset: 3px;
   padding: 4px 0;

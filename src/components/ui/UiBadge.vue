@@ -11,22 +11,24 @@ defineProps({
 
 <style scoped>
 .badge {
-  font-size: 10px;
+  display: inline-block;
+  font-size: 11.5px;
   font-weight: 700;
-  letter-spacing: 0.3px;
-  padding: 3px 6px;
-  border-radius: 4px;
-  margin-left: 6px;
+  letter-spacing: 0.4px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  margin-left: 8px;
   white-space: nowrap;
+  vertical-align: 1px;
 }
 
 .badge--off {
-  background: rgba(233, 105, 79, 0.18);
-  color: var(--alert);
+  background: var(--alert);
+  color: #2b0d06;
 }
 
 .badge--on {
-  background: rgba(95, 190, 139, 0.18);
-  color: var(--go);
+  background: var(--go);
+  color: #06231a;
 }
 </style>

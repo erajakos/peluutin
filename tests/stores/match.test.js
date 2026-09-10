@@ -181,6 +181,89 @@ describe('match store', () => {
     })
   })
 
+  describe('trading positions on the field', () => {
+    it('exchanges two players without spending a substitution', () => {
+      const { match } = startMatch()
+      match.tick(300)
+      const [first, second] = match.slots.filter((slot) => !slot.isGoalkeeper)
+      const before = { first: first.playerId, second: second.playerId }
+
+      match.toggleOffSlot(first.id)
+      match.toggleOffSlot(second.id)
+      expect(match.canSwapPositions).toBe(true)
+      match.swapPositions()
+
+      expect(first.playerId).toBe(before.second)
+      expect(second.playerId).toBe(before.first)
+      expect(match.subsUsed).toBe(0)
+      expect(match.selectedOffSlotIds.size).toBe(0)
+    })
+
+    it('leaves both players on the field, so their time keeps running', () => {
+      const { match } = startMatch()
+      match.tick(300)
+      const [first, second] = match.slots.filter((slot) => !slot.isGoalkeeper)
+      const moved = first.playerId
+
+      match.toggleOffSlot(first.id)
+      match.toggleOffSlot(second.id)
+      match.swapPositions()
+
+      // Neither left the pitch: minutes and current stint both carry on.
+      expect(match.playersById.get(moved).seconds).toBe(300)
+      expect(match.playersById.get(moved).stintSeconds).toBe(300)
+      match.tick(60)
+      expect(match.playersById.get(moved).seconds).toBe(360)
+    })
+
+    it('nobody is marked as having left, even with re-entry disallowed', () => {
+      const { match } = startMatch({ allowReentry: false })
+      const [first, second] = match.slots.filter((slot) => !slot.isGoalkeeper)
+      const moved = first.playerId
+      match.toggleOffSlot(first.id)
+      match.toggleOffSlot(second.id)
+      match.swapPositions()
+      expect(match.canPlayerReturn(moved)).toBe(true)
+    })
+
+    it('needs exactly two, not one or three', () => {
+      const { match } = startMatch()
+      const slots = match.slots.filter((slot) => !slot.isGoalkeeper)
+      match.toggleOffSlot(slots[0].id)
+      expect(match.canSwapPositions).toBe(false)
+      match.toggleOffSlot(slots[1].id)
+      expect(match.canSwapPositions).toBe(true)
+      match.toggleOffSlot(slots[2].id)
+      expect(match.canSwapPositions).toBe(false)
+    })
+
+    it('does nothing when the selection is not a pair', () => {
+      const { match } = startMatch()
+      const [first] = match.slots.filter((slot) => !slot.isGoalkeeper)
+      const before = first.playerId
+      match.toggleOffSlot(first.id)
+      match.swapPositions()
+      expect(first.playerId).toBe(before)
+    })
+
+    it('is still possible once substitutions have run out', () => {
+      const { match } = startMatch({ fieldSize: 7, subLimitEnabled: true, subLimit: 1 })
+      const slot = match.slots.find((candidate) => candidate.playerId === 2)
+      match.toggleOffSlot(slot.id)
+      match.confirmSubstitution()
+      expect(match.limitReached).toBe(true)
+
+      const [first, second] = match.slots.filter((candidate) => !candidate.isGoalkeeper)
+      const before = { first: first.playerId, second: second.playerId }
+      match.toggleOffSlot(first.id)
+      match.toggleOffSlot(second.id)
+      match.swapPositions()
+
+      expect(first.playerId).toBe(before.second)
+      expect(second.playerId).toBe(before.first)
+    })
+  })
+
   describe('the scoreline', () => {
     it('records goals for both sides and can reattribute a scorer later', () => {
       const { match } = startMatch()

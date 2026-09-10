@@ -9,14 +9,16 @@ defineProps({
 </script>
 
 <template>
-  <UiPanel v-if="items.length">
-    <span class="field-label heading">{{ heading }}</span>
-    <p class="count-note">{{ items.join(', ') }}</p>
+  <UiPanel v-if="items.length" :title="heading">
+    <p class="items">{{ items.join(', ') }}</p>
   </UiPanel>
 </template>
 
 <style scoped>
-.heading {
-  margin-bottom: 6px;
+.items {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--chalk-dim);
+  margin: 0;
 }
 </style>

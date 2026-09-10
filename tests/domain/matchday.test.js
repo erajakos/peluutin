@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { createMatchRecord, seasonSummary } from '@/domain/season.js'
-import { CARD_RED, CARD_YELLOW, TEAM_OPPONENT, TEAM_US } from '@/domain/scoring.js'
+import { createMatchRecord, matchdaySummary } from '@/domain/matchday.js'
+import { CARD_RED, CARD_YELLOW, TEAM_OPPONENT, TEAM_US, runningScores } from '@/domain/scoring.js'
 
 function match({ id, usScore, opponentScore, players, goals = [], cards = [] }) {
   return createMatchRecord({
@@ -31,7 +31,7 @@ describe('createMatchRecord', () => {
   })
 })
 
-describe('seasonSummary', () => {
+describe('matchdaySummary', () => {
   const matches = [
     match({
       id: 1,
@@ -65,23 +65,23 @@ describe('seasonSummary', () => {
   ]
 
   it('counts the record', () => {
-    const summary = seasonSummary(matches)
+    const summary = matchdaySummary(matches)
     expect(summary).toMatchObject({ played: 3, wins: 1, draws: 1, losses: 1 })
   })
 
   it('totals goals for and against', () => {
-    expect(seasonSummary(matches)).toMatchObject({ goalsFor: 3, goalsAgainst: 5 })
+    expect(matchdaySummary(matches)).toMatchObject({ goalsFor: 3, goalsAgainst: 5 })
   })
 
   it('adds up each player’s minutes across matches, most first', () => {
-    expect(seasonSummary(matches).minutes).toEqual([
+    expect(matchdaySummary(matches).minutes).toEqual([
       { id: 1, name: 'Aino', seconds: 1800 },
       { id: 2, name: 'Bo', seconds: 1300 },
     ])
   })
 
   it('tallies scorers and keeps unattributed goals separate', () => {
-    const { scorers } = seasonSummary(matches)
+    const { scorers } = matchdaySummary(matches)
     expect(scorers.entries).toEqual([
       { id: 1, name: 'Aino', count: 1 },
       { id: 2, name: 'Bo', count: 1 },
@@ -90,13 +90,39 @@ describe('seasonSummary', () => {
   })
 
   it('tallies cards by colour', () => {
-    expect(seasonSummary(matches).cards).toEqual([
+    expect(matchdaySummary(matches).cards).toEqual([
       { id: 2, name: 'Bo', yellow: 1, red: 0 },
       { id: 1, name: 'Aino', yellow: 0, red: 1 },
     ])
   })
 
-  it('handles a season that has not started', () => {
-    expect(seasonSummary([])).toMatchObject({ played: 0, wins: 0, goalsFor: 0, minutes: [] })
+  it('handles a day with no matches played yet', () => {
+    expect(matchdaySummary([])).toMatchObject({ played: 0, wins: 0, goalsFor: 0, minutes: [] })
+  })
+})
+
+describe('runningScores', () => {
+  it('reports the scoreline each goal produced, not the final one', () => {
+    const goals = [
+      { id: 1, team: TEAM_US },
+      { id: 2, team: TEAM_OPPONENT },
+      { id: 3, team: TEAM_US },
+      { id: 4, team: TEAM_US },
+    ]
+    expect(runningScores(goals)).toEqual([
+      { id: 1, us: 1, opponent: 0 },
+      { id: 2, us: 1, opponent: 1 },
+      { id: 3, us: 2, opponent: 1 },
+      { id: 4, us: 3, opponent: 1 },
+    ])
+  })
+
+  it('stays aligned with the goals it was given', () => {
+    const goals = [{ id: 9, team: TEAM_OPPONENT }]
+    expect(runningScores(goals)).toEqual([{ id: 9, us: 0, opponent: 1 }])
+  })
+
+  it('has nothing to say about a goalless match', () => {
+    expect(runningScores([])).toEqual([])
   })
 })

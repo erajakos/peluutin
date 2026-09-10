@@ -11,9 +11,7 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <UiPanel>
-    <span class="field-label section-label">{{ t('subsSectionLabel') }}</span>
-
+  <UiPanel :title="t('subsSectionLabel')">
     <UiCheckLine v-model="setup.allowReentry">{{ t('allowReentryLabel') }}</UiCheckLine>
 
     <template v-if="setup.canLimitSubs">
@@ -29,15 +27,10 @@ const { t } = useI18n()
         />
       </div>
     </template>
-    <p v-else class="count-note">{{ t('subLimitHintSmall') }}</p>
   </UiPanel>
 </template>
 
 <style scoped>
-.section-label {
-  margin-bottom: 10px;
-}
-
 .limit {
   margin-top: 6px;
   margin-bottom: 0;

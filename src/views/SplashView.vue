@@ -1,36 +1,28 @@
 <script setup>
-import BrandMark from '@/components/BrandMark.vue'
+import BrandBadge from '@/components/BrandBadge.vue'
 import UiButton from '@/components/ui/UiButton.vue'
-import { AVAILABLE_LOCALES, useI18n } from '@/i18n/index.js'
+import { useI18n } from '@/i18n/index.js'
 import { useAppStore } from '@/stores/app.js'
 
 const app = useAppStore()
-const { t } = useI18n()
+const { t, tIn, locale, alternate } = useI18n()
 </script>
 
 <template>
   <div class="splash">
-    <BrandMark />
-    <h1 class="wordmark">
-      <span class="word">Melkein</span>
-      <span class="word word--accent">suunnitelma</span>
-    </h1>
-    <p class="tagline">{{ t('appTagline') }}</p>
+    <BrandBadge class="badge" />
 
-    <p class="choose">{{ t('splashTagline') }}</p>
-    <div class="languages">
-      <UiButton
-        v-for="option in AVAILABLE_LOCALES"
-        :key="option.code"
-        :block="false"
-        @click="app.chooseLanguage(option.code)"
-      >
-        {{ option.label }}
-      </UiButton>
-    </div>
+    <UiButton class="start" :block="false" @click="app.chooseLanguage(locale)">
+      {{ t('startBtn') }}
+    </UiButton>
+
+    <!-- Offered in the language it switches to, for the reader who needs it. -->
+    <button type="button" class="switch" @click="app.chooseLanguage(alternate)">
+      {{ tIn(alternate, 'continueInThisLanguage') }}
+    </button>
 
     <!-- Said up front, before anything is typed in: nothing here leaves the device. -->
-    <p class="local-badge">🔒 {{ t('localOnlyBadge') }}</p>
+    <p class="local-badge">{{ t('localOnlyBadge') }}</p>
     <button type="button" class="info-link" @click="app.openInfo()">{{ t('infoLink') }}</button>
   </div>
 </template>
@@ -64,62 +56,38 @@ const { t } = useI18n()
   }
 }
 
-.wordmark {
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: clamp(30px, 11vw, 44px);
-  line-height: 0.98;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  margin: 0 0 12px;
-  display: flex;
-  flex-direction: column;
+.badge {
+  width: min(64vw, 250px);
+  margin-bottom: 40px;
 }
 
-/* A hand-set wordmark: the second word nudged over, as if chalked in a hurry. */
-.word--accent {
-  color: var(--amber);
-  margin-left: 14px;
+.start {
+  min-width: 210px;
+  padding: 16px 40px;
+  font-size: 17px;
 }
 
-.tagline {
-  font-size: 15px;
+.switch {
+  background: none;
   color: var(--chalk-dim);
-  max-width: 300px;
-  line-height: 1.5;
-  margin: 0 0 40px;
-}
-
-.choose {
-  font-size: 13px;
-  color: var(--chalk-dim);
-  margin: 0 0 12px;
-}
-
-.languages {
-  display: flex;
-  gap: 12px;
-  width: 100%;
-  max-width: 320px;
-}
-
-.languages :deep(.btn) {
-  flex: 1;
-  padding: 14px 20px;
+  font-size: 14px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding: 12px 8px;
+  margin-top: 6px;
 }
 
 .local-badge {
   font-size: 12.5px;
   color: var(--chalk-dim);
-  margin: 34px 0 6px;
+  margin: 40px 0 4px;
 }
 
 .info-link {
   background: none;
   color: var(--chalk-dim);
   font-size: 13px;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  padding: 6px;
+  font-weight: 500;
+  padding: 8px;
 }
 </style>

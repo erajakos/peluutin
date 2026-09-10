@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import LineupSlotRow from '@/components/lineup/LineupSlotRow.vue'
+import UiBackLink from '@/components/ui/UiBackLink.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiPanel from '@/components/ui/UiPanel.vue'
 import { onFieldPlayerIds } from '@/domain/lineup.js'
@@ -14,8 +15,6 @@ const match = useMatchStore()
 const setup = useSetupStore()
 const { t } = useI18n()
 
-const fixture = computed(() => `${app.teamName} vs ${setup.opponentName}`)
-
 const benchPreview = computed(() => {
   const placed = onFieldPlayerIds(match.slots)
   const names = setup.roster.filter((player) => !placed.has(player.id)).map((p) => p.name)
@@ -24,10 +23,8 @@ const benchPreview = computed(() => {
 </script>
 
 <template>
-  <button class="link-back" @click="app.backToSetup()">{{ t('backToSetupLink') }}</button>
-  <div class="eyebrow">{{ t('lineupEyebrow') }}</div>
-  <h1 class="title">{{ t('lineupTitle', fixture) }}</h1>
-  <p class="sub">{{ t('lineupSub') }}</p>
+  <UiBackLink @click="app.backToSquad()">{{ t('backBtn') }}</UiBackLink>
+  <h1 class="title lineup-title">{{ t('lineupTitle') }}</h1>
 
   <UiPanel>
     <LineupSlotRow
@@ -51,8 +48,12 @@ const benchPreview = computed(() => {
 </template>
 
 <style scoped>
+.lineup-title {
+  margin-bottom: 18px;
+}
+
 .bench-preview {
-  font-size: 14px;
+  font-size: 16px;
   color: var(--chalk-dim);
   line-height: 1.6;
   margin: 0;

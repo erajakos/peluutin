@@ -34,7 +34,7 @@ function result(match) {
   gap: 12px;
   padding: 9px 0;
   border-bottom: 1px solid var(--line);
-  font-size: 14px;
+  font-size: 15.5px;
 }
 
 .row:last-child {
@@ -53,9 +53,9 @@ function result(match) {
 }
 
 .tag {
-  font-size: 11px;
+  font-size: 13.5px;
   font-weight: 700;
-  padding: 2px 7px;
+  padding: 3px 8px;
   border-radius: 4px;
   margin-left: 8px;
 }

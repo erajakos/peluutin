@@ -18,9 +18,9 @@ const DEFAULT_FORMATION = findFormation(4, 'diamond')
 export const useSetupStore = defineStore('setup', {
   state: () => ({
     opponentName: '',
-    gameLength: 40,
+    gameLength: 30,
     twoHalves: false,
-    halfLength: 20,
+    halfLength: 15,
     fieldSize: 5,
     hasGoalkeeper: true,
     fixedGoalkeeper: true,

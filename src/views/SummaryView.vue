@@ -1,12 +1,13 @@
 <script setup>
 import { computed } from 'vue'
 import ScoreBoard from '@/components/live/ScoreBoard.vue'
+import GoalList from '@/components/summary/GoalList.vue'
 import PlayingTimeTable from '@/components/summary/PlayingTimeTable.vue'
 import TallyPanel from '@/components/summary/TallyPanel.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiPanel from '@/components/ui/UiPanel.vue'
 import { playingTimeRows, playingTimeSpread } from '@/domain/playingTime.js'
-import { cardTally, scorerTally } from '@/domain/scoring.js'
+import { cardTally } from '@/domain/scoring.js'
 import { formatTime } from '@/domain/time.js'
 import { useI18n } from '@/i18n/index.js'
 import { useAppStore } from '@/stores/app.js'
@@ -18,18 +19,9 @@ const match = useMatchStore()
 const setup = useSetupStore()
 const { t } = useI18n()
 
-const fixture = computed(() => `${app.teamName} vs ${setup.opponentName}`)
-
 const rows = computed(() => playingTimeRows(match.players, match.goalkeeperId))
 
 const spread = computed(() => playingTimeSpread(match.players, match.goalkeeperId))
-
-const scorerItems = computed(() => {
-  const { entries, unknown } = scorerTally(match.goals, (id) => match.playerName(id))
-  const items = entries.map((entry) => `${entry.name} ×${entry.count}`)
-  if (unknown) items.push(`${t('unknownScorerOption')} ×${unknown}`)
-  return items
-})
 
 const cardItems = computed(() => {
   if (!setup.trackCards) return []
@@ -41,9 +33,9 @@ const cardItems = computed(() => {
 
 <template>
   <div class="eyebrow">{{ t('fullTimeEyebrow') }}</div>
-  <h1 class="title">{{ t('summaryTitle', fixture) }}</h1>
+  <h1 class="title">{{ t('summaryTitle') }}</h1>
 
-  <UiPanel>
+  <UiPanel :title="t('goalsTitle')">
     <ScoreBoard
       :us-name="app.teamName"
       :opponent-name="setup.opponentName"
@@ -52,10 +44,18 @@ const cardItems = computed(() => {
     />
   </UiPanel>
 
-  <TallyPanel :heading="t('scorersTitle')" :items="scorerItems" />
+  <!-- Goal by goal: when it went in, what it made the score, and who got it. -->
+  <UiPanel v-if="match.goals.length" :title="t('scorersTitle')">
+    <GoalList
+      :goals="match.goals"
+      :opponent-name="setup.opponentName"
+      :resolve-name="(id) => match.playerName(id)"
+    />
+  </UiPanel>
+
   <TallyPanel :heading="t('cardsSummaryTitle')" :items="cardItems" />
 
-  <UiPanel>
+  <UiPanel :title="t('sectionPlayingTime')">
     <PlayingTimeTable :rows="rows" :minutes-heading="t('tableMinutes')" show-delta />
   </UiPanel>
 

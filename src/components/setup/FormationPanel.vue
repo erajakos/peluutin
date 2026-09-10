@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import FormationPreview from '@/components/setup/FormationPreview.vue'
 import UiPanel from '@/components/ui/UiPanel.vue'
 import UiSelectField from '@/components/ui/UiSelectField.vue'
 import { useI18n } from '@/i18n/index.js'
@@ -20,22 +21,20 @@ const hasChoice = computed(() => setup.formations.length > 1)
 </script>
 
 <template>
-  <UiPanel>
-    <div class="field-group">
-      <span class="field-label">{{ t('formationLabel') }}</span>
+  <UiPanel :title="t('formationLabel')">
+    <FormationPreview :positions="setup.positions" :has-goalkeeper="setup.hasGoalkeeper" />
+    <p class="shape-name">{{ options.find((o) => o.value === setup.formationId)?.label }}</p>
+
+    <div v-if="hasChoice" class="field-group">
       <UiSelectField
-        v-if="hasChoice"
         :model-value="setup.formationId"
         :options="options"
         @update:model-value="setup.applyFormation($event)"
       />
-      <p v-else class="count-note">
-        {{ t('formationSingleNote', options[0].label, setup.outfieldCount) }}
-      </p>
     </div>
 
-    <div class="field-group last">
-      <span class="field-label">{{ t('positionsLabel', setup.outfieldCount) }}</span>
+    <details class="positions">
+      <summary>{{ t('editPositionsLabel') }}</summary>
       <div v-for="(position, index) in setup.positions" :key="index" class="position-row">
         <span class="position-number">{{ index + 1 }}</span>
         <input
@@ -45,13 +44,52 @@ const hasChoice = computed(() => setup.formations.length > 1)
           @input="setup.renamePosition(index, $event.target.value)"
         />
       </div>
-    </div>
+    </details>
   </UiPanel>
 </template>
 
 <style scoped>
-.last {
-  margin-bottom: 0;
+.shape-name {
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin: 0 0 14px;
+}
+
+.positions {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-top: 4px;
+}
+
+.positions summary {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--chalk-dim);
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.positions summary::-webkit-details-marker {
+  display: none;
+}
+
+.positions summary::before {
+  content: '▸';
+  font-size: 11px;
+  transition: transform 0.15s ease;
+}
+
+.positions[open] summary::before {
+  transform: rotate(90deg);
 }
 
 .position-row {

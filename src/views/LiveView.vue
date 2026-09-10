@@ -1,11 +1,11 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import BenchPanel from '@/components/live/BenchPanel.vue'
 import CardsPanel from '@/components/live/CardsPanel.vue'
 import MatchClock from '@/components/live/MatchClock.vue'
+import ScoreBoard from '@/components/live/ScoreBoard.vue'
 import PitchPanel from '@/components/live/PitchPanel.vue'
 import ScorePanel from '@/components/live/ScorePanel.vue'
-import SubstitutionBar from '@/components/live/SubstitutionBar.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import { useI18n } from '@/i18n/index.js'
 import { useAppStore } from '@/stores/app.js'
@@ -26,18 +26,19 @@ const { t } = useI18n()
 const TABS = { SQUAD: 'squad', EVENTS: 'events' }
 const tab = ref(TABS.SQUAD)
 
-const fixture = computed(() => `${app.teamName} vs ${setup.opponentName}`)
 </script>
 
 <template>
-  <header class="header">
-    <div class="fixture">{{ fixture }}</div>
-    <button type="button" class="score-strip" @click="tab = TABS.EVENTS">
-      <span class="score clock-face">{{ match.usScore }}</span>
-      <span class="dash">–</span>
-      <span class="score clock-face">{{ match.opponentScore }}</span>
-    </button>
-  </header>
+  <!-- The scoreline doubles as the way into logging goals and cards. -->
+  <button type="button" class="header" @click="tab = TABS.EVENTS">
+    <ScoreBoard
+      size="compact"
+      :us-name="app.teamName"
+      :opponent-name="setup.opponentName"
+      :us-score="match.usScore"
+      :opponent-score="match.opponentScore"
+    />
+  </button>
 
   <MatchClock />
 
@@ -65,7 +66,6 @@ const fixture = computed(() => `${app.teamName} vs ${setup.opponentName}`)
   <template v-if="tab === TABS.SQUAD">
     <PitchPanel />
     <BenchPanel />
-    <SubstitutionBar />
   </template>
 
   <template v-else>
@@ -82,7 +82,7 @@ const fixture = computed(() => `${app.teamName} vs ${setup.opponentName}`)
         <UiButton @click="app.endMatch()">{{ t('yesEndBtn') }}</UiButton>
       </div>
     </template>
-    <UiButton v-else variant="text" :block="false" @click="match.requestEnd()">
+    <UiButton v-else variant="secondary" class="end-btn" @click="match.requestEnd()">
       {{ t('endMatchLink') }}
     </UiButton>
   </div>
@@ -90,39 +90,17 @@ const fixture = computed(() => `${app.teamName} vs ${setup.opponentName}`)
 
 <style scoped>
 .header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.fixture {
-  font-size: 13px;
-  color: var(--chalk-dim);
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.score-strip {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  flex-shrink: 0;
+  display: block;
+  width: 100%;
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 4px 14px;
+  border-radius: var(--radius);
+  padding: 13px 18px 15px;
   color: var(--chalk);
 }
 
-.score {
-  font-size: 20px;
-}
-
-.dash {
-  color: var(--chalk-dim);
+.header:active {
+  transform: translateY(1px);
 }
 
 .tabs {
@@ -131,16 +109,16 @@ const fixture = computed(() => `${app.teamName} vs ${setup.opponentName}`)
   background: rgba(0, 0, 0, 0.24);
   border-radius: 999px;
   padding: 4px;
-  margin: 16px 0;
+  margin: 14px 0 16px;
 }
 
 .tabs button {
   flex: 1;
-  padding: 10px 8px;
+  padding: 11px 8px;
   border-radius: 999px;
   background: none;
   color: var(--chalk-dim);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   transition:
     background 0.15s ease,
@@ -153,13 +131,20 @@ const fixture = computed(() => `${app.teamName} vs ${setup.opponentName}`)
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.25);
 }
 
+/* Deliberately far from the substitution bar: ending a match cannot be undone,
+   and a thumb reaching for "confirm" must not find this instead. */
 .end {
   text-align: center;
-  margin-top: 22px;
+  margin-top: 68px;
+}
+
+.end-btn {
+  color: var(--alert);
+  border-color: rgba(233, 105, 79, 0.4);
 }
 
 .confirm {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--chalk-dim);
   margin: 0 0 8px;
 }

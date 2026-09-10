@@ -15,10 +15,13 @@ const halfLabel = computed(() => {
   return match.currentHalf === 1 ? t('firstHalfLabel') : t('secondHalfLabel')
 })
 
-/** Start / Resume / Pause — the label tells the coach what the tap will do. */
+/**
+ * The button is an icon, so the label lives in `aria-label` — but it still has
+ * to say what the tap will do, not what the clock is doing.
+ */
 const runLabel = computed(() => {
   if (match.running) return t('pauseBtn')
-  return match.elapsedSeconds > 0 ? t('resumeBtn') : t('startBtn')
+  return match.elapsedSeconds > 0 ? t('resumeBtn') : t('clockStartBtn')
 })
 
 /** Capped at 100%: injury time overruns the plan, it does not overrun the bar. */
@@ -28,62 +31,83 @@ const progress = computed(() =>
 </script>
 
 <template>
+  <!--
+    Clock and transport on one row: the two things a coach touches most, kept
+    side by side so the pitch itself starts higher up the screen. The button
+    stays a full thumb-sized target regardless.
+  -->
   <div class="clock" :class="{ 'clock--running': match.running }">
     <div class="readout">
       <span class="elapsed clock-face">{{ formatTime(match.elapsedSeconds) }}</span>
       <span class="total">{{ t('ofLabel', formatTime(match.totalSeconds)) }}</span>
     </div>
 
-    <div
-      class="progress"
-      role="progressbar"
-      :aria-label="t('matchProgressAria')"
-      :aria-valuenow="Math.round(progress)"
-      aria-valuemin="0"
-      aria-valuemax="100"
+    <button
+      type="button"
+      class="run"
+      :class="{ 'run--playing': match.running }"
+      :aria-label="runLabel"
+      :title="runLabel"
+      @click="match.toggleRun()"
     >
-      <div class="progress-fill" :style="{ width: `${progress}%` }" />
-      <!-- Where the halves meet, so the coach can see half time coming. -->
-      <div v-if="setup.twoHalves" class="progress-half" />
-    </div>
-
-    <div v-if="setup.twoHalves" class="half">{{ halfLabel }}</div>
-    <p v-if="match.isFullTime" class="full-time">{{ t('fullTimeBanner') }}</p>
-
-    <div class="controls">
-      <UiButton @click="match.toggleRun()">{{ runLabel }}</UiButton>
-      <UiButton
-        v-if="setup.twoHalves && match.currentHalf === 1"
-        variant="secondary"
-        @click="match.startSecondHalf()"
-      >
-        {{ t('startSecondHalfBtn') }}
-      </UiButton>
-    </div>
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect v-if="match.running" x="6.5" y="5" width="4" height="14" rx="1.2" />
+        <rect v-if="match.running" x="13.5" y="5" width="4" height="14" rx="1.2" />
+        <path v-else d="M8 5.2 19 12 8 18.8Z" />
+      </svg>
+    </button>
   </div>
+
+  <div
+    class="progress"
+    role="progressbar"
+    :aria-label="t('matchProgressAria')"
+    :aria-valuenow="Math.round(progress)"
+    aria-valuemin="0"
+    aria-valuemax="100"
+  >
+    <div class="progress-fill" :style="{ width: `${progress}%` }" />
+    <!-- Where the halves meet, so the coach can see half time coming. -->
+    <div v-if="setup.twoHalves" class="progress-half" />
+  </div>
+
+  <div v-if="setup.twoHalves" class="half">{{ halfLabel }}</div>
+  <p v-if="match.isFullTime" class="full-time">{{ t('fullTimeBanner') }}</p>
+
+  <UiButton
+    v-if="setup.twoHalves && match.currentHalf === 1"
+    variant="secondary"
+    class="second-half"
+    @click="match.startSecondHalf()"
+  >
+    {{ t('startSecondHalfBtn') }}
+  </UiButton>
 </template>
 
 <style scoped>
 .clock {
-  text-align: center;
-  padding: 14px 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 2px 10px;
 }
 
 .readout {
   display: flex;
   align-items: baseline;
-  justify-content: center;
   gap: 10px;
+  min-width: 0;
 }
 
 .elapsed {
-  font-size: 58px;
+  font-size: 38px;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 
 .total {
-  font-size: 14px;
+  font-size: 15.5px;
   color: var(--chalk-dim);
 }
 
@@ -108,12 +132,49 @@ const progress = computed(() =>
   }
 }
 
+.run {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: var(--amber);
+  color: var(--amber-ink);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.28);
+  transition: transform 0.1s ease;
+}
+
+.run svg {
+  width: 28px;
+  height: 28px;
+  fill: currentColor;
+  /* The play triangle looks off-centre in a circle unless nudged. */
+  margin-left: 3px;
+}
+
+.run--playing svg {
+  margin-left: 0;
+}
+
+/* Running: quieter, because stopping the clock is the rarer intent. */
+.run--playing {
+  background: rgba(0, 0, 0, 0.22);
+  border: 2px solid var(--line-strong);
+  color: var(--chalk);
+  box-shadow: none;
+}
+
+.run:active {
+  transform: translateY(1px) scale(0.97);
+}
+
 .progress {
   position: relative;
   height: 6px;
   border-radius: 999px;
   background: rgba(0, 0, 0, 0.28);
-  margin: 14px 0 0;
   overflow: hidden;
 }
 
@@ -134,29 +195,25 @@ const progress = computed(() =>
 }
 
 .half {
-  font-size: 12px;
+  text-align: center;
+  font-size: 15px;
   font-weight: 700;
   letter-spacing: 0.6px;
   text-transform: uppercase;
-  color: var(--amber);
-  margin-top: 8px;
+  color: var(--amber-text);
+  margin-top: 10px;
 }
 
 .full-time {
-  color: var(--amber);
-  font-size: 13px;
+  text-align: center;
+  color: var(--amber-text);
+  font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.4px;
-  margin: 8px 0 0;
+  margin: 10px 0 0;
 }
 
-.controls {
-  display: flex;
-  gap: 10px;
+.second-half {
   margin-top: 14px;
-}
-
-.controls > * {
-  flex: 1;
 }
 </style>

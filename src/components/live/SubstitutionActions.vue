@@ -45,8 +45,9 @@ const onNames = computed(() =>
   [...match.selectedOnPlayerIds].map((playerId) => match.playerName(playerId)).join(', '),
 )
 
+/** Empty until there is a selection: an idle instruction is just noise. */
 const status = computed(() => {
-  if (!offNames.value) return t('subPrompt')
+  if (!offNames.value) return ''
   if (!onNames.value) return t('comingOffOnly', offNames.value)
   return t('comingOffOn', offNames.value, onNames.value)
 })
@@ -54,10 +55,10 @@ const status = computed(() => {
 
 <template>
   <!--
-    Sticky by design: the coach's thumb stays here while their eyes are on the
-    pitch, so the confirm action must never scroll out of reach.
+    Lives at the foot of the bench panel: incoming players are chosen just
+    above, so the action that commits them belongs in the same box.
   -->
-  <div class="sub-bar">
+  <div class="sub-actions">
     <!-- Multi-player change: say who takes which position. -->
     <template v-if="assignment">
       <p class="status">{{ t('assignTitle') }}</p>
@@ -82,54 +83,70 @@ const status = computed(() => {
           </button>
         </div>
       </div>
-      <div class="action-pair spaced">
-        <UiButton variant="secondary" @click="match.cancelAssignment()">
-          {{ t('cancelBtn') }}
-        </UiButton>
-        <UiButton :disabled="!isAssignmentComplete(assignment)" @click="match.applyAssignment()">
-          {{ t('applySubBtn') }}
-        </UiButton>
-      </div>
+      <UiButton
+        class="commit"
+        :disabled="!isAssignmentComplete(assignment)"
+        @click="match.applyAssignment()"
+      >
+        {{ t('applySubBtn') }}
+      </UiButton>
+      <button type="button" class="minor" @click="match.cancelAssignment()">
+        {{ t('cancelBtn') }}
+      </button>
     </template>
 
-    <!-- No substitutions left under the match's own rules. -->
-    <p v-else-if="match.limitReached" class="status status--alert">
-      {{ t('limitReachedNote', match.subsUsed, match.rules.subLimit) }}
-    </p>
-
     <template v-else>
-      <p class="status">
+      <!-- No substitutions left under the match's own rules. -->
+      <p v-if="match.limitReached" class="status status--alert">
+        {{ t('limitReachedNote', match.subsUsed, match.rules.subLimit) }}
+      </p>
+      <p v-else-if="status || match.rules.subLimitEnabled" class="status">
         {{ status }}
-        <template v-if="match.rules.subLimitEnabled">
+        <template v-if="status && match.rules.subLimitEnabled">
           <span class="divider">·</span>
+        </template>
+        <template v-if="match.rules.subLimitEnabled">
           {{ t('subsUsedNote', match.subsUsed, match.rules.subLimit) }}
         </template>
       </p>
+
       <p v-if="match.autoSelectedOn" class="auto-note">{{ t('autoPickedNote') }}</p>
-      <div class="action-pair">
-        <UiButton variant="secondary" @click="match.clearSelection()">{{ t('clearBtn') }}</UiButton>
-        <UiButton :disabled="!match.canConfirmSub" @click="match.confirmSubstitution()">
-          {{ t('confirmSubBtn') }}
-        </UiButton>
-      </div>
+
+      <UiButton
+        v-if="!match.limitReached"
+        class="commit"
+        :disabled="!match.canConfirmSub"
+        @click="match.confirmSubstitution()"
+      >
+        {{ t('confirmSubBtn') }}
+      </UiButton>
+
+      <!-- Two on the pitch selected: they can trade shirts without a sub. -->
+      <UiButton
+        v-if="match.canSwapPositions"
+        variant="secondary"
+        class="swap"
+        @click="match.swapPositions()"
+      >
+        {{ t('swapPositionsBtn') }}
+      </UiButton>
+
+      <button v-if="match.hasSelection" type="button" class="minor" @click="match.clearSelection()">
+        {{ t('clearBtn') }}
+      </button>
     </template>
   </div>
 </template>
 
 <style scoped>
-.sub-bar {
-  position: sticky;
-  bottom: 0;
-  background: var(--bg2);
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius);
-  padding: 12px 14px;
-  margin-top: 16px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+.sub-actions {
+  border-top: 1px solid var(--line);
+  margin-top: 14px;
+  padding-top: 14px;
 }
 
 .status {
-  font-size: 13px;
+  font-size: 14.5px;
   color: var(--chalk-dim);
   margin: 0 0 10px;
   line-height: 1.45;
@@ -141,7 +158,8 @@ const status = computed(() => {
 }
 
 .auto-note {
-  font-size: 12px;
+  font-size: 14.5px;
+  font-weight: 600;
   color: var(--go);
   margin: -4px 0 10px;
 }
@@ -167,13 +185,14 @@ const status = computed(() => {
 }
 
 .assign-position {
-  font-size: 13px;
+  font-size: 14.5px;
   font-weight: 600;
   color: var(--chalk);
 }
 
 .assign-leaving {
-  font-size: 12px;
+  font-size: 14.5px;
+  font-weight: 500;
   color: var(--chalk-dim);
 }
 
@@ -189,12 +208,12 @@ const status = computed(() => {
 }
 
 .choice {
-  padding: 9px 14px;
+  padding: 11px 16px;
   border-radius: 999px;
   border: 1px solid var(--line-strong);
   background: var(--field-bg);
   color: var(--chalk);
-  font-size: 14px;
+  font-size: 15.5px;
   font-weight: 600;
 }
 
@@ -214,7 +233,25 @@ const status = computed(() => {
   border-style: dashed;
 }
 
-.spaced {
-  margin-top: 10px;
+/* The one thing these actions exist to do. */
+.commit {
+  margin-top: 0;
+}
+
+.swap {
+  margin-top: 8px;
+}
+
+/* A way to undo a selection — available, but never competing with the commit. */
+.minor {
+  display: block;
+  margin: 12px auto 2px;
+  background: none;
+  color: var(--chalk-dim);
+  font-size: 15px;
+  font-weight: 500;
+  padding: 4px 10px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 </style>

@@ -1,14 +1,17 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onBeforeUnmount } from 'vue'
 import InfoView from '@/views/InfoView.vue'
 import LineupView from '@/views/LineupView.vue'
 import LiveView from '@/views/LiveView.vue'
-import SetupView from '@/views/SetupView.vue'
+import OpponentView from '@/views/OpponentView.vue'
+import SettingsView from '@/views/SettingsView.vue'
 import SplashView from '@/views/SplashView.vue'
+import SquadView from '@/views/SquadView.vue'
 import StatsView from '@/views/StatsView.vue'
 import SummaryView from '@/views/SummaryView.vue'
 import TeamNameView from '@/views/TeamNameView.vue'
-import { useI18n } from '@/i18n/index.js'
+import GrassBackdrop from '@/components/ui/GrassBackdrop.vue'
+import { installUnloadWarning } from '@/services/unloadGuard.js'
 import { PHASES, useAppStore } from '@/stores/app.js'
 
 /**
@@ -19,7 +22,9 @@ const VIEWS = {
   [PHASES.SPLASH]: SplashView,
   [PHASES.INFO]: InfoView,
   [PHASES.TEAM]: TeamNameView,
-  [PHASES.SETUP]: SetupView,
+  [PHASES.OPPONENT]: OpponentView,
+  [PHASES.SETTINGS]: SettingsView,
+  [PHASES.SQUAD]: SquadView,
   [PHASES.LINEUP]: LineupView,
   [PHASES.LIVE]: LiveView,
   [PHASES.SUMMARY]: SummaryView,
@@ -27,35 +32,15 @@ const VIEWS = {
 }
 
 const app = useAppStore()
-const { t } = useI18n()
 const currentView = computed(() => VIEWS[app.phase] ?? SplashView)
 
-/** The splash carries its own info link, and the info page is the destination. */
-const showInfoLink = computed(() => ![PHASES.SPLASH, PHASES.INFO].includes(app.phase))
+// A refresh would wipe the match, so ask before it happens.
+const stopUnloadWarning = installUnloadWarning(() => app.hasWorkToLose)
+onBeforeUnmount(stopUnloadWarning)
 </script>
 
 <template>
+  <GrassBackdrop />
+
   <component :is="currentView" />
-
-  <footer v-if="showInfoLink" class="footer">
-    <button type="button" class="footer-link" @click="app.openInfo()">{{ t('infoLink') }}</button>
-  </footer>
 </template>
-
-<style scoped>
-.footer {
-  text-align: center;
-  margin-top: 28px;
-  padding-top: 16px;
-  border-top: 1px solid var(--line);
-}
-
-.footer-link {
-  background: none;
-  color: var(--chalk-dim);
-  font-size: 12.5px;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  padding: 4px;
-}
-</style>

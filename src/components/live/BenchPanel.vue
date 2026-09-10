@@ -1,5 +1,6 @@
 <script setup>
 import PlayerRow from '@/components/live/PlayerRow.vue'
+import SubstitutionActions from '@/components/live/SubstitutionActions.vue'
 import UiPanel from '@/components/ui/UiPanel.vue'
 import { formatTime } from '@/domain/time.js'
 import { useI18n } from '@/i18n/index.js'
@@ -20,13 +21,7 @@ function badgeFor(player) {
 </script>
 
 <template>
-  <UiPanel>
-    <div class="section-title">
-      <h3>{{ t('benchTitle') }}</h3>
-      <span class="hint">{{ t('benchHint') }}</span>
-    </div>
-    <hr class="rule" />
-
+  <UiPanel :title="t('benchTitle')">
     <template v-if="match.bench.length">
       <PlayerRow
         v-for="player in match.bench"
@@ -42,13 +37,8 @@ function badgeFor(player) {
       />
     </template>
     <p v-else class="count-note">{{ t('benchEmpty') }}</p>
+
+    <SubstitutionActions />
   </UiPanel>
 </template>
 
-<style scoped>
-.rule {
-  border: none;
-  border-top: 1px dashed var(--line-strong);
-  margin: 0 0 12px;
-}
-</style>

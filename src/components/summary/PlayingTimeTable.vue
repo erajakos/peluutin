@@ -49,10 +49,10 @@ function sign(delta) {
 
 .table th {
   text-align: left;
-  font-size: 11px;
-  letter-spacing: 0.3px;
+  font-size: 14px;
+  letter-spacing: 0.4px;
   color: var(--chalk-dim);
-  font-weight: 600;
+  font-weight: 700;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--line-strong);
 }
@@ -62,9 +62,9 @@ function sign(delta) {
 }
 
 .table td {
-  padding: 10px 0;
+  padding: 12px 0;
   border-bottom: 1px solid var(--line);
-  font-size: 15px;
+  font-size: 16.5px;
 }
 
 .table td.num {
@@ -74,7 +74,8 @@ function sign(delta) {
 
 /* Distance from the squad average: green is fair, red needs a word after. */
 .delta {
-  font-size: 12px;
+  font-size: 14.5px;
+  font-weight: 600;
   margin-left: 6px;
 }
 
@@ -91,9 +92,10 @@ function sign(delta) {
 }
 
 .gk-tag {
-  font-size: 11px;
-  color: var(--amber);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--amber-text);
   display: block;
-  margin-top: 1px;
+  margin-top: 2px;
 }
 </style>

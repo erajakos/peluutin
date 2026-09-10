@@ -1,9 +1,9 @@
 <script setup>
-import { ref } from 'vue'
 import FormationPanel from '@/components/setup/FormationPanel.vue'
 import MatchFormatPanel from '@/components/setup/MatchFormatPanel.vue'
-import SquadPanel from '@/components/setup/SquadPanel.vue'
+import SetupProgress from '@/components/setup/SetupProgress.vue'
 import SubstitutionRulesPanel from '@/components/setup/SubstitutionRulesPanel.vue'
+import UiBackLink from '@/components/ui/UiBackLink.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiCheckLine from '@/components/ui/UiCheckLine.vue'
 import UiPanel from '@/components/ui/UiPanel.vue'
@@ -14,40 +14,27 @@ import { useSetupStore } from '@/stores/setup.js'
 const app = useAppStore()
 const setup = useSetupStore()
 const { t } = useI18n()
-
-const error = ref('')
-
-/** Both checks must pass before a lineup can be built at all. */
-function submit() {
-  setup.opponentName = setup.opponentName.trim()
-  if (!setup.opponentName) {
-    error.value = t('opponentRequired')
-    return
-  }
-  if (!setup.hasEnoughPlayers) {
-    error.value = t('setupErrorNote', setup.fieldSize, setup.roster.length)
-    return
-  }
-  error.value = ''
-  app.openLineup()
-}
 </script>
 
 <template>
-  <div class="eyebrow">{{ t('setupEyebrow') }}</div>
-  <h1 class="title">{{ t('setupTitle') }}</h1>
-  <p class="sub">{{ t('setupSub') }}</p>
+  <SetupProgress :step="2" />
+  <UiBackLink @click="app.backToOpponent()">{{ t('backBtn') }}</UiBackLink>
+
+  <h1 class="title settings-title">{{ t('settingsTitle') }}</h1>
 
   <MatchFormatPanel />
+  <FormationPanel />
   <SubstitutionRulesPanel />
 
-  <UiPanel>
+  <UiPanel :title="t('sectionCards')">
     <UiCheckLine v-model="setup.trackCards" tight>{{ t('trackCardsLabel') }}</UiCheckLine>
   </UiPanel>
 
-  <FormationPanel />
-  <SquadPanel />
-
-  <UiButton @click="submit">{{ t('continueBtn') }}</UiButton>
-  <p class="error-note">{{ error }}</p>
+  <UiButton size="lg" @click="app.openSquad()">{{ t('teamContinueBtn') }}</UiButton>
 </template>
+
+<style scoped>
+.settings-title {
+  margin-bottom: 20px;
+}
+</style>

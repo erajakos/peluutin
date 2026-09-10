@@ -89,6 +89,13 @@ export const useMatchStore = defineStore('match', {
       return isLimitReached({ ...this.rules, subsUsed: state.subsUsed })
     },
 
+    /** Whether there is a selection for the coach to clear or confirm. */
+    hasSelection: (state) =>
+      state.selectedOffSlotIds.size > 0 || state.selectedOnPlayerIds.size > 0,
+
+    /** Two players on the pitch selected: they can trade positions. */
+    canSwapPositions: (state) => state.selectedOffSlotIds.size === 2,
+
     canConfirmSub(state) {
       return canConfirmSubstitution({
         offCount: state.selectedOffSlotIds.size,
@@ -255,6 +262,33 @@ export const useMatchStore = defineStore('match', {
 
     cancelAssignment() {
       this.clearSelection()
+    },
+
+    /**
+     * Trade the positions of two players already on the field.
+     *
+     * This is not a substitution: nobody leaves, no allowance is spent, and
+     * neither player's spell on the pitch is interrupted — so their minutes and
+     * their current stint both carry on untouched.
+     */
+    swapSlotPlayers(slotIdA, slotIdB) {
+      if (slotIdA === slotIdB) return false
+      const first = this.slots.find((slot) => slot.id === slotIdA)
+      const second = this.slots.find((slot) => slot.id === slotIdB)
+      if (!first || !second) return false
+      if (first.playerId === null || second.playerId === null) return false
+
+      const held = first.playerId
+      first.playerId = second.playerId
+      second.playerId = held
+      return true
+    },
+
+    /** Trade the two positions the coach has selected. */
+    swapPositions() {
+      if (!this.canSwapPositions) return
+      const [first, second] = [...this.selectedOffSlotIds]
+      if (this.swapSlotPlayers(first, second)) this.clearSelection()
     },
 
     /** Move one player off and another on, counting it against the sub limit. */

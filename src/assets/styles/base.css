@@ -14,7 +14,14 @@ body {
 }
 
 body {
-  background: radial-gradient(120% 90% at 50% -10%, #175333 0%, var(--bg) 55%);
+  background-color: var(--bg);
+  /* Floodlight from above, then soft patches of wear like real turf. */
+  background-image:
+    radial-gradient(115% 80% at 50% -8%, rgba(37, 106, 66, 0.5) 0%, rgba(15, 51, 36, 0) 62%),
+    radial-gradient(70% 45% at 18% 22%, rgba(96, 160, 112, 0.1) 0%, rgba(15, 51, 36, 0) 70%),
+    radial-gradient(60% 40% at 84% 62%, rgba(96, 160, 112, 0.08) 0%, rgba(15, 51, 36, 0) 70%),
+    radial-gradient(75% 45% at 40% 92%, rgba(8, 34, 22, 0.4) 0%, rgba(15, 51, 36, 0) 72%);
+  background-attachment: fixed;
   color: var(--chalk);
   font-family: var(--font-body);
   min-height: 100vh;
@@ -43,45 +50,48 @@ button {
 /* Display face — used for the clock, scores and any tabulated number. */
 .clock-face {
   font-family: var(--font-display);
+  font-weight: 700;
   letter-spacing: 0.5px;
-  font-weight: 400;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Page headers */
 .eyebrow {
-  font-size: 13px;
-  color: var(--chalk-dim);
-  margin-bottom: 2px;
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--amber-text);
+  margin-bottom: 8px;
 }
 
 .title {
-  font-size: 22px;
+  font-size: 27px;
   font-weight: 700;
-  margin-bottom: 4px;
-}
-
-.sub {
-  font-size: 14px;
-  color: var(--chalk-dim);
-  margin-bottom: 18px;
+  line-height: 1.15;
+  letter-spacing: -0.2px;
+  margin-bottom: 6px;
 }
 
 /* Small print */
 .count-note {
-  font-size: 13px;
+  font-size: 15.5px;
+  font-weight: 500;
   color: var(--chalk-dim);
   margin-top: 2px;
 }
 
 .error-note {
-  font-size: 13px;
+  font-size: 15px;
+  font-weight: 600;
   color: var(--alert);
   margin-top: 8px;
-  min-height: 16px;
+  min-height: 18px;
 }
 
 .link-inline {
-  color: var(--amber);
+  color: var(--amber-text);
+  font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 2px;
   cursor: pointer;
@@ -89,35 +99,6 @@ button {
   border: none;
   font: inherit;
   padding: 0;
-}
-
-.link-back {
-  color: var(--chalk-dim);
-  font-size: 14px;
-  background: none;
-  border: none;
-  padding: 0;
-  display: inline-block;
-  margin-bottom: 12px;
-  cursor: pointer;
-}
-
-/* Section heading inside a panel */
-.section-title {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.section-title h3 {
-  font-size: 15px;
-  letter-spacing: 0.2px;
-}
-
-.section-title .hint {
-  font-size: 12px;
-  color: var(--chalk-dim);
 }
 
 /* Layout helpers */
@@ -155,13 +136,26 @@ button {
  */
 .field {
   width: 100%;
-  padding: 10px 12px;
+  padding: 13px 14px;
   background: var(--field-bg);
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
   color: var(--chalk);
   font-family: inherit;
-  font-size: 15px;
+  font-size: 16px;
+}
+
+.field--lg {
+  padding: 18px 18px;
+  font-size: 20px;
+  font-weight: 600;
+  border-radius: 10px;
+}
+
+.field::placeholder {
+  color: var(--chalk-dim);
+  opacity: 0.65;
+  font-weight: 400;
 }
 
 .field:focus {
@@ -170,12 +164,18 @@ button {
 }
 
 select.field {
-  padding: 10px;
+  appearance: none;
+  padding: 12px 42px 12px 14px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1.5 7 7.5 13 1.5' fill='none' stroke='%23cbe0d2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  background-size: 13px 8px;
 }
 
 .field-label {
   display: block;
-  font-size: 13px;
+  font-size: 15px;
+  font-weight: 500;
   color: var(--chalk-dim);
   margin-bottom: 6px;
 }

@@ -21,8 +21,8 @@ defineEmits(['update:modelValue'])
 .checkline {
   display: flex;
   align-items: center;
-  gap: 9px;
-  font-size: 14px;
+  gap: 11px;
+  font-size: 15.5px;
   color: var(--chalk);
   margin-bottom: 10px;
   cursor: pointer;
@@ -33,8 +33,8 @@ defineEmits(['update:modelValue'])
 }
 
 .checkline input {
-  width: 18px;
-  height: 18px;
+  width: 21px;
+  height: 21px;
   accent-color: var(--amber);
 }
 </style>

@@ -8,24 +8,24 @@ import UiButton from '@/components/ui/UiButton.vue'
 import UiPanel from '@/components/ui/UiPanel.vue'
 import { useI18n } from '@/i18n/index.js'
 import { useAppStore } from '@/stores/app.js'
-import { useSeasonStore } from '@/stores/season.js'
+import { useMatchdayStore } from '@/stores/matchday.js'
 
 const app = useAppStore()
-const season = useSeasonStore()
+const matchday = useMatchdayStore()
 const { t } = useI18n()
 
-const summary = computed(() => season.summary)
+const summary = computed(() => matchday.summary)
 
-const stats = computed(() => [
-  { value: summary.value.played, label: t('matchesPlayedLabel', summary.value.played) },
-  {
-    value: t('recordLabel', summary.value.wins, summary.value.draws, summary.value.losses),
-    label: '',
-  },
-  {
-    value: `${summary.value.goalsFor}–${summary.value.goalsAgainst}`,
-    label: t('goalsForAgainstLabel', summary.value.goalsFor, summary.value.goalsAgainst),
-  },
+const totals = computed(() => [
+  { value: summary.value.played, label: t('matchesLabel') },
+  { value: `${summary.value.goalsFor}–${summary.value.goalsAgainst}`, label: t('goalsLabel') },
+])
+
+// "1V 0T 0H" needs decoding; three labelled numbers do not.
+const record = computed(() => [
+  { value: summary.value.wins, label: t('winsLabel') },
+  { value: summary.value.draws, label: t('drawsLabel') },
+  { value: summary.value.losses, label: t('lossesLabel') },
 ])
 
 const scorerItems = computed(() => {
@@ -41,28 +41,28 @@ const cardItems = computed(() =>
 </script>
 
 <template>
-  <div class="eyebrow">{{ t('statsEyebrow') }}</div>
-  <h1 class="title">{{ t('statsTitle') }}</h1>
+  <h1 class="title stats-title">{{ t('statsTitle') }}</h1>
 
-  <StatGrid :stats="stats" />
+  <StatGrid :stats="totals" />
+  <StatGrid :stats="record" />
 
-  <UiPanel>
-    <span class="field-label heading">{{ t('matchHistoryTitle') }}</span>
-    <MatchHistoryList :matches="season.matches" :team-name="app.teamName" />
+  <UiPanel :title="t('matchHistoryTitle')">
+    <MatchHistoryList :matches="matchday.matches" :team-name="app.teamName" />
   </UiPanel>
 
   <TallyPanel :heading="t('topScorersTitle')" :items="scorerItems" />
   <TallyPanel :heading="t('cardsSummaryTitle')" :items="cardItems" />
 
-  <UiPanel>
-    <PlayingTimeTable :rows="summary.minutes" :minutes-heading="t('totalMinutesTitle')" />
+  <UiPanel :title="t('totalMinutesTitle')">
+    <PlayingTimeTable :rows="summary.minutes" :minutes-heading="t('tableMinutes')" />
   </UiPanel>
 
   <UiButton @click="app.playAnotherMatch()">{{ t('playAnotherBtn') }}</UiButton>
 </template>
 
 <style scoped>
-.heading {
-  margin-bottom: 6px;
+.stats-title {
+  margin-bottom: 20px;
 }
 </style>
+

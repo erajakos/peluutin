@@ -33,12 +33,13 @@ defineProps({
 }
 
 .num {
-  font-size: 24px;
+  font-size: 31px;
 }
 
 .lbl {
-  font-size: 11px;
+  font-size: 14.5px;
+  font-weight: 500;
   color: var(--chalk-dim);
-  margin-top: 2px;
+  margin-top: 3px;
 }
 </style>

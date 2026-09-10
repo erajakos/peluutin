@@ -8,6 +8,21 @@ export function countGoals(goals, team) {
   return goals.filter((goal) => goal.team === team).length
 }
 
+/**
+ * The scoreline after each goal, in the order they were scored. It is what a
+ * coach reads back afterwards to reconstruct how the match actually went —
+ * three goals in a list say much less than 1–0, 1–1, 2–1.
+ */
+export function runningScores(goals) {
+  let us = 0
+  let opponent = 0
+  return goals.map((goal) => {
+    if (goal.team === TEAM_US) us += 1
+    else opponent += 1
+    return { id: goal.id, us, opponent }
+  })
+}
+
 export function resultOf(usScore, opponentScore) {
   if (usScore > opponentScore) return 'win'
   if (usScore < opponentScore) return 'loss'
@@ -42,7 +57,7 @@ export function scorerTally(goals, resolveName) {
   return { entries, unknown }
 }
 
-/** Yellow and red counts per player, for the match summary and season stats. */
+/** Yellow and red counts per player, for the match summary and the day's stats. */
 export function cardTally(cards, resolveName) {
   const counts = new Map()
   cards.forEach((card) => {

@@ -1,7 +1,7 @@
 import { TEAM_US, cardTally, resultOf, scorerTally } from './scoring.js'
 
 /**
- * Turn a finished match into the immutable record the season stats read from.
+ * Turn a finished match into the immutable record the matchday stats read from.
  * Snapshotting names and minutes here means later roster edits cannot rewrite
  * history.
  */
@@ -17,8 +17,8 @@ export function createMatchRecord({ id, opponent, usScore, opponentScore, player
   }
 }
 
-/** Aggregate every recorded match into the season view. */
-export function seasonSummary(matches) {
+/** Aggregate every recorded match of the day. */
+export function matchdaySummary(matches) {
   const minutes = new Map()
   let wins = 0
   let draws = 0

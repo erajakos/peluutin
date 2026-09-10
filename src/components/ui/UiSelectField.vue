@@ -32,8 +32,4 @@ defineEmits(['update:modelValue'])
   width: 100%;
   min-width: 0;
 }
-
-select.field {
-  padding: 10px;
-}
 </style>
