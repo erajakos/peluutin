@@ -23,6 +23,11 @@ export default {
   licenseBody:
     'Completely free. Use it, change it, fork it — MIT licensed. No warranty, no strings.',
   backBtn: 'Back',
+  installAppBtn: 'Install as an app',
+  installTitle: 'Install on your phone',
+  installBody:
+    'Peluutin works without a connection once it has been opened. On Android and in Chrome, install it from the button on the start screen or from the browser menu.',
+  installIos: 'On iPhone: open it in Safari, tap Share and choose Add to Home Screen.',
 
   // Team name
   teamNameTitle: 'Enter your team name',

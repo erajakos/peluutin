@@ -43,6 +43,10 @@ browser's own `localStorage` so you do not re-enter them every week: your team
 name, and how you play the match (length, halves, format, formation, rules).
 Player names and opponents are never saved.
 
+Nothing is fetched from anywhere else either: the fonts are bundled with the
+app rather than loaded from a font service, so opening Peluutin makes no
+request to any third party.
+
 The trade-off is deliberate and worth knowing: **close the tab and the match is
 gone.** Keep the app open for the duration of the game.
 
@@ -64,9 +68,36 @@ npm run dev        # http://localhost:5173
 | `npm run test:watch` | Unit tests in watch mode |
 | `npm run lint` | ESLint over the whole project |
 | `npm run format` | Prettier over `src/` and `tests/` |
+| `npm run generate-pwa-assets` | Regenerate the app icons from `public/icon.svg` |
 
 The build output in `dist/` is fully static — any file host will serve it. The
-Vite `base` is `./`, so it also works from a subdirectory.
+Vite `base` is `./`, so it also works from a subdirectory. It must be served
+over HTTPS (or `localhost`) for the app to be installable.
+
+## Installing as an app
+
+Peluutin is a Progressive Web App. Once opened, it can be installed to the
+home screen and then works with **no connection** — useful on a pitch with poor
+reception.
+
+- **Android / Chrome / Edge:** the start screen shows an *Asenna sovellukseksi*
+  button when the browser can install it; the browser menu works too.
+- **iPhone / iPad:** open it in Safari, tap *Share*, then *Add to Home Screen*.
+  Safari offers no install prompt, so the info page explains this instead.
+
+How it is put together, in [`vite.config.js`](vite.config.js):
+
+- **Everything is precached** by the service worker — code, styles, icons and
+  the self-hosted fonts — so an installed app opens fully offline.
+- **Updates never reload the page under a coach.** The match lives in memory,
+  so a reload mid-match would lose it. A new version activates in the
+  background as soon as it has downloaded; the page is only reloaded onto it if
+  the coach is still on the start screen, and otherwise the next launch simply
+  opens the new version.
+- **Icons** are generated from one source, [`public/icon.svg`](public/icon.svg),
+  by `npm run generate-pwa-assets` ([`pwa-assets.config.js`](pwa-assets.config.js)).
+  Maskable and Apple icons get padding and the pitch green behind them, so the
+  platforms' own cropping never cuts into the ball.
 
 ## How the code is organised
 

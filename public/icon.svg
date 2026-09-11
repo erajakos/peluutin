@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Peluutin app icon: the crest without its lettering, which would be
+       unreadable at icon size. Transparent corners; the PWA asset generator
+       adds padding and a background for the maskable and Apple variants. -->
+  <defs>
+    <radialGradient id="dome" cx="34%" cy="26%" r="80%">
+      <stop offset="0%" stop-color="#1F6140"/><stop offset="55%" stop-color="#143F28"/><stop offset="100%" stop-color="#0A2718"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F8D793"/><stop offset="45%" stop-color="#E8A33D"/><stop offset="100%" stop-color="#A2660F"/>
+    </linearGradient>
+    <radialGradient id="ball" cx="33%" cy="27%" r="74%">
+      <stop offset="0%" stop-color="#FFFFFF"/><stop offset="52%" stop-color="#F0F8ED"/><stop offset="100%" stop-color="#BCCCC0"/>
+    </radialGradient>
+    <radialGradient id="shade" cx="35%" cy="29%" r="74%">
+      <stop offset="56%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity="0.45"/>
+    </radialGradient>
+    <clipPath id="clip"><circle cx="256" cy="256" r="150"/></clipPath>
+  </defs>
+  <circle cx="256" cy="256" r="250" fill="url(#dome)"/>
+  <circle cx="256" cy="256" r="238" fill="none" stroke="url(#ring)" stroke-width="20"/>
+  <circle cx="256" cy="256" r="196" fill="none" stroke="url(#ring)" stroke-width="6"/>
+  <g clip-path="url(#clip)">
+    <circle cx="256" cy="256" r="150" fill="url(#ball)"/>
+    <g fill="#10301E">
+      <polygon points="256.0,172.5 207.4,137.1 225.9,80.0 286.1,80.0 304.6,137.1"/>
+      <polygon points="335.4,230.2 354.0,173.0 414.1,173.0 432.7,230.2 384.1,265.5"/>
+      <polygon points="305.1,323.6 365.2,323.6 383.8,380.7 335.2,416.1 286.5,380.7"/>
+      <polygon points="206.9,323.6 225.5,380.7 176.8,416.1 128.2,380.7 146.8,323.6"/>
+      <polygon points="176.6,230.2 127.9,265.5 79.3,230.2 97.9,173.0 158.0,173.0"/>
+      <polygon points="256.0,208.3 301.4,241.3 284.1,294.6 227.9,294.6 210.6,241.3"/>
+    </g>
+    <g stroke="#10301E" stroke-width="10" stroke-linecap="butt" fill="none">
+      <path d="M256.0,208.3 L256.0,172.5"/>
+      <path d="M301.4,241.3 L335.4,230.2"/>
+      <path d="M284.1,294.6 L305.1,323.6"/>
+      <path d="M227.9,294.6 L206.9,323.6"/>
+      <path d="M210.6,241.3 L176.6,230.2"/>
+    </g>
+    <circle cx="256" cy="256" r="150" fill="url(#shade)"/>
+  </g>
+</svg>

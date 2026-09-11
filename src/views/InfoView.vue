@@ -13,6 +13,7 @@ const { t } = useI18n()
  */
 const SECTIONS = [
   { label: 'privacyTitle', paragraphs: ['privacyBody', 'privacyNoTracking', 'privacyRefresh'] },
+  { label: 'installTitle', paragraphs: ['installBody', 'installIos'] },
   { label: 'madeTitle', paragraphs: ['madeBody'] },
   { label: 'authorTitle', paragraphs: ['authorBody'] },
   { label: 'licenseTitle', paragraphs: ['licenseBody'] },

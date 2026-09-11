@@ -23,6 +23,11 @@ export default {
   licenseBody:
     'Täysin ilmainen. Käytä, muokkaa ja haaroita vapaasti — MIT-lisenssi. Ei takuuta, ei ehtoja.',
   backBtn: 'Takaisin',
+  installAppBtn: 'Asenna sovellukseksi',
+  installTitle: 'Asenna puhelimeen',
+  installBody:
+    'Peluutin toimii myös ilman verkkoa, kun sen on kerran avannut. Androidilla ja Chromessa asenna aloitusnäytön painikkeesta tai selaimen valikosta.',
+  installIos: 'iPhonella: avaa Safarissa, napauta Jaa ja valitse Lisää Koti-valikkoon.',
 
   // Team name
   teamNameTitle: 'Anna joukkueesi nimi',

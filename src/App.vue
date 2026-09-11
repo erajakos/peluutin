@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount } from 'vue'
+import { useRegisterSW } from 'virtual:pwa-register/vue'
 import InfoView from '@/views/InfoView.vue'
 import LineupView from '@/views/LineupView.vue'
 import LiveView from '@/views/LiveView.vue'
@@ -37,6 +38,19 @@ const currentView = computed(() => VIEWS[app.phase] ?? SplashView)
 // A refresh would wipe the match, so ask before it happens.
 const stopUnloadWarning = installUnloadWarning(() => app.hasWorkToLose)
 onBeforeUnmount(stopUnloadWarning)
+
+/**
+ * App updates. A new version downloads and takes over in the background, but
+ * the page is only reloaded onto it from the start screen: anywhere later, a
+ * reload would lose the squad or a match in progress. The running page keeps
+ * the code it already loaded, and the next launch simply opens the new version.
+ */
+useRegisterSW({
+  immediate: true,
+  onNeedReload() {
+    if (app.phase === PHASES.SPLASH) window.location.reload()
+  },
+})
 </script>
 
 <template>
