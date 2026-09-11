@@ -1,4 +1,4 @@
-# Melkein suunnitelma
+# Peluutin
 
 A small, offline web app for a youth football coach standing on the touchline.
 It tracks how long every player has actually been on the pitch, tells you who
@@ -29,8 +29,8 @@ Finnish and English. No accounts, no servers, no tracking.
 - **Match rules** — halves, match length, format size, goalkeeper handling,
   re-entry after a substitution, and an optional cap on total substitutions.
 - **Score, scorers and cards** — logged against the match clock.
-- **Full-time summary** — minutes per player, each measured against the squad
-  average, and the spread between the most- and least-played player.
+- **Full-time summary** — the final score, every goal with the scoreline it
+  produced, and minutes per player measured against the outfield average.
 - **The day's stats** — record, goals, top scorers, cards and total minutes
   across every match played in this session.
 
@@ -38,8 +38,10 @@ Finnish and English. No accounts, no servers, no tracking.
 
 Everything stays on the device. There are no accounts, no servers, no cloud,
 no database and no build-time or run-time analytics. Matches, players and stats
-live only in the browser tab's memory. The single thing persisted is your team
-name, in that browser's own `localStorage`, so you do not retype it every week.
+live only in the browser tab's memory. Two things are persisted, both in that
+browser's own `localStorage` so you do not re-enter them every week: your team
+name, and how you play the match (length, halves, format, formation, rules).
+Player names and opponents are never saved.
 
 The trade-off is deliberate and worth knowing: **close the tab and the match is
 gone.** Keep the app open for the duration of the game.
@@ -47,6 +49,8 @@ gone.** Keep the app open for the duration of the game.
 ## Getting started
 
 ```bash
+git clone git@github.com:erajakos/peluutin.git
+cd peluutin
 npm install
 npm run dev        # http://localhost:5173
 ```
@@ -79,7 +83,7 @@ src/
 │   ├── ids.js           One shared id sequence for every entity
 │   ├── lineup.js        Building slots and working out the bench
 │   ├── pitch.js         Where each position sits on the drawn pitch
-│   ├── playingTime.js   Fairness: averages, deltas, spread
+│   ├── playingTime.js   Fairness: averages and deltas
 │   ├── rotation.js      DUE OFF / DUE ON hints
 │   ├── scoring.js       Goals, cards and their tallies
 │   ├── matchday.js      Immutable match records and the day's aggregation

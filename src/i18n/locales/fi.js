@@ -9,7 +9,7 @@ export default {
   infoIntro: 'Pieni työkalu ottelun ja vaihtojen suunnitteluun kentän laidalla.',
   privacyTitle: 'Tietosi pysyvät sinulla',
   privacyBody:
-    'Kaikki tiedot pysyvät tällä laitteella. Sovelluksessa ei ole tilejä, palvelimia, pilveä eikä tietokantaa: ottelut, pelaajat ja tilastot elävät vain selaimesi muistissa. Ainoa asia, joka tallennetaan pidempään, on joukkueesi nimi — ja sekin vain tämän laitteen omaan selainmuistiin.',
+    'Kaikki tiedot pysyvät tällä laitteella. Sovelluksessa ei ole tilejä, palvelimia, pilveä eikä tietokantaa: ottelut, pelaajat ja tilastot elävät vain selaimesi muistissa. Pidempään tallennetaan vain joukkueesi nimi ja ottelun asetukset — ja nekin vain tämän laitteen omaan selainmuistiin. Pelaajien nimiä ei tallenneta.',
   privacyNoTracking:
     'Ei seurantaa, ei analytiikkaa, ei telemetriaa, ei evästeitä, ei mainoksia. Mitään ei lähetetä mihinkään.',
   privacyRefresh:
@@ -50,6 +50,10 @@ export default {
   secondHalfLabel: 'Toinen puoliaika',
   halfTimeLabel: 'Puoliaika',
   startSecondHalfBtn: 'Aloita toinen puoliaika',
+  secondHalfShort: '2. puoliaika',
+  halfTimeBtn: 'Aloita puoliaikatauko',
+  endHalfConfirmText: 'Päättyikö ensimmäinen puoliaika?',
+  yesBtn: 'Kyllä',
   fieldSizeLabel: 'Pelaajia kentällä yhtä aikaa',
   hasGKLabel: 'Sisältää maalivahdin',
   fixedGKLabel: 'Maalivahti pelaa koko ottelun (ei vaihdeta)',
@@ -72,18 +76,22 @@ export default {
 
   // Lineup
   lineupTitle: 'Aloituskokoonpano',
+  drawLineupBtn: 'Täytä satunnaisesti',
+  captainLabel: 'Kapteeni',
+  noCaptainOption: '— ei kapteenia —',
   choosePlayerOption: '— valitse pelaaja —',
   benchPreviewLabel: 'Vaihtopenkki alussa',
   benchPreviewEmpty: 'Kaikki aloittavat kentällä.',
   kickoffBtn: 'Aloita ottelu',
 
   // Live
-  tabSquad: 'Kenttä',
-  tabEvents: 'Tulos & tapahtumat',
+  onFieldTitle: 'Kentällä',
+  eventsTitle: 'Tulos & tapahtumat',
+  openEventsAria: 'Avaa tulos ja tapahtumat',
+  closeBtn: 'Sulje',
   restingFor: (time) => `penkillä ${time}`,
   playingFor: (time) => `kentällä ${time}`,
   matchProgressAria: 'Ottelun eteneminen',
-  onFieldHint: 'napauta valitaksesi · raahaa vaihtaaksesi paikkoja',
   benchTitle: 'Vaihtopenkki',
   noOneOnField: 'Kukaan ei ole kentällä.',
   benchEmpty: 'Vaihtopenkki on tyhjä.',
@@ -92,10 +100,9 @@ export default {
   outBadge: 'POISSA',
   sentOffBadge: 'ULOSAJETTU',
   vacantLabel: 'Paikka tyhjänä',
-  clockStartBtn: 'Aloita',
+  startClockBtn: 'Käynnistä kello',
   resumeBtn: 'Jatka',
   pauseBtn: 'Tauko',
-  fullTimeBanner: 'PELI PÄÄTTYY — lopeta kun valmis',
   ofLabel: (time) => `/ ${time}`,
   comingOffOn: (off, on) => `Pois: ${off} · Sisään: ${on}`,
   comingOffOnly: (off) => `Pois: ${off} · valitse tulija penkiltä`,
@@ -103,7 +110,6 @@ export default {
   subsUsedNote: (used, limit) => `Vaihtoja käytetty: ${used} / ${limit}`,
   clearBtn: 'Tyhjennä',
   confirmSubBtn: 'Vahvista vaihto',
-  swapPositionsBtn: 'Vaihda pelipaikat keskenään',
   limitReachedNote: (used, limit) =>
     `Vaihtojen enimmäismäärä täynnä (${used}/${limit}) — lisää vaihtoja ei sallita.`,
   assignTitle: 'Valitse, kuka pelaaja ottaa kunkin paikan',
@@ -111,7 +117,6 @@ export default {
   applySubBtn: 'Vahvista vaihdot',
   endMatchLink: 'Lopeta ottelu & katso yhteenveto',
   endConfirmText: 'Lopetetaanko ottelu nyt? Tätä ei voi perua.',
-  yesEndBtn: 'Kyllä, lopeta ottelu',
 
   // Goals and cards
   goalsTitle: 'Tulos',
@@ -123,19 +128,24 @@ export default {
   noCardsNote: 'Ei vielä kortteja.',
   yellowCardAria: 'Keltainen',
   redCardAria: 'Punainen',
+  yellowCardConfirm: (name) => `Keltainen kortti pelaajalle ${name}?`,
+  secondYellowConfirm: (name) =>
+    `Toinen keltainen kortti pelaajalle ${name}? Hän ei voi enää pelata tässä ottelussa.`,
+  redCardConfirm: (name) =>
+    `Punainen kortti pelaajalle ${name}? Hän ei voi enää pelata tässä ottelussa.`,
 
   // Summary
-  fullTimeEyebrow: 'Peli päättyi',
-  summaryTitle: 'Peliajat',
   sectionPlayingTime: 'Peliajat',
+  finalScoreTitle: 'Lopputulos',
+  deltaExplained: (average) =>
+    `Erotus kertoo, paljonko pelaaja pelasi yli (+) tai alle (−) kenttäpelaajien keskiarvon ${average}.`,
   tablePlayer: 'Pelaaja',
   tableMinutes: 'Minuutit',
   gkTag: 'Maalivahti — koko ottelu',
-  spreadNote: (spread) => `Kenttäpelaajien peliaikojen ero: ${spread}`,
   scorersTitle: 'Maalintekijät',
   cardsSummaryTitle: 'Kortit',
   playAnotherBtn: 'Pelaa toinen ottelu',
-  finishSessionBtn: 'Näytä tilastot',
+  finishSessionBtn: 'Näytä päivän tilastot',
 
   // Stats
   statsTitle: 'Päivän tilastot',

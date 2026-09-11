@@ -1,8 +1,8 @@
 {
-  "name": "melkein-suunnitelma",
+  "name": "peluutin",
   "version": "1.0.0",
   "private": false,
-  "description": "Fair playing-time and substitution tracker for youth football matches.",
+  "description": "Peluuttajan työkalu: fair playing time and substitutions for youth football.",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -29,5 +29,13 @@
     "vitest": "^5.0.0"
   },
   "license": "MIT",
-  "author": "Erkki Rajakoski (Studio Rajakoski)"
+  "author": "Erkki Rajakoski (Studio Rajakoski)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/erajakos/peluutin.git"
+  },
+  "homepage": "https://github.com/erajakos/peluutin#readme",
+  "bugs": {
+    "url": "https://github.com/erajakos/peluutin/issues"
+  }
 }

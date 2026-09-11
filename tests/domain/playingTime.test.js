@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { fairnessBand, playingTimeRows, playingTimeSpread } from '@/domain/playingTime.js'
+import {
+  averageSeconds,
+  fairnessBand,
+  playingTimeRows,
+  rotatingPlayers,
+} from '@/domain/playingTime.js'
 
 const squad = [
   { id: 1, name: 'Keeper', seconds: 2400 },
@@ -46,12 +51,17 @@ describe('playingTimeRows', () => {
   })
 })
 
-describe('playingTimeSpread', () => {
-  it('reports the gap between the most- and least-played rotating player', () => {
-    expect(playingTimeSpread(squad, 1)).toBe(600)
+describe('the outfield average', () => {
+  it('is what every +/- in the summary is measured against', () => {
+    // (1200 + 1200 + 600) / 3 — the fixed keeper stays out of it.
+    expect(averageSeconds(rotatingPlayers(squad, 1))).toBe(1000)
   })
 
-  it('has nothing to say about a squad of one', () => {
-    expect(playingTimeSpread([{ id: 1, seconds: 100 }], null)).toBe(null)
+  it('includes the keeper once they are part of the rotation', () => {
+    expect(averageSeconds(rotatingPlayers(squad, null))).toBe(1350)
+  })
+
+  it('is zero rather than NaN for an empty rotation', () => {
+    expect(averageSeconds([])).toBe(0)
   })
 })

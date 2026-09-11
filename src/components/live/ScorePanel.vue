@@ -85,7 +85,12 @@ const timeline = computed(() => {
       </UiButton>
     </div>
 
-    <div v-for="{ goal, score } in timeline" :key="goal.id" class="goal-row">
+    <div
+      v-for="{ goal, score } in timeline"
+      :key="goal.id"
+      class="goal-row"
+      :class="{ 'goal-row--theirs': goal.team !== TEAM_US }"
+    >
       <BallIcon />
       <span class="goal-time clock-face">{{ formatTime(goal.atSecond) }}</span>
       <!-- The scoreline this goal produced, not the final one. -->
@@ -160,8 +165,12 @@ const timeline = computed(() => {
   font-style: italic;
 }
 
+.goal-row--theirs .goal-score,
+.goal-row--theirs .scorer--opponent {
+  color: var(--against);
+}
+
 .scorer--opponent {
-  color: var(--chalk-dim);
   font-weight: 500;
   text-decoration: none;
   overflow: hidden;

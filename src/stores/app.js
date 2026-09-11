@@ -62,8 +62,8 @@ export const useAppStore = defineStore('app', {
 
     chooseLanguage(code) {
       setLocale(code)
-      // Seed the default shape now that we know which language to name it in.
-      useSetupStore().resetFormationForLocale()
+      // Name the positions in the chosen language, keeping the chosen shape.
+      useSetupStore().relabelPositionsForLocale()
       // A returning coach has already told us their team; do not ask again.
       this.phase = this.teamName ? PHASES.OPPONENT : PHASES.TEAM
     },

@@ -57,6 +57,22 @@ export function scorerTally(goals, resolveName) {
   return { entries, unknown }
 }
 
+/** How many of each card one player has been shown. */
+export function cardCount(cards, playerId) {
+  const count = { yellow: 0, red: 0 }
+  cards.forEach((card) => {
+    if (card.playerId !== playerId) return
+    if (card.type === CARD_YELLOW) count.yellow += 1
+    else count.red += 1
+  })
+  return count
+}
+
+/** A red card, or a second yellow, ends that player's match. */
+export function isSentOffByCards({ yellow, red }) {
+  return red > 0 || yellow >= 2
+}
+
 /** Yellow and red counts per player, for the match summary and the day's stats. */
 export function cardTally(cards, resolveName) {
   const counts = new Map()

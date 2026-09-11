@@ -2,7 +2,8 @@ import { defineStore } from 'pinia'
 import { findFormation, getFormationsFor, outfieldCount } from '@/domain/formations.js'
 import { buildSlots } from '@/domain/lineup.js'
 import { nextId } from '@/domain/ids.js'
-import { t, tPosition } from '@/i18n/index.js'
+import { numberDuplicateNames } from '@/domain/roster.js'
+import { isStockPositionLabel, t, tPosition } from '@/i18n/index.js'
 
 /** Below this many players on the field, a substitution cap makes no sense. */
 const SUB_LIMIT_MIN_FIELD_SIZE = 6
@@ -99,7 +100,8 @@ export const useSetupStore = defineStore('setup', {
      * default shape for the new size rather than leaving a stale line-up behind.
      */
     syncFormationToFormat() {
-      if (this.positions.length === this.outfieldCount) return
+      const known = this.formations.some((formation) => formation.id === this.formationId)
+      if (known && this.positions.length === this.outfieldCount) return
       this.applyFormation(this.formations[0].id)
     },
 
@@ -109,24 +111,45 @@ export const useSetupStore = defineStore('setup', {
       this.positions = formation.positions.map((key) => ({ key, label: tPosition(key) }))
     },
 
-    /** Re-seed the default shape in the newly chosen language. */
-    resetFormationForLocale() {
-      this.applyFormation(this.formations[0].id)
+    /**
+     * Name the positions in the newly chosen language. The formation is left
+     * alone — it may be one the coach chose and the app remembered — and so is
+     * any position the coach renamed themselves.
+     */
+    relabelPositionsForLocale() {
+      this.positions.forEach((position) => {
+        if (isStockPositionLabel(position.key, position.label)) {
+          position.label = tPosition(position.key)
+        }
+      })
     },
 
     renamePosition(index, label) {
       this.positions[index].label = label
     },
 
+    /**
+     * Each player keeps the name as typed; `name` is what everything else shows,
+     * numbered when two players share one so a coach can tell them apart.
+     */
     addPlayer(name) {
       const trimmed = name.trim()
       if (!trimmed) return false
-      this.roster.push({ id: nextId(), name: trimmed })
+      this.roster.push({ id: nextId(), typedName: trimmed, name: trimmed })
+      this.renumberNames()
       return true
     },
 
     removePlayer(id) {
       this.roster = this.roster.filter((player) => player.id !== id)
+      this.renumberNames()
+    },
+
+    renumberNames() {
+      const shown = numberDuplicateNames(this.roster.map((player) => player.typedName))
+      this.roster.forEach((player, index) => {
+        player.name = shown[index]
+      })
     },
 
     /** Positions left blank fall back to a numbered placeholder. */

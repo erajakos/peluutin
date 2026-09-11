@@ -7,6 +7,8 @@ defineProps({
   rows: { type: Array, required: true },
   minutesHeading: { type: String, required: true },
   showDelta: { type: Boolean, default: false },
+  /** Marked with an armband, when the match had one. */
+  captainId: { type: Number, default: null },
 })
 const { t } = useI18n()
 
@@ -27,6 +29,14 @@ function sign(delta) {
       <tr v-for="row in rows" :key="row.id">
         <td>
           {{ row.name }}
+          <span
+            v-if="captainId !== null && row.id === captainId"
+            class="armband"
+            :title="t('captainLabel')"
+            :aria-label="t('captainLabel')"
+          >
+            C
+          </span>
           <span v-if="row.isGoalkeeper" class="gk-tag">{{ t('gkTag') }}</span>
         </td>
         <td class="num">
@@ -89,6 +99,23 @@ function sign(delta) {
 
 .delta--bad {
   color: var(--alert);
+}
+
+/* The captain's armband: the one mark every football fan already reads. */
+.armband {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-left: 8px;
+  border-radius: 5px;
+  border: 1.5px solid var(--amber);
+  color: var(--amber-text);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  vertical-align: 2px;
 }
 
 .gk-tag {

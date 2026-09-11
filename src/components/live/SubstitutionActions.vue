@@ -121,16 +121,6 @@ const status = computed(() => {
         {{ t('confirmSubBtn') }}
       </UiButton>
 
-      <!-- Two on the pitch selected: they can trade shirts without a sub. -->
-      <UiButton
-        v-if="match.canSwapPositions"
-        variant="secondary"
-        class="swap"
-        @click="match.swapPositions()"
-      >
-        {{ t('swapPositionsBtn') }}
-      </UiButton>
-
       <button v-if="match.hasSelection" type="button" class="minor" @click="match.clearSelection()">
         {{ t('clearBtn') }}
       </button>
@@ -236,10 +226,6 @@ const status = computed(() => {
 /* The one thing these actions exist to do. */
 .commit {
   margin-top: 0;
-}
-
-.swap {
-  margin-top: 8px;
 }
 
 /* A way to undo a selection — available, but never competing with the commit. */

@@ -56,9 +56,22 @@ export function t(key, ...args) {
  * with no stock formation ("Position 3") are numbered in the reader's language.
  */
 export function tPosition(key) {
+  return stockPositionLabel(locale.value, key)
+}
+
+function stockPositionLabel(code, key) {
   const numbered = /^Position (\d+)$/.exec(key)
-  if (numbered) return t('positionNumbered', Number(numbered[1]))
-  return translatePosition(key, locale.value)
+  if (numbered) return tIn(code, 'positionNumbered', Number(numbered[1]))
+  return translatePosition(key, code)
+}
+
+/**
+ * Whether a position still carries its stock name in any language — as
+ * opposed to a name the coach typed. Only stock names are translated when the
+ * language changes; the coach's own wording is theirs to keep.
+ */
+export function isStockPositionLabel(key, label) {
+  return Object.keys(MESSAGES).some((code) => stockPositionLabel(code, key) === label)
 }
 
 export function tFormationLabel(label) {

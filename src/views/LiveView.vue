@@ -1,12 +1,10 @@
 <script setup>
 import { ref } from 'vue'
 import BenchPanel from '@/components/live/BenchPanel.vue'
-import CardsPanel from '@/components/live/CardsPanel.vue'
 import MatchClock from '@/components/live/MatchClock.vue'
-import ScoreBoard from '@/components/live/ScoreBoard.vue'
+import MatchEventsSheet from '@/components/live/MatchEventsSheet.vue'
 import PitchPanel from '@/components/live/PitchPanel.vue'
-import ScorePanel from '@/components/live/ScorePanel.vue'
-import UiButton from '@/components/ui/UiButton.vue'
+import ScoreBoard from '@/components/live/ScoreBoard.vue'
 import { useI18n } from '@/i18n/index.js'
 import { useAppStore } from '@/stores/app.js'
 import { useMatchStore } from '@/stores/match.js'
@@ -18,19 +16,19 @@ const setup = useSetupStore()
 const { t } = useI18n()
 
 /**
- * Two tabs, because a coach mid-match is doing one of two things: managing who
- * is on the pitch, or logging what just happened. Rotation is the job this app
- * exists for, so it opens there; the score stays visible in the header either
- * way and is one tap from anywhere.
+ * The pitch is the screen. Score and events open over it from the scoreline,
+ * which is the thing a coach reaches for when a goal goes in anyway.
  */
-const TABS = { SQUAD: 'squad', EVENTS: 'events' }
-const tab = ref(TABS.SQUAD)
-
+const eventsOpen = ref(false)
 </script>
 
 <template>
-  <!-- The scoreline doubles as the way into logging goals and cards. -->
-  <button type="button" class="header" @click="tab = TABS.EVENTS">
+  <MatchClock />
+
+  <!-- The scoreline is the way into logging goals and cards; the chevron says so. -->
+  <button type="button" class="header" :aria-label="t('openEventsAria')" @click="eventsOpen = true">
+    <!-- Balances the chevron, so the score stays centred on the card. -->
+    <span class="chevron-balance" aria-hidden="true" />
     <ScoreBoard
       size="compact"
       :us-name="app.teamName"
@@ -38,114 +36,68 @@ const tab = ref(TABS.SQUAD)
       :us-score="match.usScore"
       :opponent-score="match.opponentScore"
     />
+    <span class="chevron" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="m9.5 5.5 7 6.5-7 6.5" /></svg>
+    </span>
   </button>
 
-  <MatchClock />
+  <PitchPanel class="pitch-panel" />
+  <BenchPanel />
 
-  <nav class="tabs" role="tablist">
-    <button
-      type="button"
-      role="tab"
-      :aria-selected="tab === TABS.SQUAD"
-      :class="{ 'tab--active': tab === TABS.SQUAD }"
-      @click="tab = TABS.SQUAD"
-    >
-      {{ t('tabSquad') }}
-    </button>
-    <button
-      type="button"
-      role="tab"
-      :aria-selected="tab === TABS.EVENTS"
-      :class="{ 'tab--active': tab === TABS.EVENTS }"
-      @click="tab = TABS.EVENTS"
-    >
-      {{ t('tabEvents') }}
-    </button>
-  </nav>
-
-  <template v-if="tab === TABS.SQUAD">
-    <PitchPanel />
-    <BenchPanel />
-  </template>
-
-  <template v-else>
-    <ScorePanel />
-    <CardsPanel v-if="setup.trackCards" />
-  </template>
-
-  <!-- Ending is irreversible, so it asks once. -->
-  <div class="end">
-    <template v-if="match.confirmingEnd">
-      <p class="confirm">{{ t('endConfirmText') }}</p>
-      <div class="action-pair">
-        <UiButton variant="secondary" @click="match.cancelEnd()">{{ t('cancelBtn') }}</UiButton>
-        <UiButton @click="app.endMatch()">{{ t('yesEndBtn') }}</UiButton>
-      </div>
-    </template>
-    <UiButton v-else variant="secondary" class="end-btn" @click="match.requestEnd()">
-      {{ t('endMatchLink') }}
-    </UiButton>
-  </div>
+  <MatchEventsSheet v-if="eventsOpen" @close="eventsOpen = false" />
 </template>
 
 <style scoped>
 .header {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   width: 100%;
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 13px 18px 15px;
+  padding: 13px 12px 15px;
   color: var(--chalk);
+  transition: background 0.12s ease;
 }
 
 .header:active {
   transform: translateY(1px);
+  background: #1a5436;
 }
 
-.tabs {
-  display: flex;
-  gap: 4px;
-  background: rgba(0, 0, 0, 0.24);
-  border-radius: 999px;
-  padding: 4px;
-  margin: 14px 0 16px;
-}
-
-.tabs button {
+.header :deep(.board) {
   flex: 1;
-  padding: 11px 8px;
-  border-radius: 999px;
-  background: none;
+  min-width: 0;
+}
+
+.chevron-balance {
+  flex-shrink: 0;
+  width: 26px;
+}
+
+.pitch-panel {
+  margin-top: 16px;
+}
+
+/* The affordance: a card that opens something looks like a row you can follow. */
+.chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
   color: var(--chalk-dim);
-  font-size: 15px;
-  font-weight: 600;
-  transition:
-    background 0.15s ease,
-    color 0.15s ease;
 }
 
-.tabs .tab--active {
-  background: var(--panel);
-  color: var(--chalk);
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.25);
-}
-
-/* Deliberately far from the substitution bar: ending a match cannot be undone,
-   and a thumb reaching for "confirm" must not find this instead. */
-.end {
-  text-align: center;
-  margin-top: 68px;
-}
-
-.end-btn {
-  color: var(--alert);
-  border-color: rgba(233, 105, 79, 0.4);
-}
-
-.confirm {
-  font-size: 15px;
-  color: var(--chalk-dim);
-  margin: 0 0 8px;
+.chevron svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 </style>

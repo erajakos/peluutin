@@ -36,6 +36,38 @@ export function benchPlayers(players, slots) {
   return players.filter((player) => !onField.has(player.id)).sort((a, b) => a.seconds - b.seconds)
 }
 
+/**
+ * Fill the empty positions with players drawn at random from those not yet
+ * placed. Positions that already hold someone are never touched — that is what
+ * lets a coach fix the players they care about and let chance do the rest.
+ *
+ * `random` is injectable so the draw can be tested; it defaults to Math.random.
+ *
+ * @returns {Array<{slotId:number, playerId:number}>} one entry per filled slot
+ */
+export function drawForEmptySlots(slots, roster, random = Math.random) {
+  const placed = onFieldPlayerIds(slots)
+  const pool = shuffle(
+    roster.filter((player) => !placed.has(player.id)),
+    random,
+  )
+  const empty = slots.filter((slot) => slot.playerId === null)
+  return empty.slice(0, pool.length).map((slot, index) => ({
+    slotId: slot.id,
+    playerId: pool[index].id,
+  }))
+}
+
+/** Fisher–Yates: every ordering equally likely, without mutating the input. */
+function shuffle(list, random) {
+  const copy = list.slice()
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(random() * (i + 1))
+    ;[copy[i], copy[j]] = [copy[j], copy[i]]
+  }
+  return copy
+}
+
 /** The lineup is ready to kick off once every slot has a player in it. */
 export function isLineupComplete(slots) {
   return slots.length > 0 && slots.every((slot) => slot.playerId !== null)

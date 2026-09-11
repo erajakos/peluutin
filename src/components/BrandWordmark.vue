@@ -6,41 +6,26 @@ defineProps({
 </script>
 
 <template>
-  <!-- Two words, second in amber: the one piece of type that has to be the same everywhere. -->
-  <h1 class="wordmark" :class="`wordmark--${size}`">
-    <span class="word">Melkein</span>
-    <span class="word word--accent">suunnitelma</span>
-  </h1>
+  <h1 class="wordmark" :class="`wordmark--${size}`">Peluutin</h1>
 </template>
 
 <style scoped>
 .wordmark {
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: 700;
   line-height: 0.94;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
   text-transform: uppercase;
+  color: var(--amber);
   margin: 0;
-  display: flex;
-  flex-direction: column;
 }
 
 .wordmark--hero {
-  font-size: clamp(30px, 11vw, 44px);
-  align-items: center;
+  font-size: clamp(34px, 12vw, 48px);
+  text-align: center;
 }
 
 .wordmark--compact {
-  font-size: clamp(26px, 8.5vw, 34px);
-  align-items: flex-start;
-}
-
-.word--accent {
-  color: var(--amber);
-}
-
-/* Nudged over, as if chalked in a hurry. */
-.wordmark--hero .word--accent {
-  margin-left: 14px;
+  font-size: clamp(30px, 9.5vw, 38px);
 }
 </style>

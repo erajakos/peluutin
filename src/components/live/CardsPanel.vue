@@ -1,56 +1,24 @@
 <script setup>
-import { computed, ref } from 'vue'
-import PlayerPicker from '@/components/live/PlayerPicker.vue'
+import CardGlyph from '@/components/ui/CardGlyph.vue'
 import UiPanel from '@/components/ui/UiPanel.vue'
 import UiRemoveButton from '@/components/ui/UiRemoveButton.vue'
-import { CARD_RED, CARD_YELLOW } from '@/domain/scoring.js'
 import { formatTime } from '@/domain/time.js'
 import { useI18n } from '@/i18n/index.js'
 import { useMatchStore } from '@/stores/match.js'
-import { useSetupStore } from '@/stores/setup.js'
 
 const match = useMatchStore()
-const setup = useSetupStore()
 const { t } = useI18n()
-
-/** Colour chosen first, player second — a referee shows the card before you look. */
-const pendingType = ref(null)
-
-const prompt = computed(() =>
-  pendingType.value === CARD_RED ? t('redCardAria') : t('yellowCardAria'),
-)
-
-function issue(playerId) {
-  match.addCard(playerId, pendingType.value)
-  pendingType.value = null
-}
-
-function icon(type) {
-  return type === CARD_YELLOW ? '🟨' : '🟥'
-}
 </script>
 
 <template>
+  <!--
+    The record of cards shown, with a way to take one back. Cards are issued
+    from the pitch: tap the player, then the colour.
+  -->
   <UiPanel :title="t('cardsTitle')">
-    <PlayerPicker
-      v-if="pendingType"
-      :players="setup.roster"
-      :prompt="`${icon(pendingType)} ${prompt}`"
-      @pick="issue"
-      @cancel="pendingType = null"
-    />
-    <div v-else class="action-pair card-buttons">
-      <button type="button" class="card-btn" @click="pendingType = CARD_YELLOW">
-        🟨 {{ t('yellowCardAria') }}
-      </button>
-      <button type="button" class="card-btn" @click="pendingType = CARD_RED">
-        🟥 {{ t('redCardAria') }}
-      </button>
-    </div>
-
     <div v-for="card in match.cards" :key="card.id" class="card-row">
       <span class="card-time clock-face">{{ formatTime(card.atSecond) }}</span>
-      <span class="card-icon">{{ icon(card.type) }}</span>
+      <CardGlyph :type="card.type" />
       <span class="card-name">{{ match.playerName(card.playerId) }}</span>
       <UiRemoveButton :label="t('removeAria')" @click="match.removeCard(card.id)" />
     </div>
@@ -59,29 +27,11 @@ function icon(type) {
 </template>
 
 <style scoped>
-.card-buttons {
-  margin-bottom: 10px;
-}
-
-.card-btn {
-  padding: 14px 10px;
-  border-radius: 8px;
-  font-size: 14.5px;
-  font-weight: 600;
-  background: var(--field-bg);
-  border: 1px solid var(--line-strong);
-  color: var(--chalk);
-}
-
-.card-btn:active {
-  transform: scale(0.98);
-}
-
 .card-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 0;
+  gap: 12px;
+  padding: 11px 0;
   border-bottom: 1px solid var(--line);
   font-size: 15.5px;
 }
@@ -97,12 +47,8 @@ function icon(type) {
   font-size: 15px;
 }
 
-.card-icon {
-  font-size: 16px;
-  flex-shrink: 0;
-}
-
 .card-name {
   flex: 1;
+  font-weight: 600;
 }
 </style>

@@ -9,7 +9,7 @@ export default {
   infoIntro: 'A small tool for planning the match and the substitutions from the touchline.',
   privacyTitle: 'Your data stays yours',
   privacyBody:
-    'Everything stays on this device. There are no accounts, no servers, no cloud and no database: matches, players and stats live only in your browser. The one thing kept for longer is your team name — and that only in this device\u2019s own browser storage.',
+    'Everything stays on this device. There are no accounts, no servers, no cloud and no database: matches, players and stats live only in your browser. Only your team name and match settings are kept for longer — and only in this device\u2019s own browser storage. Player names are never saved.',
   privacyNoTracking:
     'No tracking, no analytics, no telemetry, no cookies, no ads. Nothing is sent anywhere.',
   privacyRefresh:
@@ -50,6 +50,10 @@ export default {
   secondHalfLabel: 'Second half',
   halfTimeLabel: 'Half time',
   startSecondHalfBtn: 'Start second half',
+  secondHalfShort: '2nd half',
+  halfTimeBtn: 'Start half time',
+  endHalfConfirmText: 'Is the first half over?',
+  yesBtn: 'Yes',
   fieldSizeLabel: 'Players on the field at once',
   hasGKLabel: 'Includes a goalkeeper',
   fixedGKLabel: 'Goalkeeper plays the whole match (not rotated)',
@@ -72,18 +76,22 @@ export default {
 
   // Lineup
   lineupTitle: 'Starting lineup',
+  drawLineupBtn: 'Fill at random',
+  captainLabel: 'Captain',
+  noCaptainOption: '— no captain —',
   choosePlayerOption: '— choose player —',
   benchPreviewLabel: 'Starting bench',
   benchPreviewEmpty: 'Everyone is on the field to start.',
   kickoffBtn: 'Kick off',
 
   // Live
-  tabSquad: 'Pitch',
-  tabEvents: 'Score & events',
+  onFieldTitle: 'On the field',
+  eventsTitle: 'Score & events',
+  openEventsAria: 'Open score and events',
+  closeBtn: 'Close',
   restingFor: (time) => `resting ${time}`,
   playingFor: (time) => `on for ${time}`,
   matchProgressAria: 'Match progress',
-  onFieldHint: 'tap to select · drag to swap positions',
   benchTitle: 'Bench',
   noOneOnField: 'No one is on the field.',
   benchEmpty: 'Bench is empty.',
@@ -92,10 +100,9 @@ export default {
   outBadge: 'OUT',
   sentOffBadge: 'SENT OFF',
   vacantLabel: 'Position empty',
-  clockStartBtn: 'Start',
+  startClockBtn: 'Start the clock',
   resumeBtn: 'Resume',
   pauseBtn: 'Pause',
-  fullTimeBanner: 'FULL TIME — end whenever you are ready',
   ofLabel: (time) => `of ${time}`,
   comingOffOn: (off, on) => `Off: ${off} · On: ${on}`,
   comingOffOnly: (off) => `Off: ${off} · now pick someone from the bench`,
@@ -103,7 +110,6 @@ export default {
   subsUsedNote: (used, limit) => `Subs used: ${used} / ${limit}`,
   clearBtn: 'Clear',
   confirmSubBtn: 'Confirm substitution',
-  swapPositionsBtn: 'Swap their positions',
   limitReachedNote: (used, limit) =>
     `Substitution limit reached (${used}/${limit}) — no more changes allowed.`,
   assignTitle: 'Match which player takes each spot',
@@ -111,7 +117,6 @@ export default {
   applySubBtn: 'Apply substitution',
   endMatchLink: 'End match & see summary',
   endConfirmText: "End the match now? This can't be undone.",
-  yesEndBtn: 'Yes, end match',
 
   // Goals and cards
   goalsTitle: 'Score',
@@ -123,19 +128,23 @@ export default {
   noCardsNote: 'No cards yet.',
   yellowCardAria: 'Yellow',
   redCardAria: 'Red',
+  yellowCardConfirm: (name) => `Yellow card for ${name}?`,
+  secondYellowConfirm: (name) =>
+    `Second yellow card for ${name}? They cannot play again in this match.`,
+  redCardConfirm: (name) => `Red card for ${name}? They cannot play again in this match.`,
 
   // Summary
-  fullTimeEyebrow: 'Full time',
-  summaryTitle: 'Playing time',
   sectionPlayingTime: 'Playing time',
+  finalScoreTitle: 'Full time',
+  deltaExplained: (average) =>
+    `The difference is how far each player was above (+) or below (−) the outfield average of ${average}.`,
   tablePlayer: 'Player',
   tableMinutes: 'Minutes',
   gkTag: 'Goalkeeper — full match',
-  spreadNote: (spread) => `Spread across outfield players: ${spread}`,
   scorersTitle: 'Goal scorers',
   cardsSummaryTitle: 'Cards issued',
   playAnotherBtn: 'Play another match',
-  finishSessionBtn: 'See stats',
+  finishSessionBtn: "See today's stats",
 
   // Stats
   statsTitle: "Today's stats",

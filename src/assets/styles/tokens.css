@@ -18,6 +18,8 @@
   --amber-ink: #2a1b04;
   --go: #5fbe8b;
   --alert: #e9694f;
+  /* Softer than --alert: marks the opposition's goals without shouting. */
+  --against: #f2a08e;
   --yellow: #e8d23d;
 
   --field-bg: #0e2d1f;

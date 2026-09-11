@@ -1,5 +1,6 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import CardMarks from '@/components/ui/CardMarks.vue'
 import PitchMarkings from '@/components/ui/PitchMarkings.vue'
 import { pitchLayout } from '@/domain/pitch.js'
 import { formatTime } from '@/domain/time.js'
@@ -13,6 +14,8 @@ const { t } = useI18n()
 const DRAG_THRESHOLD = 8
 /** How near another shirt a drop has to land to count as aimed at it. */
 const DROP_RADIUS = 60
+/** How long a player who has just changed place stays highlighted. */
+const MOVED_HIGHLIGHT_MS = 1200
 
 const pitch = ref(null)
 const draggedSlotId = ref(null)
@@ -32,12 +35,43 @@ let suppressClick = false
  * a player for a substitution; dragging one onto another swaps their positions,
  * which is how a coach actually thinks about moving someone up front.
  */
+/**
+ * Players who have just taken up a new position, however it happened — a drag,
+ * the swap button, a substitution. Watching who stands in each slot catches all
+ * of them in one place instead of every action announcing itself.
+ */
+const recentlyMoved = ref(new Set())
+let movedTimer = null
+
+watch(
+  () => match.slots.map((slot) => slot.playerId),
+  (now, before) => {
+    if (!before || now.length !== before.length) return
+    const moved = new Set(
+      now.filter((playerId, index) => playerId !== null && playerId !== before[index]),
+    )
+    if (!moved.size) return
+    recentlyMoved.value = moved
+    clearTimeout(movedTimer)
+    movedTimer = setTimeout(() => {
+      recentlyMoved.value = new Set()
+    }, MOVED_HIGHLIGHT_MS)
+  },
+)
+
+onBeforeUnmount(() => clearTimeout(movedTimer))
+
 const chips = computed(() => {
   const spots = pitchLayout(match.slots)
   return match.slots.map((slot, index) => {
     const player = slot.playerId === null ? null : match.playersById.get(slot.playerId)
     const fixedGk = slot.isGoalkeeper && match.rules.fixedGoalkeeper
     return {
+      // Keyed by player, not by position: when two players trade places their
+      // chips travel across the pitch to each other's spot, instead of two
+      // names silently changing in place.
+      key: player ? `player-${player.id}` : `vacant-${slot.id}`,
+      playerId: player?.id ?? null,
       slotId: slot.id,
       position: slot.label,
       name: player?.name ?? '',
@@ -49,6 +83,8 @@ const chips = computed(() => {
       isGoalkeeper: slot.isGoalkeeper,
       dueOff: match.hints.dueOffSlotIds.has(slot.id),
       selected: match.selectedOffSlotIds.has(slot.id),
+      moved: player !== null && recentlyMoved.value.has(player.id),
+      cards: player ? (match.cardCountsById.get(player.id) ?? null) : null,
       // A fixed goalkeeper is out of the rotation: not selectable, not movable.
       selectable: !fixedGk,
       x: spots[index]?.x ?? 50,
@@ -56,6 +92,14 @@ const chips = computed(() => {
     }
   })
 })
+
+/**
+ * Chips are rendered in an order a swap cannot change. They are absolutely
+ * positioned, so DOM order means nothing visually — but if it followed the
+ * slots, a swap would make Vue move one chip's element, and a moved element
+ * loses its transition: one player would slide while the other jumped.
+ */
+const renderedChips = computed(() => [...chips.value].sort((a, b) => a.key.localeCompare(b.key)))
 
 function chipTitle(chip) {
   if (chip.vacant) return `${chip.position} — ${t('vacantLabel')}`
@@ -168,8 +212,8 @@ function onClick(chip) {
     <PitchMarkings />
 
     <button
-      v-for="chip in chips"
-      :key="chip.slotId"
+      v-for="chip in renderedChips"
+      :key="chip.key"
       type="button"
       class="chip"
       :class="{
@@ -180,6 +224,7 @@ function onClick(chip) {
         'chip--dragging': draggedSlotId === chip.slotId,
         'chip--target': dropTargetId === chip.slotId,
         'chip--vacant': chip.vacant,
+        'chip--moved': chip.moved,
       }"
       :style="chipStyle(chip)"
       :disabled="!chip.selectable"
@@ -199,6 +244,9 @@ function onClick(chip) {
         <span class="chip-name">{{ chip.name }}</span>
         <span class="chip-time clock-face">{{ formatTime(chip.seconds) }}</span>
       </template>
+
+      <!-- Booked: the card sits on the shirt, so it is never forgotten mid-match. -->
+      <CardMarks v-if="chip.cards" class="chip-cards" :counts="chip.cards" :size="11" />
 
       <!-- A tick as well as the fill: colour alone is easy to miss outdoors. -->
       <span v-if="chip.selected" class="chip-mark" aria-hidden="true">
@@ -246,13 +294,23 @@ function onClick(chip) {
   backdrop-filter: blur(2px);
   /* The browser must not claim the gesture for scrolling mid-drag. */
   touch-action: none;
+  /*
+   * Position and transform share one timing on purpose. When a dragged chip is
+   * dropped, its offset shrinks to nothing while its anchor moves to the new
+   * spot; moving in step, the two cancel out and the chip settles where the
+   * finger let go instead of snapping back and sliding over again.
+   */
   transition:
-    transform 0.12s ease,
-    background 0.12s ease;
+    left 0.34s cubic-bezier(0.2, 0.8, 0.25, 1),
+    top 0.34s cubic-bezier(0.2, 0.8, 0.25, 1),
+    transform 0.34s cubic-bezier(0.2, 0.8, 0.25, 1),
+    background 0.12s ease,
+    filter 0.1s ease;
 }
 
+/* Press feedback that does not fight the positional transition above. */
 .chip:active:not(:disabled) {
-  transform: translate(-50%, -50%) scale(0.94);
+  filter: brightness(1.2);
 }
 
 .chip-name {
@@ -305,6 +363,12 @@ function onClick(chip) {
   stroke: #2b0d06;
 }
 
+.chip-cards {
+  position: absolute;
+  top: -7px;
+  left: -5px;
+}
+
 .chip--gk {
   border-color: rgba(232, 163, 61, 0.55);
 }
@@ -351,6 +415,36 @@ function onClick(chip) {
   line-height: 1.15;
   white-space: normal;
   text-align: center;
+}
+
+/* Just arrived in this position: a ring of green that spreads and fades. */
+.chip--moved {
+  border-color: var(--go);
+  animation: chip-moved 1.1s ease-out;
+}
+
+@keyframes chip-moved {
+  0% {
+    box-shadow: 0 0 0 0 rgba(95, 190, 139, 0.8);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(95, 190, 139, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(95, 190, 139, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chip {
+    transition:
+      background 0.12s ease,
+      filter 0.1s ease;
+  }
+
+  .chip--moved {
+    animation: none;
+  }
 }
 
 /* Lifted out of the pitch and following the finger. */

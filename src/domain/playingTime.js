@@ -41,15 +41,3 @@ export function playingTimeRows(players, goalkeeperId) {
       return { ...player, isGoalkeeper: false, delta, band: fairnessBand(delta) }
     })
 }
-
-/**
- * Gap between the most- and least-played rotating player: the single number
- * that says whether the match was shared out fairly. Null when there is nobody
- * to compare against.
- */
-export function playingTimeSpread(players, goalkeeperId) {
-  const rotating = rotatingPlayers(players, goalkeeperId)
-  if (rotating.length < 2) return null
-  const seconds = rotating.map((player) => player.seconds)
-  return Math.max(...seconds) - Math.min(...seconds)
-}

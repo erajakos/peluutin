@@ -23,14 +23,21 @@ const entries = computed(() => {
     ours: goal.team === TEAM_US,
     scorer:
       goal.team === TEAM_US
-        ? (goal.playerId ? props.resolveName(goal.playerId) : t('unknownScorerOption'))
+        ? goal.playerId
+          ? props.resolveName(goal.playerId)
+          : t('unknownScorerOption')
         : props.opponentName,
   }))
 })
 </script>
 
 <template>
-  <div v-for="entry in entries" :key="entry.id" class="goal">
+  <div
+    v-for="entry in entries"
+    :key="entry.id"
+    class="goal"
+    :class="{ 'goal--theirs': !entry.ours }"
+  >
     <BallIcon />
     <span class="time clock-face">{{ formatTime(entry.atSecond) }}</span>
     <span class="score clock-face">{{ entry.score.us }}–{{ entry.score.opponent }}</span>
@@ -75,9 +82,13 @@ const entries = computed(() => {
   white-space: nowrap;
 }
 
-/* Their goal: named, but not dressed up as one of ours. */
+/* A goal against: tinted, so the story of the match reads at a glance. */
+.goal--theirs .score,
+.goal--theirs .scorer {
+  color: var(--against);
+}
+
 .scorer--theirs {
   font-weight: 500;
-  color: var(--chalk-dim);
 }
 </style>

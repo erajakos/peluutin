@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { createMatchRecord, matchdaySummary } from '@/domain/matchday.js'
-import { CARD_RED, CARD_YELLOW, TEAM_OPPONENT, TEAM_US, runningScores } from '@/domain/scoring.js'
+import {
+  CARD_RED,
+  CARD_YELLOW,
+  TEAM_OPPONENT,
+  TEAM_US,
+  isSentOffByCards,
+  runningScores,
+} from '@/domain/scoring.js'
 
 function match({ id, usScore, opponentScore, players, goals = [], cards = [] }) {
   return createMatchRecord({
@@ -124,5 +131,19 @@ describe('runningScores', () => {
 
   it('has nothing to say about a goalless match', () => {
     expect(runningScores([])).toEqual([])
+  })
+})
+
+describe('isSentOffByCards', () => {
+  it('sends off for a red card', () => {
+    expect(isSentOffByCards({ yellow: 0, red: 1 })).toBe(true)
+  })
+
+  it('sends off for a second yellow', () => {
+    expect(isSentOffByCards({ yellow: 2, red: 0 })).toBe(true)
+  })
+
+  it('lets a single yellow play on', () => {
+    expect(isSentOffByCards({ yellow: 1, red: 0 })).toBe(false)
   })
 })

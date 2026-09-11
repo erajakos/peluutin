@@ -52,6 +52,28 @@ const seams = PANEL_ANGLES.map((angle) => {
 const rimPanels = PANEL_ANGLES.map((angle) =>
   pentagon(point(angle, RIM_PANEL_DISTANCE), RIM_PANEL_RADIUS, angle + 180),
 )
+
+/**
+ * The name fills the top of the ring; the bottom carries three stars, the way
+ * a club crest does. They sit on the band's centre line, fanned about 6 o'clock.
+ */
+const STAR_ANGLES = [72, 90, 108]
+const STAR_RING = 84.5
+
+function star(centre, outer, inner) {
+  return Array.from({ length: 10 }, (_, index) => {
+    const radius = index % 2 === 0 ? outer : inner
+    const radians = ((index * 36 - 90) * Math.PI) / 180
+    const x = centre.x + radius * Math.cos(radians)
+    const y = centre.y + radius * Math.sin(radians)
+    return `${x.toFixed(1)},${y.toFixed(1)}`
+  }).join(' ')
+}
+
+const stars = STAR_ANGLES.map((angle, index) =>
+  // The middle star is a touch larger, so the three read as a set.
+  star(point(angle, STAR_RING), index === 1 ? 7 : 5.6, index === 1 ? 2.9 : 2.3),
+)
 </script>
 
 <template>
@@ -73,11 +95,10 @@ const rimPanels = PANEL_ANGLES.map((angle) =>
         :height="size"
         viewBox="0 0 200 200"
         role="img"
-        aria-label="Melkein suunnitelma"
+        aria-label="Peluutin"
       >
         <defs>
           <path id="badge-arc-top" d="M 23,100 A 77,77 0 0 1 177,100" />
-          <path id="badge-arc-bottom" d="M 9,100 A 91,91 0 0 0 191,100" />
 
           <radialGradient id="badge-dome" cx="34%" cy="26%" r="80%">
             <stop offset="0%" stop-color="#1F6140" />
@@ -134,14 +155,15 @@ const rimPanels = PANEL_ANGLES.map((angle) =>
         <circle class="ring ring--outer" cx="100" cy="100" r="97" />
         <circle class="ring" cx="100" cy="100" r="72" />
 
-        <text class="crest-text crest-text--top">
-          <textPath href="#badge-arc-top" startOffset="50%" text-anchor="middle">MELKEIN</textPath>
+        <text class="crest-text">
+          <textPath href="#badge-arc-top" startOffset="50%" text-anchor="middle">PELUUTIN</textPath>
         </text>
-        <text class="crest-text crest-text--bottom">
-          <textPath href="#badge-arc-bottom" startOffset="50%" text-anchor="middle">
-            SUUNNITELMA
-          </textPath>
-        </text>
+        <polygon
+          v-for="(points, index) in stars"
+          :key="`star-${index}`"
+          class="star"
+          :points="points"
+        />
 
         <!-- Where the two halves of the ring meet. -->
         <circle class="pip" cx="15" cy="100" r="2.6" />
@@ -259,11 +281,11 @@ const rimPanels = PANEL_ANGLES.map((angle) =>
   letter-spacing: 6px;
 }
 
-.crest-text--top {
+.crest-text {
   fill: var(--chalk);
 }
 
-.crest-text--bottom {
+.star {
   fill: var(--amber);
 }
 

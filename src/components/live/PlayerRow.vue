@@ -1,4 +1,5 @@
 <script setup>
+import CardMarks from '@/components/ui/CardMarks.vue'
 import UiBadge from '@/components/ui/UiBadge.vue'
 import { formatTime } from '@/domain/time.js'
 
@@ -11,6 +12,8 @@ defineProps({
   selectable: { type: Boolean, default: true },
   badge: { type: String, default: '' },
   badgeTone: { type: String, default: 'on' },
+  /** `{ yellow, red }` cards shown to this player, if any. */
+  cards: { type: Object, default: null },
 })
 defineEmits(['toggle'])
 </script>
@@ -23,6 +26,7 @@ defineEmits(['toggle'])
     <span class="detail">
       <span class="name">
         {{ name }}
+        <CardMarks :counts="cards" :size="13" class="cards" />
         <UiBadge v-if="badge" :tone="badgeTone">{{ badge }}</UiBadge>
       </span>
       <span v-if="meta" class="meta">{{ meta }}</span>
@@ -84,6 +88,11 @@ defineEmits(['toggle'])
   min-width: 0;
 }
 
+.cards {
+  margin-left: 6px;
+  vertical-align: -1px;
+}
+
 .name {
   display: block;
   font-size: 16.5px;
@@ -99,7 +108,6 @@ defineEmits(['toggle'])
   color: var(--chalk-dim);
   margin-top: 2px;
 }
-
 
 .time {
   font-size: 18px;

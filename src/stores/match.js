@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { nextId } from '@/domain/ids.js'
-import { benchPlayers, isLineupComplete } from '@/domain/lineup.js'
+import { benchPlayers, drawForEmptySlots, isLineupComplete } from '@/domain/lineup.js'
 import { rotationHints, isEligibleToReturn } from '@/domain/rotation.js'
 import {
   assignPlayer,
@@ -11,7 +11,13 @@ import {
   needsAssignment,
   remainingSubs,
 } from '@/domain/substitutions.js'
-import { CARD_RED, TEAM_OPPONENT, TEAM_US, countGoals } from '@/domain/scoring.js'
+import {
+  TEAM_OPPONENT,
+  TEAM_US,
+  cardCount,
+  countGoals,
+  isSentOffByCards,
+} from '@/domain/scoring.js'
 import { minutesToSeconds } from '@/domain/time.js'
 import { createSecondTicker } from '@/services/ticker.js'
 import { useSetupStore } from './setup.js'
@@ -22,13 +28,24 @@ import { useSetupStore } from './setup.js'
  */
 let ticker = null
 
+/**
+ * Where a match played in halves has got to. Half time is a period of its own
+ * because the coach calls it — the clock stops and nothing moves on until they
+ * start the second half. A match played straight through stays in FIRST.
+ */
+export const PERIOD = Object.freeze({
+  FIRST: 'first',
+  HALF_TIME: 'halftime',
+  SECOND: 'second',
+})
+
 function emptyMatch() {
   return {
     slots: [],
     players: [],
     elapsedSeconds: 0,
     running: false,
-    currentHalf: 1,
+    period: PERIOD.FIRST,
     selectedOffSlotIds: new Set(),
     selectedOnPlayerIds: new Set(),
     outForGood: new Set(),
@@ -36,12 +53,13 @@ function emptyMatch() {
     sentOff: new Set(),
     subsUsed: 0,
     pendingAssignment: null,
+    /** Optional, chosen from the starting lineup; shown in the results. */
+    captainId: null,
     /** True while the bench selection was made for the coach, not by them. */
     autoSelectedOn: false,
     goals: [],
     pendingGoal: false,
     cards: [],
-    confirmingEnd: false,
   }
 }
 
@@ -74,6 +92,9 @@ export const useMatchStore = defineStore('match', {
 
     lineupComplete: (state) => isLineupComplete(state.slots),
 
+    /** The draw only fills gaps, so it is on offer only while there is one. */
+    canDrawLineup: (state) => state.slots.some((slot) => slot.playerId === null),
+
     /** The fixed goalkeeper, who sits outside the rotation and the fairness maths. */
     goalkeeperId(state) {
       if (!this.rules.fixedGoalkeeper) return null
@@ -97,12 +118,33 @@ export const useMatchStore = defineStore('match', {
       return isLimitReached({ ...this.rules, subsUsed: state.subsUsed })
     },
 
+    /**
+     * The one player the coach has picked out, if they have picked exactly one
+     * — the player a card would be shown to. Bench players the app selected on
+     * its own do not count: the coach tapped one shirt, so that is the choice.
+     */
+    cardCandidateId(state) {
+      const onField = [...state.selectedOffSlotIds]
+        .map((slotId) => state.slots.find((slot) => slot.id === slotId)?.playerId)
+        .filter((playerId) => playerId !== null && playerId !== undefined)
+      const fromBench = state.autoSelectedOn ? [] : [...state.selectedOnPlayerIds]
+      const picked = [...onField, ...fromBench]
+      return picked.length === 1 ? picked[0] : null
+    },
+
+    /** Cards shown so far, per player — for marking them on the pitch and bench. */
+    cardCountsById(state) {
+      const counts = new Map()
+      state.cards.forEach((card) => {
+        if (!counts.has(card.playerId))
+          counts.set(card.playerId, cardCount(state.cards, card.playerId))
+      })
+      return counts
+    },
+
     /** Whether there is a selection for the coach to clear or confirm. */
     hasSelection: (state) =>
       state.selectedOffSlotIds.size > 0 || state.selectedOnPlayerIds.size > 0,
-
-    /** Two players on the pitch selected: they can trade positions. */
-    canSwapPositions: (state) => state.selectedOffSlotIds.size === 2,
 
     canConfirmSub(state) {
       return canConfirmSubstitution({
@@ -118,15 +160,31 @@ export const useMatchStore = defineStore('match', {
       return state.elapsedSeconds >= this.totalSeconds
     },
 
-    /** First half played out, second half not started — time for the talk. */
-    atHalfTime(state) {
-      const setup = useSetupStore()
-      return (
-        setup.twoHalves &&
-        state.currentHalf === 1 &&
-        state.elapsedSeconds >= minutesToSeconds(setup.halfLength)
-      )
+    atHalfTime: (state) => state.period === PERIOD.HALF_TIME,
+
+    /**
+     * The coach may call half time whenever the first half is under way. It is
+     * not tied to the planned half length: referees do not blow on the coach's
+     * clock, and the person on the touchline is the one who decides.
+     *
+     * "Under way" is exactly `!notStarted` — the same test that decides whether
+     * the stop button is shown. Checking for a full elapsed second instead left
+     * a moment where the button was visible but its action silently refused.
+     */
+    canEndFirstHalf(state) {
+      return useSetupStore().twoHalves && state.period === PERIOD.FIRST && !this.notStarted
     },
+
+    /** Only a nudge: the planned first half is up, so half time is probably due. */
+    firstHalfPlanReached(state) {
+      const setup = useSetupStore()
+      return this.canEndFirstHalf && state.elapsedSeconds >= minutesToSeconds(setup.halfLength)
+    },
+
+    /** Nothing has happened yet: the whistle has not gone. */
+    notStarted: (state) => !state.running && state.elapsedSeconds === 0,
+
+    canStartSecondHalf: (state) => state.period === PERIOD.HALF_TIME,
 
     usScore: (state) => countGoals(state.goals, TEAM_US),
     opponentScore: (state) => countGoals(state.goals, TEAM_OPPONENT),
@@ -141,7 +199,28 @@ export const useMatchStore = defineStore('match', {
 
     assignSlot(slotId, playerId) {
       const slot = this.slots.find((candidate) => candidate.id === slotId)
-      if (slot) slot.playerId = playerId
+      if (!slot) return
+      slot.playerId = playerId
+      // A captain is picked from the starting lineup; taken out of it, they are
+      // no longer captain rather than captain of nothing.
+      if (this.captainId !== null && !this.slots.some((s) => s.playerId === this.captainId)) {
+        this.captainId = null
+      }
+    },
+
+    setCaptain(playerId) {
+      this.captainId = playerId ?? null
+    },
+
+    /**
+     * Fill the empty positions at random. Anyone the coach has already placed
+     * is left exactly where they are — a draw only ever fills gaps, and once it
+     * has filled them there is nothing left for a second press to change.
+     */
+    drawLineup(roster, random = Math.random) {
+      drawForEmptySlots(this.slots, roster, random).forEach(({ slotId, playerId }) => {
+        this.assignSlot(slotId, playerId)
+      })
     },
 
     kickOff(roster) {
@@ -155,7 +234,7 @@ export const useMatchStore = defineStore('match', {
         stintSeconds: 0,
       }))
       this.elapsedSeconds = 0
-      this.currentHalf = 1
+      this.period = PERIOD.FIRST
     },
 
     // --- Clock ------------------------------------------------------------
@@ -174,7 +253,8 @@ export const useMatchStore = defineStore('match', {
     },
 
     start() {
-      if (this.running) return
+      // During half time the only way on is to start the second half.
+      if (this.running || this.period === PERIOD.HALF_TIME) return
       ticker = ticker ?? createSecondTicker((seconds) => this.tick(seconds))
       ticker.start()
       this.running = true
@@ -190,8 +270,16 @@ export const useMatchStore = defineStore('match', {
       else this.start()
     },
 
+    /** Half time: the clock stops, and waits for the second half. */
+    endFirstHalf() {
+      if (!this.canEndFirstHalf) return
+      this.pause()
+      this.period = PERIOD.HALF_TIME
+    },
+
     startSecondHalf() {
-      this.currentHalf = 2
+      if (!this.canStartSecondHalf) return
+      this.period = PERIOD.SECOND
       this.start()
     },
 
@@ -293,13 +381,6 @@ export const useMatchStore = defineStore('match', {
       return true
     },
 
-    /** Trade the two positions the coach has selected. */
-    swapPositions() {
-      if (!this.canSwapPositions) return
-      const [first, second] = [...this.selectedOffSlotIds]
-      if (this.swapSlotPlayers(first, second)) this.clearSelection()
-    },
-
     /** Move one player off and another on, counting it against the sub limit. */
     swapPlayer(slotId, incomingPlayerId) {
       const slot = this.slots.find((candidate) => candidate.id === slotId)
@@ -357,10 +438,14 @@ export const useMatchStore = defineStore('match', {
     },
 
     // --- Cards ------------------------------------------------------------
+    /**
+     * Record a card. A red, or a second yellow, sends the player off — the
+     * rule lives here so every way of showing a card obeys it.
+     */
     addCard(playerId, type) {
       if (!playerId) return
       this.cards.push({ id: nextId(), playerId, type, atSecond: this.elapsedSeconds })
-      if (type === CARD_RED) this.sendOff(playerId)
+      if (isSentOffByCards(cardCount(this.cards, playerId))) this.sendOff(playerId)
     },
 
     /**
@@ -380,33 +465,22 @@ export const useMatchStore = defineStore('match', {
     },
 
     /**
-     * Removing a red card reinstates the player, since the only reason to
-     * remove one is that it was logged by mistake. It does not put them back on
+     * Removing a card that was logged by mistake reinstates the player if what
+     * is left no longer adds up to a sending-off. It does not put them back on
      * the field: that is a substitution, and the coach's decision.
      */
     removeCard(cardId) {
       const card = this.cards.find((candidate) => candidate.id === cardId)
       this.cards = this.cards.filter((candidate) => candidate.id !== cardId)
-      if (!card || card.type !== CARD_RED) return
-
-      const stillSentOff = this.cards.some(
-        (other) => other.playerId === card.playerId && other.type === CARD_RED,
-      )
-      if (!stillSentOff) this.sentOff.delete(card.playerId)
+      if (!card) return
+      if (!isSentOffByCards(cardCount(this.cards, card.playerId))) {
+        this.sentOff.delete(card.playerId)
+      }
     },
 
     // --- Ending -----------------------------------------------------------
-    requestEnd() {
-      this.confirmingEnd = true
-    },
-
-    cancelEnd() {
-      this.confirmingEnd = false
-    },
-
     finish() {
       this.pause()
-      this.confirmingEnd = false
     },
 
     playerName(playerId) {

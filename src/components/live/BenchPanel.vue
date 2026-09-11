@@ -30,6 +30,7 @@ function badgeFor(player) {
         :name="player.name"
         :seconds="player.seconds"
         :meta="t('restingFor', formatTime(player.stintSeconds))"
+        :cards="match.cardCountsById.get(player.id) ?? null"
         :selected="match.selectedOnPlayerIds.has(player.id)"
         :selectable="match.canPlayerReturn(player.id) && !match.limitReached"
         :badge="badgeFor(player).text"
@@ -42,4 +43,3 @@ function badgeFor(player) {
     <SubstitutionActions />
   </UiPanel>
 </template>
-

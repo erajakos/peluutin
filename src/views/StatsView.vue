@@ -4,6 +4,7 @@ import MatchHistoryList from '@/components/stats/MatchHistoryList.vue'
 import StatGrid from '@/components/stats/StatGrid.vue'
 import PlayingTimeTable from '@/components/summary/PlayingTimeTable.vue'
 import TallyPanel from '@/components/summary/TallyPanel.vue'
+import CardMarks from '@/components/ui/CardMarks.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiPanel from '@/components/ui/UiPanel.vue'
 import { useI18n } from '@/i18n/index.js'
@@ -34,10 +35,6 @@ const scorerItems = computed(() => {
   if (unknown) items.push(`${t('unknownScorerOption')} ×${unknown}`)
   return items
 })
-
-const cardItems = computed(() =>
-  summary.value.cards.map((entry) => `${entry.name} 🟨×${entry.yellow} 🟥×${entry.red}`),
-)
 </script>
 
 <template>
@@ -51,7 +48,12 @@ const cardItems = computed(() =>
   </UiPanel>
 
   <TallyPanel :heading="t('topScorersTitle')" :items="scorerItems" />
-  <TallyPanel :heading="t('cardsSummaryTitle')" :items="cardItems" />
+  <UiPanel v-if="summary.cards.length" :title="t('cardsSummaryTitle')">
+    <div v-for="entry in summary.cards" :key="entry.id" class="booked">
+      <span class="booked-name">{{ entry.name }}</span>
+      <CardMarks :counts="entry" :size="15" />
+    </div>
+  </UiPanel>
 
   <UiPanel :title="t('totalMinutesTitle')">
     <PlayingTimeTable :rows="summary.minutes" :minutes-heading="t('tableMinutes')" />
@@ -64,5 +66,22 @@ const cardItems = computed(() =>
 .stats-title {
   margin-bottom: 20px;
 }
-</style>
 
+.booked {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 15.5px;
+}
+
+.booked:last-child {
+  border-bottom: none;
+}
+
+.booked-name {
+  font-weight: 600;
+}
+</style>
