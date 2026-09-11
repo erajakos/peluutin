@@ -9,11 +9,12 @@ export default {
   infoIntro: 'Pieni työkalu ottelun ja vaihtojen suunnitteluun kentän laidalla.',
   privacyTitle: 'Tietosi pysyvät sinulla',
   privacyBody:
-    'Kaikki tiedot pysyvät tällä laitteella. Sovelluksessa ei ole tilejä, palvelimia, pilveä eikä tietokantaa: ottelut, pelaajat ja tilastot elävät vain selaimesi muistissa. Pidempään tallennetaan vain joukkueesi nimi ja ottelun asetukset — ja nekin vain tämän laitteen omaan selainmuistiin. Pelaajien nimiä ei tallenneta.',
+    'Kaikki tiedot pysyvät tällä laitteella. Sovelluksessa ei ole tilejä, palvelimia, pilveä eikä tietokantaa. Joukkueen nimi, pelaajat, asetukset ja päivän ottelut tallennetaan vain tämän laitteen omaan selainmuistiin, jotta niitä ei tarvitse kirjoittaa joka kerta ja keskeytynyt ottelu jatkuu siitä, mihin se jäi.',
   privacyNoTracking:
     'Ei seurantaa, ei analytiikkaa, ei telemetriaa, ei evästeitä, ei mainoksia. Mitään ei lähetetä mihinkään.',
-  privacyRefresh:
-    'Kääntöpuoli: kun suljet välilehden, ottelu katoaa. Pidä sovellus auki ottelun ajan.',
+  clearDataBtn: 'Tyhjennä kaikki tiedot',
+  clearDataConfirm:
+    'Poistetaanko joukkueen nimi, pelaajat, asetukset ja päivän tulokset? Kaikki palaa oletuksiin.',
   madeTitle: 'Miten tämä syntyi',
   madeBody:
     'Tämä on vibe-koodattu pojan futistreenin aikana Claudella ja kännykällä, kentän laidalla.',
@@ -73,6 +74,8 @@ export default {
   playerNamePlaceholder: 'Pelaajan nimi',
   addPlayerAria: 'Lisää pelaaja',
   removeAria: 'Poista',
+  clearRosterBtn: 'Tyhjennä kaikki',
+  clearRosterConfirm: 'Poistetaanko kaikki pelaajat?',
   rosterCountNote: (have, need) =>
     `${have} pelaaja${have === 1 ? '' : 'a'} lisätty · tarvitaan vähintään ${need} aloittaakseen`,
   continueBtn: 'Valitse aloituskokoonpano',
@@ -108,7 +111,6 @@ export default {
   ofLabel: (time) => `/ ${time}`,
   comingOffOn: (off, on) => `Pois: ${off} · Sisään: ${on}`,
   comingOffOnly: (off) => `Pois: ${off} · valitse tulija penkiltä`,
-  autoPickedNote: 'Tulijat valittu puolestasi — voit muuttaa valintaa.',
   subsUsedNote: (used, limit) => `Vaihtoja käytetty: ${used} / ${limit}`,
   clearBtn: 'Tyhjennä',
   confirmSubBtn: 'Vahvista vaihto',

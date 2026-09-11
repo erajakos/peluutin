@@ -22,11 +22,11 @@ const totals = computed(() => [
   { value: `${summary.value.goalsFor}–${summary.value.goalsAgainst}`, label: t('goalsLabel') },
 ])
 
-// "1V 0T 0H" needs decoding; three labelled numbers do not.
+// "1V 0T 0H" needs decoding; three labelled, colour-coded numbers do not.
 const record = computed(() => [
-  { value: summary.value.wins, label: t('winsLabel') },
-  { value: summary.value.draws, label: t('drawsLabel') },
-  { value: summary.value.losses, label: t('lossesLabel') },
+  { value: summary.value.wins, label: t('winsLabel'), result: 'win' },
+  { value: summary.value.draws, label: t('drawsLabel'), result: 'draw' },
+  { value: summary.value.losses, label: t('lossesLabel'), result: 'loss' },
 ])
 
 const scorerItems = computed(() => {

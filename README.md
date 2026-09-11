@@ -31,24 +31,29 @@ Finnish and English. No accounts, no servers, no tracking.
 - **Score, scorers and cards** — logged against the match clock.
 - **Full-time summary** — the final score, every goal with the scoreline it
   produced, and minutes per player measured against the outfield average.
-- **The day's stats** — record, goals, top scorers, cards and total minutes
-  across every match played in this session.
+- **The day's stats** — wins, draws and losses in form-guide colours, goals,
+  top scorers, cards and total minutes across every match played that day.
+- **Nothing lost to a stray swipe** — the squad is remembered from week to
+  week, and a match in progress survives a reload, a closed tab or an
+  accidental back: open the app again and it is exactly where it was, the
+  clock caught up with the time away.
 
 ## Privacy
 
 Everything stays on the device. There are no accounts, no servers, no cloud,
-no database and no build-time or run-time analytics. Matches, players and stats
-live only in the browser tab's memory. Two things are persisted, both in that
-browser's own `localStorage` so you do not re-enter them every week: your team
-name, and how you play the match (length, halves, format, formation, rules).
-Player names and opponents are never saved.
+no database and no build-time or run-time analytics. What is kept is kept in
+that browser's own `localStorage`, and only so you do not re-enter it every
+week: your team name, how you play the match (length, halves, format,
+formation, rules), your squad's names, and the current day's matches — the
+last one so an interrupted match can pick up where it left off. A saved
+matchday is dropped once the day is over.
+
+*Tietoja & tietosuoja* has a button that wipes all of it and returns the app to
+its defaults; the squad screen can clear just the players.
 
 Nothing is fetched from anywhere else either: the fonts are bundled with the
 app rather than loaded from a font service, so opening Peluutin makes no
 request to any third party.
-
-The trade-off is deliberate and worth knowing: **close the tab and the match is
-gone.** Keep the app open for the duration of the game.
 
 ## Getting started
 
@@ -89,11 +94,12 @@ How it is put together, in [`vite.config.js`](vite.config.js):
 
 - **Everything is precached** by the service worker — code, styles, icons and
   the self-hosted fonts — so an installed app opens fully offline.
-- **Updates never reload the page under a coach.** The match lives in memory,
-  so a reload mid-match would lose it. A new version activates in the
-  background as soon as it has downloaded; the page is only reloaded onto it if
-  the coach is still on the start screen, and otherwise the next launch simply
-  opens the new version.
+- **Updates never reload the page under a coach.** A match would come back
+  after a reload, but a lineup half picked would not, and nobody wants the
+  screen to blink on the touchline. A new version activates in the background
+  as soon as it has downloaded; the page is only reloaded onto it if the coach
+  is still on the start screen, and otherwise the next launch simply opens the
+  new version.
 - **Icons** are generated from one source, [`public/icon.svg`](public/icon.svg),
   by `npm run generate-pwa-assets` ([`pwa-assets.config.js`](pwa-assets.config.js)).
   Maskable and Apple icons get padding and the pitch green behind them, so the
@@ -122,8 +128,12 @@ src/
 │   └── time.js          Formatting and numeric input handling
 │
 ├── services/        Talking to the browser, defensively.
-│   ├── storage.js       localStorage that cannot throw
-│   └── ticker.js        A clock that measures elapsed time, not callbacks
+│   ├── storage.js              localStorage that cannot throw
+│   ├── settingsPersistence.js  Remembers how the match is played
+│   ├── rosterPersistence.js    Remembers the squad
+│   ├── sessionPersistence.js   Brings back today's matches after a reload
+│   ├── installPrompt.js        The browser's install offer, kept for later
+│   └── ticker.js               A clock that measures elapsed time, not callbacks
 │
 ├── stores/          Pinia. State and the transitions between states.
 │   ├── app.js           Which screen we are on; the matchday flow
@@ -147,10 +157,17 @@ src/
 ### A few decisions worth knowing
 
 **Phases, not routes.** The app is a linear matchday: splash → team → setup →
-lineup → live → summary → stats. All of it is in-memory, so a deep link would
-land on an empty match. `stores/app.js` owns the phase and every transition;
-`App.vue` is just a lookup table. The info page is the one detour, and it
-returns wherever it came from.
+lineup → live → summary → stats. A deep link into the middle of it would land
+on an empty match, so there are no URLs to link to. `stores/app.js` owns the
+phase and every transition; `App.vue` is just a lookup table. The info page is
+the one detour, and it returns wherever it came from.
+
+**Saved as it happens.** From kickoff on, every change is written to
+`localStorage` (gathered into one write per burst, since a clock tick touches
+every player). Opening the app again the same day goes straight back to the
+live match, the summary or the day's stats. A clock that was running is caught
+up by the time away — the match did not stop because the page did. Saved
+players keep their ids, so the same child is the same row in the day's stats.
 
 **Slots own positions, players fill them.** A substitution changes who is in a
 slot, never the shape. That is what lets the pitch drawing, the rotation hints
@@ -178,7 +195,9 @@ npm test
 
 The tests cover the domain layer and the match store — the rotation hints, the
 substitution rules including limits and re-entry, the swap behaviour, playing-
-time fairness, the day's aggregation, the pitch layout and the catch-up clock.
+time fairness, the day's aggregation, the pitch layout and the catch-up clock —
+and what is remembered between visits: settings, squad, and a match resumed
+after a reload.
 Components are deliberately thin enough not to need their own tests.
 
 ## Contributing and forking
@@ -187,8 +206,8 @@ Please do. This is free software under the [MIT licence](LICENSE) — use it,
 change it, fork it, ship it, sell it. No warranty, no strings, no attribution
 required (though it is always nice).
 
-Good first additions, if you are looking for one: persisting a match across a
-page reload, exporting a summary, and more stock formations.
+Good first additions, if you are looking for one: exporting a summary, and
+more stock formations.
 
 ## Credits
 

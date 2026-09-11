@@ -14,6 +14,19 @@ const { t } = useI18n()
 const DRAG_THRESHOLD = 8
 /** How near another shirt a drop has to land to count as aimed at it. */
 const DROP_RADIUS = 60
+
+/**
+ * How close a chip's centre may come to the top or bottom edge: half a chip,
+ * plus room for the selection ring. The layout is in percentages, and on a
+ * narrow phone the keeper's spot by the goal line would otherwise put the
+ * bottom of their chip past the edge of the pitch, where it is cut off.
+ */
+const CHIP_EDGE_PX = 28
+
+/** The chip's vertical centre in pixels, kept clear of the pitch edges. */
+function chipCentreY(chip, height) {
+  return Math.min(Math.max((chip.y / 100) * height, CHIP_EDGE_PX), height - CHIP_EDGE_PX)
+}
 /** How long a player who has just changed place stays highlighted. */
 const MOVED_HIGHLIGHT_MS = 1200
 
@@ -109,7 +122,10 @@ function chipTitle(chip) {
 }
 
 function chipStyle(chip) {
-  const base = { left: `${chip.x}%`, top: `${chip.y}%` }
+  const base = {
+    left: `${chip.x}%`,
+    top: `clamp(${CHIP_EDGE_PX}px, ${chip.y}%, calc(100% - ${CHIP_EDGE_PX}px))`,
+  }
   if (draggedSlotId.value !== chip.slotId) return base
   const { x, y } = dragDelta.value
   return {
@@ -128,7 +144,7 @@ function findDropTarget(clientX, clientY) {
   chips.value.forEach((chip) => {
     if (chip.slotId === originSlotId || !chip.selectable) return
     const centreX = rect.left + (chip.x / 100) * rect.width
-    const centreY = rect.top + (chip.y / 100) * rect.height
+    const centreY = rect.top + chipCentreY(chip, rect.height)
     const distance = Math.hypot(clientX - centreX, clientY - centreY)
     if (distance < bestDistance) {
       bestDistance = distance

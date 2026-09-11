@@ -2,6 +2,8 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import { listenForInstallPrompt } from './services/installPrompt.js'
+import { persistRoster } from './services/rosterPersistence.js'
+import { keepSessionSaved, resumeSession } from './services/sessionPersistence.js'
 import { persistMatchSettings } from './services/settingsPersistence.js'
 
 // Self-hosted fonts: bundled with the app, so they work offline and no request
@@ -21,5 +23,13 @@ listenForInstallPrompt()
 
 const pinia = createPinia()
 pinia.use(persistMatchSettings)
+pinia.use(persistRoster)
 
-createApp(App).use(pinia).mount('#app')
+const app = createApp(App).use(pinia)
+
+// Back where the coach left off: a match survives a reload, a closed tab, or a
+// stray swipe back out of the app.
+resumeSession()
+keepSessionSaved()
+
+app.mount('#app')

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { nextId } from '@/domain/ids.js'
 import { setLocale } from '@/i18n/index.js'
-import { loadTeamName, saveTeamName } from '@/services/storage.js'
+import { clearAllSaved, loadTeamName, saveTeamName } from '@/services/storage.js'
 import { useMatchStore } from './match.js'
 import { useMatchdayStore } from './matchday.js'
 import { useSetupStore } from './setup.js'
@@ -35,18 +35,6 @@ export const useAppStore = defineStore('app', {
     previousPhase: PHASES.SPLASH,
     teamName: loadTeamName(),
   }),
-
-  getters: {
-    /**
-     * Whether leaving the page would lose something the coach cannot get back.
-     * A squad typed in, or any match already played, counts; the splash and the
-     * team-name screen do not.
-     */
-    hasWorkToLose(state) {
-      if ([PHASES.SPLASH, PHASES.INFO, PHASES.TEAM].includes(state.phase)) return false
-      return useSetupStore().roster.length > 0 || useMatchdayStore().hasMatches
-    },
-  },
 
   actions: {
     /** The info page is a detour, not a step: it always returns where it came from. */
@@ -153,6 +141,21 @@ export const useAppStore = defineStore('app', {
 
     finishSession() {
       this.phase = PHASES.STATS
+    },
+
+    /**
+     * Start over as if on a new phone: the team, the squad, the settings and
+     * the day's results are all forgotten, here and in the device's storage.
+     */
+    forgetEverything() {
+      useMatchStore().reset()
+      useMatchdayStore().clear()
+      useSetupStore().$reset()
+      // After the resets, which save their now-empty state on the way through.
+      clearAllSaved()
+      this.teamName = ''
+      this.previousPhase = PHASES.SPLASH
+      this.phase = PHASES.SPLASH
     },
   },
 })

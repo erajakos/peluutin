@@ -110,8 +110,6 @@ const status = computed(() => {
         </template>
       </p>
 
-      <p v-if="match.autoSelectedOn" class="auto-note">{{ t('autoPickedNote') }}</p>
-
       <UiButton
         v-if="!match.limitReached"
         class="commit"
@@ -145,13 +143,6 @@ const status = computed(() => {
 .status--alert {
   color: var(--alert);
   margin-bottom: 0;
-}
-
-.auto-note {
-  font-size: 14.5px;
-  font-weight: 600;
-  color: var(--go);
-  margin: -4px 0 10px;
 }
 
 .divider {

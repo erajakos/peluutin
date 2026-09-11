@@ -51,4 +51,3 @@ const { t } = useI18n()
     </UiCheckLine>
   </UiPanel>
 </template>
-

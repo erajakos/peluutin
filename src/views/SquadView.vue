@@ -3,6 +3,7 @@ import { nextTick, ref } from 'vue'
 import SetupProgress from '@/components/setup/SetupProgress.vue'
 import UiBackLink from '@/components/ui/UiBackLink.vue'
 import UiButton from '@/components/ui/UiButton.vue'
+import UiConfirmDialog from '@/components/ui/UiConfirmDialog.vue'
 import { useI18n } from '@/i18n/index.js'
 import { useAppStore } from '@/stores/app.js'
 import { useSetupStore } from '@/stores/setup.js'
@@ -14,6 +15,7 @@ const { t } = useI18n()
 const newPlayer = ref('')
 const input = ref(null)
 const error = ref('')
+const confirmingClear = ref(false)
 
 /** Keep focus in the field so a whole squad can be typed without reaching away. */
 async function add() {
@@ -22,6 +24,13 @@ async function add() {
   error.value = ''
   await nextTick()
   input.value?.focus()
+}
+
+/** The squad is remembered, so a different group of players starts from empty. */
+function clearRoster() {
+  setup.clearRoster()
+  confirmingClear.value = false
+  error.value = ''
 }
 
 function submit() {
@@ -62,15 +71,35 @@ function submit() {
     </li>
   </ul>
 
-  <p class="count" :class="{ 'count--ready': setup.hasEnoughPlayers }">
-    {{ t('rosterCountNote', setup.roster.length, setup.fieldSize) }}
-  </p>
+  <div class="count-row">
+    <p class="count" :class="{ 'count--ready': setup.hasEnoughPlayers }">
+      {{ t('rosterCountNote', setup.roster.length, setup.fieldSize) }}
+    </p>
+    <button
+      v-if="setup.roster.length"
+      type="button"
+      class="clear-all"
+      @click="confirmingClear = true"
+    >
+      {{ t('clearRosterBtn') }}
+    </button>
+  </div>
 
   <p class="error">{{ error }}</p>
 
   <UiButton size="lg" :disabled="!setup.hasEnoughPlayers" @click="submit">
     {{ t('continueBtn') }}
   </UiButton>
+
+  <UiConfirmDialog
+    v-if="confirmingClear"
+    :message="t('clearRosterConfirm')"
+    :confirm-label="t('yesBtn')"
+    :cancel-label="t('cancelBtn')"
+    tone="danger"
+    @confirm="clearRoster"
+    @cancel="confirmingClear = false"
+  />
 </template>
 
 <style scoped>
@@ -131,11 +160,29 @@ function submit() {
   padding: 2px 9px;
 }
 
+.count-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+}
+
 .count {
   font-size: 15px;
   font-weight: 500;
   color: var(--chalk-dim);
-  margin: 16px 0 0;
+  margin: 0;
+}
+
+/* Rarely needed, so it stays quiet: plain text, off to the side. */
+.clear-all {
+  flex-shrink: 0;
+  background: none;
+  color: var(--chalk-dim);
+  font-size: 15px;
+  font-weight: 600;
+  padding: 6px 0 6px 10px;
 }
 
 .count--ready {

@@ -255,7 +255,10 @@ export const useMatchStore = defineStore('match', {
     start() {
       // During half time the only way on is to start the second half.
       if (this.running || this.period === PERIOD.HALF_TIME) return
-      ticker = ticker ?? createSecondTicker((seconds) => this.tick(seconds))
+      // A fresh ticker each time, bound to this store: after a restore, the one
+      // left over from before must not be the one that keeps counting.
+      ticker?.stop()
+      ticker = createSecondTicker((seconds) => this.tick(seconds))
       ticker.start()
       this.running = true
     },
@@ -490,6 +493,52 @@ export const useMatchStore = defineStore('match', {
     reset() {
       this.pause()
       this.$patch(emptyMatch())
+    },
+
+    // --- Surviving a reload ---------------------------------------------
+    /**
+     * The match as plain data, for keeping it across a reload. A selection the
+     * coach is halfway through is left out: after a reload that tap is simply
+     * made again, but nothing that actually happened in the match is lost.
+     */
+    snapshot() {
+      return {
+        slots: this.slots,
+        players: this.players,
+        elapsedSeconds: this.elapsedSeconds,
+        running: this.running,
+        period: this.period,
+        outForGood: [...this.outForGood],
+        sentOff: [...this.sentOff],
+        subsUsed: this.subsUsed,
+        captainId: this.captainId,
+        goals: this.goals,
+        cards: this.cards,
+      }
+    },
+
+    /**
+     * Pick the match up from a snapshot. A clock that was running went on
+     * running on the pitch while the page was gone, so it catches up by the
+     * time away — just as it does when the phone comes out of a pocket.
+     */
+    restore(saved, secondsAway = 0) {
+      this.reset()
+      this.$patch({
+        slots: saved.slots,
+        players: saved.players,
+        elapsedSeconds: saved.elapsedSeconds,
+        period: saved.period,
+        outForGood: new Set(saved.outForGood),
+        sentOff: new Set(saved.sentOff),
+        subsUsed: saved.subsUsed,
+        captainId: saved.captainId,
+        goals: saved.goals,
+        cards: saved.cards,
+      })
+      if (!saved.running) return
+      if (secondsAway > 0) this.tick(secondsAway)
+      this.start()
     },
   },
 })

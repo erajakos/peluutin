@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount } from 'vue'
+import { computed } from 'vue'
 import { useRegisterSW } from 'virtual:pwa-register/vue'
 import InfoView from '@/views/InfoView.vue'
 import LineupView from '@/views/LineupView.vue'
@@ -12,7 +12,6 @@ import StatsView from '@/views/StatsView.vue'
 import SummaryView from '@/views/SummaryView.vue'
 import TeamNameView from '@/views/TeamNameView.vue'
 import GrassBackdrop from '@/components/ui/GrassBackdrop.vue'
-import { installUnloadWarning } from '@/services/unloadGuard.js'
 import { PHASES, useAppStore } from '@/stores/app.js'
 
 /**
@@ -35,15 +34,12 @@ const VIEWS = {
 const app = useAppStore()
 const currentView = computed(() => VIEWS[app.phase] ?? SplashView)
 
-// A refresh would wipe the match, so ask before it happens.
-const stopUnloadWarning = installUnloadWarning(() => app.hasWorkToLose)
-onBeforeUnmount(stopUnloadWarning)
-
 /**
  * App updates. A new version downloads and takes over in the background, but
- * the page is only reloaded onto it from the start screen: anywhere later, a
- * reload would lose the squad or a match in progress. The running page keeps
- * the code it already loaded, and the next launch simply opens the new version.
+ * the page is only reloaded onto it from the start screen: a match would come
+ * back after a reload, but not a lineup half picked, and nobody wants the
+ * screen to blink under them on the touchline. The running page keeps the code
+ * it already loaded, and the next launch simply opens the new version.
  */
 useRegisterSW({
   immediate: true,

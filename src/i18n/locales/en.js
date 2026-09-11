@@ -9,11 +9,12 @@ export default {
   infoIntro: 'A small tool for planning the match and the substitutions from the touchline.',
   privacyTitle: 'Your data stays yours',
   privacyBody:
-    'Everything stays on this device. There are no accounts, no servers, no cloud and no database: matches, players and stats live only in your browser. Only your team name and match settings are kept for longer — and only in this device\u2019s own browser storage. Player names are never saved.',
+    'Everything stays on this device. There are no accounts, no servers, no cloud and no database. Your team name, players, settings and the day\u2019s matches are kept only in this device\u2019s own browser storage, so you need not type them in every time and an interrupted match carries on where it left off.',
   privacyNoTracking:
     'No tracking, no analytics, no telemetry, no cookies, no ads. Nothing is sent anywhere.',
-  privacyRefresh:
-    'The flip side: close the tab and the match is gone. Keep the app open for the duration of the game.',
+  clearDataBtn: 'Clear all data',
+  clearDataConfirm:
+    'Remove the team name, players, settings and today\u2019s results? Everything goes back to the defaults.',
   madeTitle: 'How this came about',
   madeBody:
     'Vibe coded during my son\u2019s football practice, with Claude, on a mobile phone, at the side of the pitch.',
@@ -73,6 +74,8 @@ export default {
   playerNamePlaceholder: 'Player name',
   addPlayerAria: 'Add player',
   removeAria: 'Remove',
+  clearRosterBtn: 'Clear all',
+  clearRosterConfirm: 'Remove all players?',
   rosterCountNote: (have, need) =>
     `${have} player${have === 1 ? '' : 's'} added · need at least ${need} to start`,
   continueBtn: 'Choose starting lineup',
@@ -108,7 +111,6 @@ export default {
   ofLabel: (time) => `of ${time}`,
   comingOffOn: (off, on) => `Off: ${off} · On: ${on}`,
   comingOffOnly: (off) => `Off: ${off} · now pick someone from the bench`,
-  autoPickedNote: 'Incoming players chosen for you — change them if you like.',
   subsUsedNote: (used, limit) => `Subs used: ${used} / ${limit}`,
   clearBtn: 'Clear',
   confirmSubBtn: 'Confirm substitution',

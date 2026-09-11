@@ -5,20 +5,9 @@ import { pickMatchSettings, sanitizeMatchSettings } from '@/domain/matchSettings
 import { setLocale } from '@/i18n/index.js'
 import { persistMatchSettings } from '@/services/settingsPersistence.js'
 import { useSetupStore } from '@/stores/setup.js'
+import { installStorage } from './storageStub.js'
 
 const KEY = 'sortOfAPlanMatchSettings'
-
-/** A stand-in for the browser's localStorage, fresh for every test. */
-function installStorage() {
-  const data = new Map()
-  globalThis.window = {
-    localStorage: {
-      getItem: (key) => (data.has(key) ? data.get(key) : null),
-      setItem: (key, value) => data.set(key, String(value)),
-    },
-  }
-  return data
-}
 
 /** A new app visit: a fresh Pinia with the plugin, over whatever is stored. */
 function visit() {

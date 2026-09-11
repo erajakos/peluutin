@@ -13,8 +13,10 @@ const DEFAULT_FORMATION = findFormation(4, 'diamond')
 
 /**
  * How the match is played and who is available: format, rules, shape, squad.
- * Everything here survives from one match to the next within a session — only
- * the opponent is cleared, because the squad rarely changes between games.
+ * Everything here survives from one match to the next — only the opponent is
+ * cleared, because the squad rarely changes between games, or even between
+ * weeks. The settings and the squad are remembered across visits too, by the
+ * persistence plugins in `services/`.
  */
 export const useSetupStore = defineStore('setup', {
   state: () => ({
@@ -142,6 +144,21 @@ export const useSetupStore = defineStore('setup', {
 
     removePlayer(id) {
       this.roster = this.roster.filter((player) => player.id !== id)
+      this.renumberNames()
+    },
+
+    /** A different group of players this time: start the squad from nothing. */
+    clearRoster() {
+      this.roster = []
+    },
+
+    /**
+     * The squad from a previous visit. Players keep their saved ids, so the
+     * same child is the same player in every match of the day's stats.
+     */
+    restoreRoster(players) {
+      players.forEach((player) => nextId.skipPast(player.id))
+      this.roster = players.map(({ id, name }) => ({ id, typedName: name, name }))
       this.renumberNames()
     },
 
