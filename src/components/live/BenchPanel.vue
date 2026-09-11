@@ -23,22 +23,19 @@ function badgeFor(player) {
 
 <template>
   <UiPanel :title="t('benchTitle')">
-    <template v-if="match.bench.length">
-      <PlayerRow
-        v-for="player in match.bench"
-        :key="player.id"
-        :name="player.name"
-        :seconds="player.seconds"
-        :meta="t('restingFor', formatTime(player.stintSeconds))"
-        :cards="match.cardCountsById.get(player.id) ?? null"
-        :selected="match.selectedOnPlayerIds.has(player.id)"
-        :selectable="match.canPlayerReturn(player.id) && !match.limitReached"
-        :badge="badgeFor(player).text"
-        :badge-tone="badgeFor(player).tone"
-        @toggle="match.toggleOnPlayer(player.id)"
-      />
-    </template>
-    <p v-else class="count-note">{{ t('benchEmpty') }}</p>
+    <PlayerRow
+      v-for="player in match.bench"
+      :key="player.id"
+      :name="player.name"
+      :seconds="player.seconds"
+      :meta="t('restingFor', formatTime(player.stintSeconds))"
+      :cards="match.cardCountsById.get(player.id) ?? null"
+      :selected="match.selectedOnPlayerIds.has(player.id)"
+      :selectable="match.canPlayerReturn(player.id) && !match.limitReached"
+      :badge="badgeFor(player).text"
+      :badge-tone="badgeFor(player).tone"
+      @toggle="match.toggleOnPlayer(player.id)"
+    />
 
     <SubstitutionActions />
   </UiPanel>

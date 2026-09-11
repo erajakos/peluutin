@@ -32,7 +32,13 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
     <div class="inner">
       <header class="head">
         <h1 class="title">{{ t('eventsTitle') }}</h1>
-        <button ref="closeButton" type="button" class="close" :aria-label="t('closeBtn')" @click="emit('close')">
+        <button
+          ref="closeButton"
+          type="button"
+          class="close"
+          :aria-label="t('closeBtn')"
+          @click="emit('close')"
+        >
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M6 6 18 18M18 6 6 18" />
           </svg>

@@ -42,7 +42,8 @@ const eventsOpen = ref(false)
   </button>
 
   <PitchPanel class="pitch-panel" />
-  <BenchPanel />
+  <!-- Everyone is on the field: nobody to bring on, so no bench at all. -->
+  <BenchPanel v-if="match.bench.length" />
 
   <MatchEventsSheet v-if="eventsOpen" @close="eventsOpen = false" />
 </template>

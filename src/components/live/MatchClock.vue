@@ -23,8 +23,7 @@ const halfLabel = computed(() => {
  * are the moment where forgetting to press means minutes go uncounted.
  */
 const waiting = computed(() => match.notStarted || match.atHalfTime)
-const waitingLabel = computed(() => (match.atHalfTime ? t('secondHalfShort') : t('startClockBtn')))
-const waitingAria = computed(() =>
+const waitingLabel = computed(() =>
   match.atHalfTime ? t('startSecondHalfBtn') : t('startClockBtn'),
 )
 
@@ -100,23 +99,8 @@ const progress = computed(() =>
         <span class="total">{{ t('ofLabel', formatTime(match.totalSeconds)) }}</span>
       </div>
 
-      <!--
-        Before kickoff the clock is the one thing that must not be forgotten, so
-        the button says so in words and keeps pulsing until it is pressed. After
-        that it shrinks back to a plain play/pause.
-      -->
-      <button
-        v-if="waiting"
-        type="button"
-        class="kickoff"
-        :aria-label="waitingAria"
-        @click="onWaitingPress"
-      >
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.2 19 12 8 18.8Z" /></svg>
-        {{ waitingLabel }}
-      </button>
       <!-- Play/pause and stop: the transport controls everyone already knows. -->
-      <div v-else class="transport">
+      <div v-if="!waiting" class="transport">
         <button
           type="button"
           class="run"
@@ -160,6 +144,17 @@ const progress = computed(() =>
     </div>
 
     <div v-if="setup.twoHalves" class="half">{{ halfLabel }}</div>
+
+    <!--
+      Before kickoff and at half time the clock is the one thing that must not
+      be forgotten, so the button says so in words and keeps pulsing until it is
+      pressed. It gets a row of its own, full width, so the time above never has
+      to squeeze beside it; once running, the round transport takes its place.
+    -->
+    <button v-if="waiting" type="button" class="kickoff" @click="onWaitingPress">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.2 19 12 8 18.8Z" /></svg>
+      {{ waitingLabel }}
+    </button>
   </div>
 
   <UiConfirmDialog
@@ -251,10 +246,12 @@ const progress = computed(() =>
 .kickoff {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  flex-shrink: 0;
+  width: 100%;
   height: 52px;
-  padding: 0 20px 0 16px;
+  margin-top: 12px;
+  padding: 0 20px;
   border-radius: 999px;
   background: var(--amber);
   color: var(--amber-ink);

@@ -13,9 +13,14 @@ const { t } = useI18n()
 </script>
 
 <template>
+  <!--
+    No empty state: the live screen is only reached with a complete lineup.
+    (An empty-state paragraph here once paired its v-else with the card
+    buttons instead of the pitch, and showed "no one on the field" whenever
+    no player was selected.)
+  -->
   <UiPanel :title="t('onFieldTitle')">
-    <PitchMap v-if="match.slots.length" />
+    <PitchMap />
     <CardActions v-if="setup.trackCards && match.cardCandidateId !== null" />
-    <p v-else class="count-note">{{ t('noOneOnField') }}</p>
   </UiPanel>
 </template>
