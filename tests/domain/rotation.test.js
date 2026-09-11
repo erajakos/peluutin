@@ -15,14 +15,13 @@ const slots = [
   { id: 12, isGoalkeeper: false, playerId: 3 },
 ]
 
-function hints(overrides = {}) {
+function hints({ allowReentry = true, outForGood = new Set(), sentOff = new Set(), ...rest } = {}) {
   return rotationHints({
     slots,
     players,
     fixedGoalkeeper: true,
-    allowReentry: true,
-    outForGood: new Set(),
-    ...overrides,
+    availability: { allowReentry, outForGood, sentOff },
+    ...rest,
   })
 }
 
@@ -53,6 +52,13 @@ describe('rotationHints', () => {
   it('leaves the last eligible substitute unbadged, having nothing to compare', () => {
     const result = hints({ allowReentry: false, outForGood: new Set([4]) })
     expect(result.dueOnPlayerIds.size).toBe(0)
+  })
+
+  it('never suggests a sent-off player, whatever the substitution rules say', () => {
+    const withSpare = [...players, { id: 6, name: 'Eve', seconds: 400 }]
+    const result = hints({ players: withSpare, sentOff: new Set([4]) })
+    expect(result.dueOnPlayerIds.has(4)).toBe(false)
+    expect([...result.dueOnPlayerIds]).toEqual([5])
   })
 
   it('shows no badges when everyone is level, since that advises nothing', () => {

@@ -90,6 +90,8 @@ export default {
   dueOffBadge: 'DUE OFF',
   dueOnBadge: 'DUE ON',
   outBadge: 'OUT',
+  sentOffBadge: 'SENT OFF',
+  vacantLabel: 'Position empty',
   clockStartBtn: 'Start',
   resumeBtn: 'Resume',
   pauseBtn: 'Pause',

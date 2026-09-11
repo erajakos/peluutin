@@ -10,10 +10,11 @@ const match = useMatchStore()
 const { t } = useI18n()
 
 /**
- * A player already used up under a no-re-entry rule is marked OUT and locked;
- * otherwise the least-rested player carries the DUE ON prompt.
+ * A sent-off player is marked and locked, as is one already used up under a
+ * no-re-entry rule; otherwise the least-rested player carries the DUE ON prompt.
  */
 function badgeFor(player) {
+  if (match.sentOff.has(player.id)) return { text: t('sentOffBadge'), tone: 'off' }
   if (!match.canPlayerReturn(player.id)) return { text: t('outBadge'), tone: 'off' }
   if (match.hints.dueOnPlayerIds.has(player.id)) return { text: t('dueOnBadge'), tone: 'on' }
   return { text: '', tone: 'on' }

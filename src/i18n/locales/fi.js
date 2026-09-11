@@ -90,6 +90,8 @@ export default {
   dueOffBadge: 'VUOROSSA POIS',
   dueOnBadge: 'VUOROSSA SISÄÄN',
   outBadge: 'POISSA',
+  sentOffBadge: 'ULOSAJETTU',
+  vacantLabel: 'Paikka tyhjänä',
   clockStartBtn: 'Aloita',
   resumeBtn: 'Jatka',
   pauseBtn: 'Tauko',

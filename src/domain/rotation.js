@@ -7,7 +7,7 @@
  * on every player says nothing. A fixed goalkeeper is outside the rotation and
  * never counts towards either extreme.
  */
-export function rotationHints({ slots, players, fixedGoalkeeper, allowReentry, outForGood }) {
+export function rotationHints({ slots, players, fixedGoalkeeper, availability }) {
   const byId = new Map(players.map((player) => [player.id, player]))
   const filled = slots.filter((slot) => slot.playerId !== null)
 
@@ -18,7 +18,7 @@ export function rotationHints({ slots, players, fixedGoalkeeper, allowReentry, o
 
   const onField = new Set(filled.map((slot) => slot.playerId))
   const eligibleBench = players.filter(
-    (player) => !onField.has(player.id) && isEligibleToReturn(player.id, allowReentry, outForGood),
+    (player) => !onField.has(player.id) && isEligibleToReturn(player.id, availability),
   )
   const benchSeconds = eligibleBench.map((player) => player.seconds)
   const minBenchSeconds = benchSeconds.length ? Math.min(...benchSeconds) : null
@@ -40,7 +40,14 @@ export function rotationHints({ slots, players, fixedGoalkeeper, allowReentry, o
   return { dueOffSlotIds, dueOnPlayerIds }
 }
 
-/** A player who has been subbed off stays off when re-entry is disallowed. */
-export function isEligibleToReturn(playerId, allowReentry, outForGood) {
+/**
+ * Whether a player may take the field again.
+ *
+ * A sending-off is final and outranks everything: a red card ends that player's
+ * match whatever the substitution rules say. Otherwise a player who has been
+ * taken off stays off only when the format disallows re-entry.
+ */
+export function isEligibleToReturn(playerId, { allowReentry, outForGood, sentOff }) {
+  if (sentOff.has(playerId)) return false
   return allowReentry || !outForGood.has(playerId)
 }

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
+import { CARD_RED, CARD_YELLOW } from '@/domain/scoring.js'
 import { useMatchStore } from '@/stores/match.js'
 import { useSetupStore } from '@/stores/setup.js'
 
@@ -261,6 +262,121 @@ describe('match store', () => {
 
       expect(first.playerId).toBe(before.second)
       expect(second.playerId).toBe(before.first)
+    })
+  })
+
+  describe('a red card', () => {
+    it('takes the player off the field at once', () => {
+      const { match } = startMatch()
+      match.tick(300)
+      const slot = match.slots.find((candidate) => candidate.playerId === 3)
+
+      match.addCard(3, CARD_RED)
+
+      expect(slot.playerId).toBe(null)
+      expect(match.sentOff.has(3)).toBe(true)
+    })
+
+    it('leaves the position vacant rather than sending someone on', () => {
+      const { match } = startMatch()
+      const before = match.filledSlots.length
+      match.addCard(3, CARD_RED)
+
+      expect(match.filledSlots).toHaveLength(before - 1)
+      expect(match.slots).toHaveLength(5)
+      expect(match.subsUsed).toBe(0)
+    })
+
+    it('stops the player accruing any more minutes', () => {
+      const { match } = startMatch()
+      match.tick(300)
+      match.addCard(3, CARD_RED)
+      match.tick(120)
+
+      expect(match.playersById.get(3).seconds).toBe(300)
+      // Still on the field, so their team-mates keep counting.
+      expect(match.playersById.get(2).seconds).toBe(420)
+    })
+
+    it('bars the player from coming back on, whatever the rules allow', () => {
+      const { match } = startMatch({ allowReentry: true })
+      match.addCard(3, CARD_RED)
+
+      expect(match.canPlayerReturn(3)).toBe(false)
+      expect(match.availableBench.map((player) => player.id)).not.toContain(3)
+      expect(match.hints.dueOnPlayerIds.has(3)).toBe(false)
+    })
+
+    it('drops the player from a pending selection', () => {
+      const { match } = startMatch()
+      match.toggleOnPlayer(6)
+      expect(match.selectedOnPlayerIds.has(6)).toBe(true)
+
+      match.addCard(6, CARD_RED)
+      expect(match.selectedOnPlayerIds.has(6)).toBe(false)
+    })
+
+    it('also ends the match of a player already on the bench', () => {
+      const { match } = startMatch()
+      match.addCard(6, CARD_RED)
+
+      expect(match.sentOff.has(6)).toBe(true)
+      expect(match.canPlayerReturn(6)).toBe(false)
+    })
+
+    it('a yellow card changes nothing', () => {
+      const { match } = startMatch()
+      const slot = match.slots.find((candidate) => candidate.playerId === 3)
+      match.addCard(3, CARD_YELLOW)
+
+      expect(slot.playerId).toBe(3)
+      expect(match.sentOff.has(3)).toBe(false)
+    })
+
+    it('reinstates the player when the card is removed as a mistake', () => {
+      const { match } = startMatch()
+      match.addCard(3, CARD_RED)
+      match.removeCard(match.cards[0].id)
+
+      expect(match.sentOff.has(3)).toBe(false)
+      expect(match.canPlayerReturn(3)).toBe(true)
+      // Reinstated, but not put back on: that is the coach's decision.
+      expect(match.filledSlots.map((slot) => slot.playerId)).not.toContain(3)
+    })
+
+    it('keeps a player off while any red card of theirs stands', () => {
+      const { match } = startMatch()
+      match.addCard(3, CARD_RED)
+      match.addCard(3, CARD_RED)
+      match.removeCard(match.cards[0].id)
+
+      expect(match.sentOff.has(3)).toBe(true)
+    })
+
+    it('lets a substitute be sent on to fill the vacancy', () => {
+      const { match } = startMatch()
+      const slot = match.slots.find((candidate) => candidate.playerId === 3)
+      match.addCard(3, CARD_RED)
+
+      match.toggleOffSlot(slot.id)
+      expect([...match.selectedOnPlayerIds]).toEqual([6])
+      match.confirmSubstitution()
+
+      expect(slot.playerId).toBe(6)
+      expect(match.canPlayerReturn(3)).toBe(false)
+    })
+
+    it('lets another player move into the empty shirt', () => {
+      const { match } = startMatch()
+      const vacated = match.slots.find((candidate) => candidate.playerId === 3)
+      const mover = match.slots.find(
+        (candidate) => !candidate.isGoalkeeper && candidate.playerId === 2,
+      )
+      match.addCard(3, CARD_RED)
+
+      expect(match.swapSlotPlayers(mover.id, vacated.id)).toBe(true)
+      expect(vacated.playerId).toBe(2)
+      expect(mover.playerId).toBe(null)
     })
   })
 

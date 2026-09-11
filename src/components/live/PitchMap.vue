@@ -33,15 +33,17 @@ let suppressClick = false
  * which is how a coach actually thinks about moving someone up front.
  */
 const chips = computed(() => {
-  const filled = match.filledSlots
-  const spots = pitchLayout(filled)
-  return filled.map((slot, index) => {
-    const player = match.playersById.get(slot.playerId)
+  const spots = pitchLayout(match.slots)
+  return match.slots.map((slot, index) => {
+    const player = slot.playerId === null ? null : match.playersById.get(slot.playerId)
     const fixedGk = slot.isGoalkeeper && match.rules.fixedGoalkeeper
     return {
       slotId: slot.id,
       position: slot.label,
       name: player?.name ?? '',
+      // Left empty by a sending-off: drawn anyway, so being a player short is
+      // something the coach can see rather than count.
+      vacant: player === null,
       seconds: player?.seconds ?? 0,
       stintSeconds: player?.stintSeconds ?? 0,
       isGoalkeeper: slot.isGoalkeeper,
@@ -56,6 +58,7 @@ const chips = computed(() => {
 })
 
 function chipTitle(chip) {
+  if (chip.vacant) return `${chip.position} — ${t('vacantLabel')}`
   const spell = t('playingFor', formatTime(chip.stintSeconds))
   const due = chip.dueOff ? ` · ${t('dueOffBadge')}` : ''
   return `${chip.position} — ${chip.name} · ${spell}${due}`
@@ -176,6 +179,7 @@ function onClick(chip) {
         'chip--locked': !chip.selectable,
         'chip--dragging': draggedSlotId === chip.slotId,
         'chip--target': dropTargetId === chip.slotId,
+        'chip--vacant': chip.vacant,
       }"
       :style="chipStyle(chip)"
       :disabled="!chip.selectable"
@@ -187,8 +191,14 @@ function onClick(chip) {
       @pointercancel="onPointerCancel"
       @click="onClick(chip)"
     >
-      <span class="chip-name">{{ chip.name }}</span>
-      <span class="chip-time clock-face">{{ formatTime(chip.seconds) }}</span>
+      <template v-if="chip.vacant">
+        <span class="chip-name">{{ chip.position }}</span>
+        <span class="chip-time clock-face">—</span>
+      </template>
+      <template v-else>
+        <span class="chip-name">{{ chip.name }}</span>
+        <span class="chip-time clock-face">{{ formatTime(chip.seconds) }}</span>
+      </template>
 
       <!-- A tick as well as the fill: colour alone is easy to miss outdoors. -->
       <span v-if="chip.selected" class="chip-mark" aria-hidden="true">
@@ -322,6 +332,25 @@ function onClick(chip) {
 .chip--locked {
   opacity: 0.72;
   cursor: default;
+}
+
+/* Nobody in this shirt: a red card was shown and nobody replaced them. */
+.chip--vacant {
+  background: rgba(0, 0, 0, 0.3);
+  border-style: dashed;
+  color: var(--chalk-dim);
+}
+
+.chip--vacant {
+  max-width: 108px;
+}
+
+.chip--vacant .chip-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.15;
+  white-space: normal;
+  text-align: center;
 }
 
 /* Lifted out of the pitch and following the finger. */

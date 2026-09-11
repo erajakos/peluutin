@@ -11,7 +11,7 @@ import {
   needsAssignment,
   remainingSubs,
 } from '@/domain/substitutions.js'
-import { TEAM_OPPONENT, TEAM_US, countGoals } from '@/domain/scoring.js'
+import { CARD_RED, TEAM_OPPONENT, TEAM_US, countGoals } from '@/domain/scoring.js'
 import { minutesToSeconds } from '@/domain/time.js'
 import { createSecondTicker } from '@/services/ticker.js'
 import { useSetupStore } from './setup.js'
@@ -32,6 +32,8 @@ function emptyMatch() {
     selectedOffSlotIds: new Set(),
     selectedOnPlayerIds: new Set(),
     outForGood: new Set(),
+    /** Players whose match is over: a red card cannot be served out. */
+    sentOff: new Set(),
     subsUsed: 0,
     pendingAssignment: null,
     /** True while the bench selection was made for the coach, not by them. */
@@ -56,11 +58,18 @@ export const useMatchStore = defineStore('match', {
 
     bench: (state) => benchPlayers(state.players, state.slots),
 
+    /** Everything that decides whether a given player may take the field. */
+    availability(state) {
+      return {
+        allowReentry: this.rules.allowReentry,
+        outForGood: state.outForGood,
+        sentOff: state.sentOff,
+      }
+    },
+
     /** Bench players actually allowed back on under this match's rules. */
-    availableBench(state) {
-      return this.bench.filter((player) =>
-        isEligibleToReturn(player.id, this.rules.allowReentry, state.outForGood),
-      )
+    availableBench() {
+      return this.bench.filter((player) => isEligibleToReturn(player.id, this.availability))
     },
 
     lineupComplete: (state) => isLineupComplete(state.slots),
@@ -76,8 +85,7 @@ export const useMatchStore = defineStore('match', {
         slots: state.slots,
         players: state.players,
         fixedGoalkeeper: this.rules.fixedGoalkeeper,
-        allowReentry: this.rules.allowReentry,
-        outForGood: state.outForGood,
+        availability: this.availability,
       })
     },
 
@@ -228,7 +236,7 @@ export const useMatchStore = defineStore('match', {
     },
 
     canPlayerReturn(playerId) {
-      return isEligibleToReturn(playerId, this.rules.allowReentry, this.outForGood)
+      return isEligibleToReturn(playerId, this.availability)
     },
 
     /**
@@ -276,7 +284,8 @@ export const useMatchStore = defineStore('match', {
       const first = this.slots.find((slot) => slot.id === slotIdA)
       const second = this.slots.find((slot) => slot.id === slotIdB)
       if (!first || !second) return false
-      if (first.playerId === null || second.playerId === null) return false
+      // One may be a vacancy — moving into it is a reshuffle, not a swap.
+      if (first.playerId === null && second.playerId === null) return false
 
       const held = first.playerId
       first.playerId = second.playerId
@@ -351,10 +360,39 @@ export const useMatchStore = defineStore('match', {
     addCard(playerId, type) {
       if (!playerId) return
       this.cards.push({ id: nextId(), playerId, type, atSecond: this.elapsedSeconds })
+      if (type === CARD_RED) this.sendOff(playerId)
     },
 
+    /**
+     * A red card ends that player's match. They leave the field at once, the
+     * position is left vacant — nobody is sent on in their place — and they
+     * cannot be picked again.
+     */
+    sendOff(playerId) {
+      this.sentOff.add(playerId)
+      this.selectedOnPlayerIds.delete(playerId)
+
+      const slot = this.slots.find((candidate) => candidate.playerId === playerId)
+      if (!slot) return
+      slot.playerId = null
+      const player = this.playersById.get(playerId)
+      if (player) player.stintSeconds = 0
+    },
+
+    /**
+     * Removing a red card reinstates the player, since the only reason to
+     * remove one is that it was logged by mistake. It does not put them back on
+     * the field: that is a substitution, and the coach's decision.
+     */
     removeCard(cardId) {
-      this.cards = this.cards.filter((card) => card.id !== cardId)
+      const card = this.cards.find((candidate) => candidate.id === cardId)
+      this.cards = this.cards.filter((candidate) => candidate.id !== cardId)
+      if (!card || card.type !== CARD_RED) return
+
+      const stillSentOff = this.cards.some(
+        (other) => other.playerId === card.playerId && other.type === CARD_RED,
+      )
+      if (!stillSentOff) this.sentOff.delete(card.playerId)
     },
 
     // --- Ending -----------------------------------------------------------

@@ -22,7 +22,7 @@ const assignmentRows = computed(() =>
     return {
       slotId,
       position: slot.label,
-      leaving: match.playerName(slot.playerId),
+      leaving: match.playerName(slot.playerId) || slot.label,
       chosenId: assignment.value.map[slotId] ?? null,
       candidates: assignment.value.onPlayerIds.map((playerId) => ({
         id: playerId,
@@ -37,7 +37,7 @@ const offNames = computed(() =>
   [...match.selectedOffSlotIds]
     .map((slotId) => match.slots.find((slot) => slot.id === slotId))
     .filter(Boolean)
-    .map((slot) => match.playerName(slot.playerId))
+    .map((slot) => match.playerName(slot.playerId) || slot.label)
     .join(', '),
 )
 

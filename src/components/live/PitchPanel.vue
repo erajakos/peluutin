@@ -12,7 +12,7 @@ const { t } = useI18n()
   <UiPanel>
     <p class="hint">{{ t('onFieldHint') }}</p>
 
-    <PitchMap v-if="match.filledSlots.length" />
+    <PitchMap v-if="match.slots.length" />
     <p v-else class="count-note">{{ t('noOneOnField') }}</p>
   </UiPanel>
 </template>
