@@ -4,14 +4,7 @@
  * and the opponent are deliberately not part of this.
  */
 const WHOLE_NUMBERS = ['gameLength', 'halfLength', 'fieldSize', 'subLimit']
-const SWITCHES = [
-  'twoHalves',
-  'hasGoalkeeper',
-  'fixedGoalkeeper',
-  'allowReentry',
-  'subLimitEnabled',
-  'trackCards',
-]
+const SWITCHES = ['twoHalves', 'allowReentry', 'subLimitEnabled', 'trackCards']
 
 /** The settings to save, taken from the setup state. */
 export function pickMatchSettings(state) {

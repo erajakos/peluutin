@@ -1,11 +1,12 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref } from 'vue'
-import BenchPanel from '@/components/live/BenchPanel.vue'
+import DragHintDialog from '@/components/live/DragHintDialog.vue'
 import MatchClock from '@/components/live/MatchClock.vue'
 import MatchEventsSheet from '@/components/live/MatchEventsSheet.vue'
 import PitchPanel from '@/components/live/PitchPanel.vue'
 import ScoreBoard from '@/components/live/ScoreBoard.vue'
 import { useI18n } from '@/i18n/index.js'
+import { hasSeenDragHint, markDragHintSeen } from '@/services/storage.js'
 import { createScreenWakeLock } from '@/services/wakeLock.js'
 import { useAppStore } from '@/stores/app.js'
 import { useMatchStore } from '@/stores/match.js'
@@ -30,6 +31,18 @@ const { t } = useI18n()
  * which is the thing a coach reaches for when a goal goes in anyway.
  */
 const eventsOpen = ref(false)
+
+/**
+ * Dragging is not a thing anyone would think to try on a drawing of a pitch,
+ * so the first match this device ever plays says so. Once only: after that it
+ * is something the coach knows, and a dialog before every match is an obstacle.
+ */
+const hintOpen = ref(!hasSeenDragHint())
+
+function closeHint() {
+  hintOpen.value = false
+  markDragHintSeen()
+}
 </script>
 
 <template>
@@ -52,10 +65,10 @@ const eventsOpen = ref(false)
   </button>
 
   <PitchPanel class="pitch-panel" />
-  <!-- Everyone is on the field: nobody to bring on, so no bench at all. -->
-  <BenchPanel v-if="match.bench.length" />
 
   <MatchEventsSheet v-if="eventsOpen" @close="eventsOpen = false" />
+
+  <DragHintDialog v-if="hintOpen" @close="closeHint" />
 </template>
 
 <style scoped>

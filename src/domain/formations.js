@@ -263,9 +263,14 @@ export const FORMATIONS = {
   ],
 }
 
-/** How many players line up outside the goal for a given match format. */
-export function outfieldCount(fieldSize, hasGoalkeeper) {
-  return Math.max(1, fieldSize - (hasGoalkeeper ? 1 : 0))
+/**
+ * How many players line up outside the goal for a given match format.
+ *
+ * The format is counted the way a coach says it — "we play seven-a-side" — so
+ * the keeper is one of the seven, not an extra.
+ */
+export function outfieldCount(fieldSize) {
+  return Math.max(1, fieldSize - 1)
 }
 
 /**

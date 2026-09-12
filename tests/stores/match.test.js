@@ -17,7 +17,7 @@ const ROSTER = [
 function startMatch(overrides = {}) {
   const setup = useSetupStore()
   const match = useMatchStore()
-  setup.$patch({ fieldSize: 5, hasGoalkeeper: true, fixedGoalkeeper: true, ...overrides })
+  setup.$patch({ fieldSize: 5, ...overrides })
   setup.roster = ROSTER.map((player) => ({ ...player }))
   match.startLineup(setup.createStartingSlots())
   match.slots.forEach((slot, index) => {
@@ -65,8 +65,8 @@ describe('match store', () => {
     function subbed() {
       const { setup, match } = startMatch()
       match.tick(300)
-      // With one player on the bench, picking someone off selects them to come on.
-      match.toggleOffSlot(match.slots[1].id)
+      // Dragging a player off pencils in whoever the rotation says is due on.
+      match.planOff(match.slots[1].id)
       match.confirmSubstitution()
       return { setup, match }
     }
@@ -94,7 +94,7 @@ describe('match store', () => {
 
     it('gives back the allowance and the right to return', () => {
       const { setup, match } = startMatch({ allowReentry: false, subLimitEnabled: true })
-      match.toggleOffSlot(match.slots[1].id)
+      match.planOff(match.slots[1].id)
       match.confirmSubstitution()
       expect(match.outForGood.has(ROSTER[1].id)).toBe(true)
       expect(match.subsUsed).toBe(1)
@@ -127,18 +127,13 @@ describe('match store', () => {
       expect(match.goalkeeperLocked).toBe(false)
     })
 
-    it('is never locked when the format does not fix one', () => {
-      const { match } = startMatch({ fixedGoalkeeper: false })
-      expect(match.goalkeeperLocked).toBe(false)
-    })
-
     it('can be substituted once unlocked, and the new keeper takes their place', () => {
       const { match } = startMatch()
       const keeperSlot = match.slots.find((slot) => slot.isGoalkeeper)
       expect(match.goalkeeperId).toBe(ROSTER[0].id)
 
       match.unlockGoalkeeper()
-      match.toggleOffSlot(keeperSlot.id)
+      match.planOff(keeperSlot.id)
       match.confirmSubstitution()
       expect(keeperSlot.playerId).toBe(ROSTER[5].id)
       // Whoever stands in goal is the one kept out of the fairness maths.
@@ -153,6 +148,59 @@ describe('match store', () => {
       expect(match.goalkeeperLocked).toBe(true)
       match.restore(saved)
       expect(match.goalkeeperLocked).toBe(false)
+    })
+  })
+
+  describe('walking off with nobody to replace them', () => {
+    it('leaves the position standing empty, and spends no allowance', () => {
+      const { match } = startMatch({ fieldSize: 7, subLimitEnabled: true, subLimit: 3 })
+      match.tick(300)
+      const slot = match.slots.find((candidate) => candidate.playerId === 2)
+
+      expect(match.takeOff(slot.id)).toBe(true)
+      expect(slot.playerId).toBe(null)
+      expect(match.subsUsed).toBe(0)
+      expect(match.bench.map((player) => player.id)).toContain(2)
+      expect(match.playersById.get(2).stintSeconds).toBe(0)
+    })
+
+    it('is not a substitution, so the player may come back on', () => {
+      const { match } = startMatch({ allowReentry: false })
+      const slot = match.slots.find((candidate) => candidate.playerId === 2)
+      match.takeOff(slot.id)
+
+      expect(match.outForGood.has(2)).toBe(false)
+      expect(match.canPlayerReturn(2)).toBe(true)
+    })
+
+    it('lets them, or anyone, be brought into the empty position later', () => {
+      const { match } = startMatch()
+      const slot = match.slots.find((candidate) => candidate.playerId === 2)
+      match.takeOff(slot.id)
+      match.tick(60)
+
+      match.stageChange(slot.id, 2)
+      expect(match.confirmSubstitution()).toBe(true)
+      expect(slot.playerId).toBe(2)
+    })
+
+    it('can be taken back like any other change', () => {
+      const { match } = startMatch()
+      match.tick(300)
+      const slot = match.slots.find((candidate) => candidate.playerId === 2)
+      match.takeOff(slot.id)
+
+      expect(match.canUndoSub).toBe(true)
+      match.undoSubstitution()
+      expect(slot.playerId).toBe(2)
+      expect(match.playersById.get(2).stintSeconds).toBe(300)
+    })
+
+    it('does nothing for a position already empty', () => {
+      const { match } = startMatch()
+      const slot = match.slots.find((candidate) => candidate.playerId === 3)
+      match.addCard(3, CARD_RED)
+      expect(match.takeOff(slot.id)).toBe(false)
     })
   })
 
@@ -221,7 +269,7 @@ describe('match store', () => {
     function freshLineup() {
       const setup = useSetupStore()
       const match = useMatchStore()
-      setup.$patch({ fieldSize: 5, hasGoalkeeper: true })
+      setup.$patch({ fieldSize: 5 })
       setup.roster = ROSTER.map((player) => ({ ...player }))
       match.startLineup(setup.createStartingSlots())
       return { setup, match }
@@ -415,98 +463,122 @@ describe('match store', () => {
     })
   })
 
-  describe('choosing who comes on', () => {
-    it('picks the bench automatically when there is only one possible answer', () => {
+  describe('putting a change together', () => {
+    it('pairs a position with a bench player, whichever is tapped first', () => {
       const { match } = startMatch()
       const slot = match.slots.find((candidate) => candidate.playerId === 2)
-      match.toggleOffSlot(slot.id)
 
-      expect([...match.selectedOnPlayerIds]).toEqual([6])
-      expect(match.autoSelectedOn).toBe(true)
+      match.pickSlot(slot.id)
+      expect(match.pickedSlotId).toBe(slot.id)
+      match.pickBenchPlayer(6)
+
+      expect(match.plan).toEqual({ [slot.id]: 6 })
+      expect(match.pickedSlotId).toBe(null)
       expect(match.canConfirmSub).toBe(true)
     })
 
-    it('withdraws its own pick when the coach changes how many go off', () => {
+    it('works the other way round as well', () => {
       const { match } = startMatch()
+      const slot = match.slots.find((candidate) => candidate.playerId === 2)
+
+      match.pickBenchPlayer(6)
+      match.pickSlot(slot.id)
+      expect(match.plan).toEqual({ [slot.id]: 6 })
+    })
+
+    it('unpicks a chip tapped twice, and cancels a change tapped again', () => {
+      const { match } = startMatch()
+      const slot = match.slots.find((candidate) => candidate.playerId === 2)
+
+      match.pickSlot(slot.id)
+      match.pickSlot(slot.id)
+      expect(match.pickedSlotId).toBe(null)
+
+      match.stageChange(slot.id, 6)
+      match.pickSlot(slot.id)
+      expect(match.plan).toEqual({})
+      expect(match.hasSelection).toBe(false)
+    })
+
+    it('pencils in whoever is due on when a player is dragged off', () => {
+      const { match, setup } = startMatch()
+      setup.roster.push({ id: 7, name: 'Fay' })
+      match.kickOff(setup.roster)
+      match.slots.forEach((slot, index) => {
+        slot.playerId = ROSTER[index].id
+      })
+      match.tick(300)
+      // Of the two waiting, 7 has played least — so 7 is the one due on.
+      match.playersById.get(6).seconds = 400
+      match.playersById.get(7).seconds = 100
+
+      const slot = match.slots.find((candidate) => candidate.playerId === 2)
+      match.planOff(slot.id)
+      expect(match.plan[slot.id]).toBe(7)
+    })
+
+    it('moves a player rather than planning them into two positions at once', () => {
+      const { match, setup } = startMatch()
+      setup.roster.push({ id: 7, name: 'Fay' })
+      match.kickOff(setup.roster)
+      match.slots.forEach((slot, index) => {
+        slot.playerId = ROSTER[index].id
+      })
       const [first, second] = match.slots.filter((slot) => !slot.isGoalkeeper)
-      match.toggleOffSlot(first.id)
-      match.toggleOffSlot(second.id)
 
-      expect(match.selectedOnPlayerIds.size).toBe(0)
-      expect(match.autoSelectedOn).toBe(false)
+      match.stageChange(first.id, 6)
+      match.stageChange(second.id, 7)
+      match.stageChange(second.id, 6)
+
+      expect(match.plan).toEqual({ [first.id]: 7, [second.id]: 6 })
     })
 
-    it('never overrides a choice the coach made themselves', () => {
-      const { match, setup } = startMatch()
-      setup.roster.push({ id: 7, name: 'Fay' })
-      match.kickOff(setup.roster)
-      match.slots.forEach((slot, index) => {
-        slot.playerId = ROSTER[index].id
-      })
-
-      match.toggleOnPlayer(7)
+    it('never plans a player who may not come back on', () => {
+      const { match } = startMatch({ allowReentry: false })
       const slot = match.slots.find((candidate) => candidate.playerId === 2)
-      match.toggleOffSlot(slot.id)
-      expect([...match.selectedOnPlayerIds]).toEqual([7])
+      match.planOff(slot.id)
+      match.confirmSubstitution()
+
+      const other = match.slots.find((candidate) => candidate.playerId === 3)
+      expect(match.stageChange(other.id, 2)).toBe(false)
+      expect(match.plan).toEqual({})
     })
 
-    it('leaves the bench alone when the numbers do not line up', () => {
-      const { match, setup } = startMatch()
-      setup.roster.push({ id: 7, name: 'Fay' })
-      match.kickOff(setup.roster)
-      match.slots.forEach((slot, index) => {
-        slot.playerId = ROSTER[index].id
-      })
-
+    it('is unfinished while a position has nobody coming into it', () => {
+      const { match } = startMatch()
       const slot = match.slots.find((candidate) => candidate.playerId === 2)
-      match.toggleOffSlot(slot.id)
-      expect(match.selectedOnPlayerIds.size).toBe(0)
+      match.stageChange(slot.id, null)
+
+      expect(match.hasSelection).toBe(true)
+      expect(match.canConfirmSub).toBe(false)
+      expect(match.confirmSubstitution()).toBe(false)
     })
   })
 
-  describe('applying a substitution', () => {
-    it('swaps straight away for a one-for-one change', () => {
-      const { match } = startMatch()
-      const slot = match.slots.find((candidate) => candidate.playerId === 2)
-      match.toggleOffSlot(slot.id)
-      match.confirmSubstitution()
-
-      expect(slot.playerId).toBe(6)
-      expect(match.pendingAssignment).toBe(null)
-      expect(match.subsUsed).toBe(1)
-    })
-
-    it('asks who takes which position for a multi-player change', () => {
+  describe('confirming a change', () => {
+    it('makes every planned swap at once', () => {
       const { match, setup } = startMatch()
       setup.roster.push({ id: 7, name: 'Fay' })
       match.kickOff(setup.roster)
       match.slots.forEach((slot, index) => {
         slot.playerId = ROSTER[index].id
       })
-
       const [first, second] = match.slots.filter((slot) => !slot.isGoalkeeper)
-      match.toggleOffSlot(first.id)
-      match.toggleOffSlot(second.id)
-      // Two off, two on the bench: the incoming pair is filled in for the coach.
-      expect([...match.selectedOnPlayerIds]).toEqual([6, 7])
 
-      match.confirmSubstitution()
-      expect(match.pendingAssignment.map).toEqual({ [first.id]: 6, [second.id]: 7 })
+      match.stageChange(first.id, 7)
+      match.stageChange(second.id, 6)
+      expect(match.confirmSubstitution()).toBe(true)
 
-      // Reordering is one tap: choosing 7 here trades the two positions.
-      match.setAssignment(first.id, 7)
-      expect(match.pendingAssignment.map).toEqual({ [first.id]: 7, [second.id]: 6 })
-
-      match.applyAssignment()
       expect(first.playerId).toBe(7)
       expect(second.playerId).toBe(6)
-      expect(match.selectedOffSlotIds.size).toBe(0)
+      expect(match.subsUsed).toBe(2)
+      expect(match.plan).toEqual({})
     })
 
     it('keeps a substituted player off when re-entry is not allowed', () => {
       const { match } = startMatch({ allowReentry: false })
       const slot = match.slots.find((candidate) => candidate.playerId === 2)
-      match.toggleOffSlot(slot.id)
+      match.planOff(slot.id)
       match.confirmSubstitution()
 
       expect(match.canPlayerReturn(2)).toBe(false)
@@ -525,12 +597,15 @@ describe('match store', () => {
       expect(match.rules.subLimitEnabled).toBe(true)
 
       const slot = match.slots.find((candidate) => candidate.playerId === 2)
-      match.toggleOffSlot(slot.id)
+      match.planOff(slot.id)
       match.confirmSubstitution()
 
       expect(match.subsUsed).toBe(1)
       expect(match.limitReached).toBe(true)
       expect(match.canConfirmSub).toBe(false)
+
+      const other = match.slots.find((candidate) => candidate.playerId === 3)
+      expect(match.stageChange(other.id, 2)).toBe(false)
     })
   })
 
@@ -583,7 +658,7 @@ describe('match store', () => {
     it('is still possible once substitutions have run out', () => {
       const { match } = startMatch({ fieldSize: 7, subLimitEnabled: true, subLimit: 1 })
       const slot = match.slots.find((candidate) => candidate.playerId === 2)
-      match.toggleOffSlot(slot.id)
+      match.planOff(slot.id)
       match.confirmSubstitution()
       expect(match.limitReached).toBe(true)
 
@@ -604,31 +679,21 @@ describe('match store', () => {
         slot.playerId = ROSTER[index].id
       })
       const slot = match.slots.find((candidate) => candidate.playerId === 3)
-      match.toggleOffSlot(slot.id)
-      expect(match.cardCandidateId).toBe(3)
-    })
-
-    it('ignores a bench player the app picked on its own', () => {
-      // One on the bench, one tapped on the pitch: auto-select adds the bench
-      // player, but the coach only chose one — the card is still for them.
-      const { match } = startMatch()
-      const slot = match.slots.find((candidate) => candidate.playerId === 3)
-      match.toggleOffSlot(slot.id)
-      expect(match.autoSelectedOn).toBe(true)
+      match.pickSlot(slot.id)
       expect(match.cardCandidateId).toBe(3)
     })
 
     it('can be a player on the bench', () => {
       const { match } = startMatch()
-      match.toggleOnPlayer(6)
+      match.pickBenchPlayer(6)
       expect(match.cardCandidateId).toBe(6)
     })
 
-    it('is nobody when two players are picked', () => {
+    it('is nobody once the pick has become a change', () => {
       const { match } = startMatch()
-      const [first, second] = match.slots.filter((slot) => !slot.isGoalkeeper)
-      match.toggleOffSlot(first.id)
-      match.toggleOffSlot(second.id)
+      const slot = match.slots.find((candidate) => candidate.playerId === 3)
+      match.pickSlot(slot.id)
+      match.pickBenchPlayer(6)
       expect(match.cardCandidateId).toBe(null)
     })
 
@@ -636,7 +701,7 @@ describe('match store', () => {
       const { match } = startMatch()
       const slot = match.slots.find((candidate) => candidate.playerId === 3)
       match.addCard(3, CARD_RED)
-      match.toggleOffSlot(slot.id)
+      match.pickSlot(slot.id)
       expect(match.cardCandidateId).toBe(null)
     })
   })
@@ -683,13 +748,14 @@ describe('match store', () => {
       expect(match.hints.dueOnPlayerIds.has(3)).toBe(false)
     })
 
-    it('drops the player from a pending selection', () => {
+    it('drops the player from a change being planned', () => {
       const { match } = startMatch()
-      match.toggleOnPlayer(6)
-      expect(match.selectedOnPlayerIds.has(6)).toBe(true)
+      const slot = match.slots.find((candidate) => candidate.playerId === 2)
+      match.stageChange(slot.id, 6)
+      expect(match.plan[slot.id]).toBe(6)
 
       match.addCard(6, CARD_RED)
-      expect(match.selectedOnPlayerIds.has(6)).toBe(false)
+      expect(match.plan).toEqual({})
     })
 
     it('also ends the match of a player already on the bench', () => {
@@ -774,8 +840,8 @@ describe('match store', () => {
       const slot = match.slots.find((candidate) => candidate.playerId === 3)
       match.addCard(3, CARD_RED)
 
-      match.toggleOffSlot(slot.id)
-      expect([...match.selectedOnPlayerIds]).toEqual([6])
+      // The shirt is empty, so nobody comes off: the substitute simply fills it.
+      match.stageChange(slot.id, 6)
       match.confirmSubstitution()
 
       expect(slot.playerId).toBe(6)

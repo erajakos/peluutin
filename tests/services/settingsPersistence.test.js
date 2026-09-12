@@ -83,10 +83,7 @@ describe('remembering match settings', () => {
   })
 
   it('replaces a remembered shape that no longer fits the format', () => {
-    storage.set(
-      KEY,
-      JSON.stringify({ fieldSize: 7, hasGoalkeeper: true, formationId: 'diamond', positions: [] }),
-    )
+    storage.set(KEY, JSON.stringify({ fieldSize: 7, formationId: 'diamond', positions: [] }))
     const setup = visit()
     // Seven a side with a keeper is six outfield players: a diamond cannot fit.
     expect(setup.positions).toHaveLength(6)
@@ -153,8 +150,6 @@ describe('sanitizeMatchSettings', () => {
       fieldSize: 7,
       subLimit: 5,
       twoHalves: true,
-      hasGoalkeeper: true,
-      fixedGoalkeeper: false,
       allowReentry: true,
       subLimitEnabled: true,
       trackCards: true,

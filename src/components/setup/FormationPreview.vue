@@ -10,7 +10,6 @@ const { tPositionCode } = useI18n()
 const props = defineProps({
   /** `{ key, label }` pairs, in the order the coach listed them. */
   positions: { type: Array, required: true },
-  hasGoalkeeper: { type: Boolean, default: true },
 })
 
 /**
@@ -19,7 +18,7 @@ const props = defineProps({
  */
 const spots = computed(() => {
   const slots = []
-  if (props.hasGoalkeeper) slots.push({ id: 0, key: GOALKEEPER_KEY, label: '' })
+  slots.push({ id: 0, key: GOALKEEPER_KEY, label: '' })
   props.positions.forEach((position, index) => {
     slots.push({ id: index + 1, key: position.key, label: position.label })
   })

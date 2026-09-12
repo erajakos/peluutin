@@ -8,17 +8,16 @@ import { nextId } from './ids.js'
  */
 export const GOALKEEPER_KEY = 'Goalkeeper'
 
-export function buildSlots({ hasGoalkeeper, positions, goalkeeperLabel }) {
-  const slots = []
-  if (hasGoalkeeper) {
-    slots.push({
+export function buildSlots({ positions, goalkeeperLabel }) {
+  const slots = [
+    {
       id: nextId(),
       key: GOALKEEPER_KEY,
       label: goalkeeperLabel,
       isGoalkeeper: true,
       playerId: null,
-    })
-  }
+    },
+  ]
   positions.forEach(({ key, label }) => {
     slots.push({ id: nextId(), key, label, isGoalkeeper: false, playerId: null })
   })

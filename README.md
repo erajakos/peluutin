@@ -18,13 +18,13 @@ Finnish and English. No accounts, no servers, no tracking.
   longest without a break, `DUE ON` for the bench player with the fewest
   minutes so far. The two sides answer different questions on purpose: who
   needs a rest now, and who is owed minutes. A fixed goalkeeper is kept out of
-  the maths entirely — though they can still be changed when the afternoon
-  calls for it: the pitch asks once, and then the keeper is like anyone else.
-- **Current spell** — the shirt on the pitch shows how long that player has
-  been on *this time*, which is what says who needs a breather; one tap
-  switches every shirt to the whole match instead. The bench is a two-column
-  list: how long each player has been sitting right now, and how long they
-  have played.
+  the maths entirely, and is never prompted to come off. Changing the keeper is
+  possible when the afternoon calls for it, but never suggested: the pitch asks
+  once, and only when you reach for them yourself.
+- **Current spell** — every shirt, on the pitch and on the touchline, shows how
+  long that player has been on — or sitting — *this time*, which is the number
+  that says who needs a breather. Match totals belong to the summary, and are
+  on each shirt's own tooltip meanwhile.
 - **The shape on the pitch** — the lineup drawn as a formation, tap a player to
   pick them for a substitution.
 - **A way back** — a substitution can be taken back for a few seconds after it
@@ -35,8 +35,9 @@ Finnish and English. No accounts, no servers, no tracking.
   who takes which position, and tapping a player already pencilled in elsewhere
   simply trades the two. When the numbers only allow one answer, it is filled
   in for you.
-- **Match rules** — halves, match length, format size, goalkeeper handling,
-  re-entry after a substitution, and an optional cap on total substitutions.
+- **Match rules** — match length and whether it is played in halves, how many
+  players a side (the keeper among them), re-entry after a substitution, and an
+  optional cap on total substitutions.
 - **Score, scorers and cards** — logged against the match clock.
 - **Full-time summary** — the final score, every goal with the scoreline it
   produced, and minutes per player measured against the outfield average.
@@ -133,6 +134,7 @@ src/
 │   ├── ids.js           One shared id sequence for every entity
 │   ├── lineup.js        Building slots and working out the bench
 │   ├── pitch.js         Where each position sits on the drawn pitch
+│   ├── plan.js          A substitution being put together, before it happens
 │   ├── playingTime.js   Fairness: averages and deltas
 │   ├── rotation.js      DUE OFF / DUE ON hints
 │   ├── scoring.js       Goals, cards and their tallies

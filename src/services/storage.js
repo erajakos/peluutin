@@ -14,6 +14,7 @@ const MATCH_SETTINGS_KEY = 'sortOfAPlanMatchSettings'
 // Newer keys carry the current name; they too must never be renamed.
 const ROSTER_KEY = 'peluutinRoster'
 const SESSION_KEY = 'peluutinSession'
+const DRAG_HINT_KEY = 'peluutinDragHintSeen'
 
 function safeGet(key) {
   try {
@@ -100,7 +101,19 @@ export function clearSession() {
   safeRemove(SESSION_KEY)
 }
 
+/**
+ * Whether the coach has been shown how a change is made. Once is enough: it is
+ * an introduction, not advice, and nobody wants it before every match.
+ */
+export function hasSeenDragHint() {
+  return safeGet(DRAG_HINT_KEY) === '1'
+}
+
+export function markDragHintSeen() {
+  return safeSet(DRAG_HINT_KEY, '1')
+}
+
 /** Forget everything this app has ever kept on the device. */
 export function clearAllSaved() {
-  ;[TEAM_NAME_KEY, MATCH_SETTINGS_KEY, ROSTER_KEY, SESSION_KEY].forEach(safeRemove)
+  ;[TEAM_NAME_KEY, MATCH_SETTINGS_KEY, ROSTER_KEY, SESSION_KEY, DRAG_HINT_KEY].forEach(safeRemove)
 }

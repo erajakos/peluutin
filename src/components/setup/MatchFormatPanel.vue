@@ -12,10 +12,8 @@ const { t } = useI18n()
 
 <template>
   <UiPanel :title="t('sectionMatch')">
-    <div class="field-group">
-      <UiCheckLine :model-value="setup.twoHalves" @update:model-value="setup.setTwoHalves($event)">
-        {{ t('twoHalvesLabel') }}
-      </UiCheckLine>
+    <!-- One question, asked once: how long, and in how many pieces. -->
+    <div class="field-group length">
       <UiTextField
         id="period-length"
         type="number"
@@ -24,10 +22,18 @@ const { t } = useI18n()
         :model-value="setup.periodLength"
         @update:model-value="setup.setPeriodLength(toPositiveInt($event, setup.periodLength))"
       />
-      <p v-if="setup.twoHalves" class="count-note">
-        {{ t('totalLengthNote', setup.totalMinutes) }}
-      </p>
+      <UiCheckLine
+        class="halves"
+        tight
+        :model-value="setup.twoHalves"
+        @update:model-value="setup.setTwoHalves($event)"
+      >
+        {{ t('twoHalvesLabel') }}
+      </UiCheckLine>
     </div>
+    <p v-if="setup.twoHalves" class="count-note halves-note">
+      {{ t('totalLengthNote', setup.totalMinutes) }}
+    </p>
 
     <div class="row field-group">
       <UiTextField
@@ -39,15 +45,31 @@ const { t } = useI18n()
         @update:model-value="setup.setFieldSize(toPositiveInt($event, setup.fieldSize))"
       />
     </div>
-
-    <UiCheckLine
-      :model-value="setup.hasGoalkeeper"
-      @update:model-value="setup.setHasGoalkeeper($event)"
-    >
-      {{ t('hasGKLabel') }}
-    </UiCheckLine>
-    <UiCheckLine v-if="setup.hasGoalkeeper" v-model="setup.fixedGoalkeeper" tight>
-      {{ t('fixedGKLabel') }}
-    </UiCheckLine>
   </UiPanel>
 </template>
+
+<style scoped>
+/* The length and how it is split belong together, so they share a row. */
+.length {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+}
+
+.length :deep(.field-wrap),
+.length :deep(.field-group) {
+  flex: 1;
+  min-width: 0;
+}
+
+.halves {
+  flex: 1;
+  min-width: 0;
+  /* Sits on the input's line, not on its label's. */
+  padding-bottom: 13px;
+}
+
+.halves-note {
+  margin-top: -4px;
+}
+</style>

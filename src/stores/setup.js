@@ -24,9 +24,8 @@ export const useSetupStore = defineStore('setup', {
     gameLength: 30,
     twoHalves: false,
     halfLength: 15,
+    /** Counted the way a coach says it: the keeper is one of these. */
     fieldSize: 5,
-    hasGoalkeeper: true,
-    fixedGoalkeeper: true,
     formationId: 'diamond',
     /** `{ key, label }` — the key drives the pitch layout, the label is the
      *  coach's own wording and can be edited freely. */
@@ -39,7 +38,7 @@ export const useSetupStore = defineStore('setup', {
   }),
 
   getters: {
-    outfieldCount: (state) => outfieldCount(state.fieldSize, state.hasGoalkeeper),
+    outfieldCount: (state) => outfieldCount(state.fieldSize),
 
     formations() {
       return getFormationsFor(this.outfieldCount)
@@ -60,7 +59,13 @@ export const useSetupStore = defineStore('setup', {
         allowReentry: state.allowReentry,
         subLimitEnabled: state.canLimitSubs && state.subLimitEnabled,
         subLimit: state.subLimit,
-        fixedGoalkeeper: state.hasGoalkeeper && state.fixedGoalkeeper,
+        /**
+         * Every match has a keeper, and the keeper is reported apart from the
+         * rotation: a player in goal by design would drag the fairness average
+         * down and make everyone else look short-changed. Changing who is in
+         * goal is a decision the pitch asks about, not a setting.
+         */
+        fixedGoalkeeper: true,
         trackCards: state.trackCards,
       }
     },
@@ -88,12 +93,6 @@ export const useSetupStore = defineStore('setup', {
 
     setFieldSize(size) {
       this.fieldSize = Math.max(1, size)
-      this.syncFormationToFormat()
-    },
-
-    setHasGoalkeeper(enabled) {
-      this.hasGoalkeeper = enabled
-      if (!enabled) this.fixedGoalkeeper = false
       this.syncFormationToFormat()
     },
 
@@ -179,7 +178,6 @@ export const useSetupStore = defineStore('setup', {
     createStartingSlots() {
       this.normalizePositions()
       return buildSlots({
-        hasGoalkeeper: this.hasGoalkeeper,
         positions: this.positions,
         goalkeeperLabel: t('goalkeeperLabel'),
       })

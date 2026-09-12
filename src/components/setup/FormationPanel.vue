@@ -22,7 +22,7 @@ const hasChoice = computed(() => setup.formations.length > 1)
 
 <template>
   <UiPanel :title="t('formationLabel')">
-    <FormationPreview :positions="setup.positions" :has-goalkeeper="setup.hasGoalkeeper" />
+    <FormationPreview :positions="setup.positions" />
     <p class="shape-name">{{ options.find((o) => o.value === setup.formationId)?.label }}</p>
 
     <div v-if="hasChoice" class="field-group">

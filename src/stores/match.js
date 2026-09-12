@@ -3,14 +3,14 @@ import { nextId } from '@/domain/ids.js'
 import { benchPlayers, drawForEmptySlots, isLineupComplete } from '@/domain/lineup.js'
 import { rotationHints, isEligibleToReturn } from '@/domain/rotation.js'
 import {
-  assignPlayer,
-  canConfirmSubstitution,
-  createAssignment,
-  isAssignmentComplete,
-  isLimitReached,
-  needsAssignment,
-  remainingSubs,
-} from '@/domain/substitutions.js'
+  canConfirmPlan,
+  isPlanEmpty,
+  plannedSlotIds,
+  slotPlannedFor,
+  stageChange,
+  unstageSlot,
+} from '@/domain/plan.js'
+import { isLimitReached, remainingSubs } from '@/domain/substitutions.js'
 import {
   TEAM_OPPONENT,
   TEAM_US,
@@ -46,23 +46,26 @@ function emptyMatch() {
     elapsedSeconds: 0,
     running: false,
     period: PERIOD.FIRST,
-    selectedOffSlotIds: new Set(),
-    selectedOnPlayerIds: new Set(),
+    /**
+     * The change being put together: which position, and who is coming into
+     * it. Nothing here has happened yet — it happens when the coach confirms.
+     */
+    plan: {},
+    /** The one chip waiting for its partner, when a change is made by tapping. */
+    pickedSlotId: null,
+    pickedPlayerId: null,
     outForGood: new Set(),
     /** Players whose match is over: a red card cannot be served out. */
     sentOff: new Set(),
     subsUsed: 0,
-    pendingAssignment: null,
     /** Optional, chosen from the starting lineup; shown in the results. */
     captainId: null,
-    /** True while the bench selection was made for the coach, not by them. */
-    autoSelectedOn: false,
     /** Enough of the last substitution to put it back, if it was a mis-tap. */
     lastSub: null,
     /**
-     * A keeper meant to play the whole match is kept out of the way of a stray
-     * tap — until the coach says otherwise, because sometimes the keeper has
-     * to come off: a knock, a bad afternoon, or simply a change of plan.
+     * The keeper stands outside the rotation: never prompted to come off, and
+     * kept out of the way of a stray tap. Changing them is possible but never
+     * encouraged — the pitch asks once, and only if the coach starts it.
      */
     goalkeeperUnlocked: false,
     goals: [],
@@ -132,17 +135,14 @@ export const useMatchStore = defineStore('match', {
     },
 
     /**
-     * The one player the coach has picked out, if they have picked exactly one
-     * — the player a card would be shown to. Bench players the app selected on
-     * its own do not count: the coach tapped one shirt, so that is the choice.
+     * The one player the coach has picked out and not yet paired with anyone —
+     * the player a card would be shown to. A change already planned is a
+     * change, not a choice of player, so it offers no card.
      */
     cardCandidateId(state) {
-      const onField = [...state.selectedOffSlotIds]
-        .map((slotId) => state.slots.find((slot) => slot.id === slotId)?.playerId)
-        .filter((playerId) => playerId !== null && playerId !== undefined)
-      const fromBench = state.autoSelectedOn ? [] : [...state.selectedOnPlayerIds]
-      const picked = [...onField, ...fromBench]
-      return picked.length === 1 ? picked[0] : null
+      if (state.pickedPlayerId !== null) return state.pickedPlayerId
+      if (state.pickedSlotId === null) return null
+      return state.slots.find((slot) => slot.id === state.pickedSlotId)?.playerId ?? null
     },
 
     /**
@@ -164,16 +164,22 @@ export const useMatchStore = defineStore('match', {
       return counts
     },
 
-    /** Whether there is a selection for the coach to clear or confirm. */
+    /** Whether anything is being put together: a plan, or a chip picked out. */
     hasSelection: (state) =>
-      state.selectedOffSlotIds.size > 0 || state.selectedOnPlayerIds.size > 0,
+      !isPlanEmpty(state.plan) || state.pickedSlotId !== null || state.pickedPlayerId !== null,
+
+    plannedSlotIds: (state) => plannedSlotIds(state.plan),
+
+    /** Who is planned to come on, by the position they are coming into. */
+    plannedIncomingId: (state) => (slotId) => state.plan[slotId] ?? null,
+
+    /** The position a bench player is pencilled into, or null. */
+    plannedSlotFor: (state) => (playerId) => slotPlannedFor(state.plan, playerId),
+
+    plannedCount: (state) => plannedSlotIds(state.plan).length,
 
     canConfirmSub(state) {
-      return canConfirmSubstitution({
-        offCount: state.selectedOffSlotIds.size,
-        onCount: state.selectedOnPlayerIds.size,
-        remaining: this.remainingSubs,
-      })
+      return canConfirmPlan(state.plan, this.remainingSubs)
     },
 
     totalSeconds: () => minutesToSeconds(useSetupStore().totalMinutes),
@@ -329,85 +335,114 @@ export const useMatchStore = defineStore('match', {
     },
 
     // --- Substitutions ----------------------------------------------------
-    toggleOffSlot(slotId) {
-      toggleIn(this.selectedOffSlotIds, slotId)
-      this.autoSelectIncoming()
+    // --- Putting a change together ---------------------------------------
+    /**
+     * Tapping a position on the field. It pairs with a bench player already
+     * picked, cancels the change it is already part of, or waits for a partner.
+     */
+    pickSlot(slotId) {
+      if (this.plan[slotId] !== undefined) {
+        this.plan = unstageSlot(this.plan, slotId)
+        return
+      }
+      if (this.pickedPlayerId !== null) {
+        this.stageChange(slotId, this.pickedPlayerId)
+        return
+      }
+      this.pickedSlotId = this.pickedSlotId === slotId ? null : slotId
     },
 
-    toggleOnPlayer(playerId) {
-      toggleIn(this.selectedOnPlayerIds, playerId)
-      // Once the coach picks for themselves, stop picking for them.
-      this.autoSelectedOn = false
+    /** Tapping a player on the bench: the same idea from the other side. */
+    pickBenchPlayer(playerId) {
+      const planned = slotPlannedFor(this.plan, playerId)
+      if (planned !== null) {
+        this.plan = unstageSlot(this.plan, planned)
+        return
+      }
+      if (!this.canPlayerReturn(playerId)) return
+      if (this.pickedSlotId !== null) {
+        this.stageChange(this.pickedSlotId, playerId)
+        return
+      }
+      this.pickedPlayerId = this.pickedPlayerId === playerId ? null : playerId
     },
 
     /**
-     * When exactly as many players are available on the bench as are going off,
-     * there is only one possible answer — so fill it in and save the taps. The
-     * choice stays fully editable, and is withdrawn again if the coach changes
-     * how many players are coming off.
+     * Pencil a player in for a position. Refused once the match's allowance is
+     * spent, unless it only rearranges a change already planned.
      */
-    autoSelectIncoming() {
-      if (this.autoSelectedOn) {
-        this.selectedOnPlayerIds.clear()
-        this.autoSelectedOn = false
-      }
-      if (this.selectedOnPlayerIds.size > 0) return
+    stageChange(slotId, playerId) {
+      if (playerId !== null && !this.canPlayerReturn(playerId)) return false
+      const isNew = this.plan[slotId] === undefined
+      if (isNew && this.plannedCount >= this.remainingSubs) return false
 
-      const going = this.selectedOffSlotIds.size
-      const available = this.availableBench
-      if (going === 0 || available.length !== going) return
+      this.plan = stageChange(this.plan, slotId, playerId)
+      this.clearPicked()
+      return true
+    },
 
-      available.forEach((player) => this.selectedOnPlayerIds.add(player.id))
-      this.autoSelectedOn = true
+    /**
+     * A player dragged off the field. Whoever the rotation says is due on is
+     * pencilled in beside them, since that is the change being made nine times
+     * out of ten — and dropping someone else on top replaces them.
+     */
+    planOff(slotId) {
+      const taken = new Set(Object.values(this.plan))
+      const suggestion =
+        this.availableBench.find((player) => this.hints.dueOnPlayerIds.has(player.id)) ??
+        this.availableBench.find((player) => !taken.has(player.id))
+      return this.stageChange(slotId, suggestion?.id ?? null)
+    },
+
+    /**
+     * Off the field with nobody to take their place: an injury, a sulk, a team
+     * playing a player short for a while. The position is left standing empty,
+     * so anyone — including them — can be brought into it later.
+     *
+     * No allowance is spent, because nobody came on, and they are not marked
+     * as substituted: they walked off, which is not the same thing.
+     */
+    takeOff(slotId) {
+      const slot = this.slots.find((candidate) => candidate.id === slotId)
+      if (!slot || slot.playerId === null) return false
+
+      this.rememberSubstitution([slotId], [])
+      const player = this.playersById.get(slot.playerId)
+      slot.playerId = null
+      if (player) player.stintSeconds = 0
+      this.plan = unstageSlot(this.plan, slotId)
+      this.clearPicked()
+      return true
+    },
+
+    unstage(slotId) {
+      this.plan = unstageSlot(this.plan, slotId)
+    },
+
+    clearPicked() {
+      this.pickedSlotId = null
+      this.pickedPlayerId = null
     },
 
     clearSelection() {
-      this.selectedOffSlotIds.clear()
-      this.selectedOnPlayerIds.clear()
-      this.pendingAssignment = null
-      this.autoSelectedOn = false
+      this.plan = {}
+      this.clearPicked()
     },
 
     canPlayerReturn(playerId) {
       return isEligibleToReturn(playerId, this.availability)
     },
 
-    /**
-     * One-for-one changes apply straight away. Anything larger needs the coach
-     * to say who takes which position first.
-     */
+    /** Make the whole planned change at once, and let it be taken back as one. */
     confirmSubstitution() {
-      if (!this.canConfirmSub) return
-      const offSlotIds = [...this.selectedOffSlotIds]
-      const onPlayerIds = [...this.selectedOnPlayerIds]
+      if (!this.canConfirmSub) return false
+      const slotIds = this.plannedSlotIds
+      const incoming = slotIds.map((slotId) => this.plan[slotId])
 
-      if (needsAssignment(offSlotIds)) {
-        this.pendingAssignment = createAssignment(offSlotIds, onPlayerIds)
-        return
-      }
-      this.rememberSubstitution(offSlotIds, onPlayerIds)
-      this.swapPlayer(offSlotIds[0], onPlayerIds[0])
+      this.rememberSubstitution(slotIds, incoming)
+      slotIds.forEach((slotId, index) => this.swapPlayer(slotId, incoming[index]))
       this.clearSelection()
-    },
-
-    setAssignment(slotId, playerId) {
-      if (!this.pendingAssignment) return
-      this.pendingAssignment = assignPlayer(this.pendingAssignment, slotId, playerId)
-    },
-
-    applyAssignment() {
-      if (!this.pendingAssignment || !isAssignmentComplete(this.pendingAssignment)) return
-      const { offSlotIds, map } = this.pendingAssignment
-      this.rememberSubstitution(
-        offSlotIds,
-        offSlotIds.map((slotId) => map[slotId]),
-      )
-      offSlotIds.forEach((slotId) => this.swapPlayer(slotId, map[slotId]))
-      this.clearSelection()
-    },
-
-    cancelAssignment() {
-      this.clearSelection()
+      return true
     },
 
     /**
@@ -554,7 +589,9 @@ export const useMatchStore = defineStore('match', {
      */
     sendOff(playerId) {
       this.sentOff.add(playerId)
-      this.selectedOnPlayerIds.delete(playerId)
+      const planned = slotPlannedFor(this.plan, playerId)
+      if (planned !== null) this.plan = unstageSlot(this.plan, planned)
+      if (this.pickedPlayerId === playerId) this.pickedPlayerId = null
 
       const slot = this.slots.find((candidate) => candidate.playerId === playerId)
       if (!slot) return
@@ -641,8 +678,3 @@ export const useMatchStore = defineStore('match', {
     },
   },
 })
-
-function toggleIn(set, value) {
-  if (set.has(value)) set.delete(value)
-  else set.add(value)
-}
