@@ -58,6 +58,7 @@ export default {
   startSecondHalfBtn: 'Start second half',
   halfTimeBtn: 'Start half time',
   endHalfConfirmText: 'Is the first half over?',
+  unlockGkConfirm: 'The keeper was set to play the whole match. Allow changing the keeper?',
   yesBtn: 'Yes',
   fieldSizeLabel: 'Players on the field at once',
   hasGKLabel: 'Includes a goalkeeper',

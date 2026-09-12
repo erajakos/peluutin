@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import CardMarks from '@/components/ui/CardMarks.vue'
+import UiConfirmDialog from '@/components/ui/UiConfirmDialog.vue'
 import PitchMarkings from '@/components/ui/PitchMarkings.vue'
 import { pitchLayout } from '@/domain/pitch.js'
 import { formatTime } from '@/domain/time.js'
@@ -91,7 +92,7 @@ const chips = computed(() => {
   const spots = pitchLayout(match.slots)
   return match.slots.map((slot, index) => {
     const player = slot.playerId === null ? null : match.playersById.get(slot.playerId)
-    const fixedGk = slot.isGoalkeeper && match.rules.fixedGoalkeeper
+    const lockedGk = slot.isGoalkeeper && match.goalkeeperLocked
     return {
       // Keyed by player, not by position: when two players trade places their
       // chips travel across the pitch to each other's spot, instead of two
@@ -111,8 +112,10 @@ const chips = computed(() => {
       selected: match.selectedOffSlotIds.has(slot.id),
       moved: player !== null && recentlyMoved.value.has(player.id),
       cards: player ? (match.cardCountsById.get(player.id) ?? null) : null,
-      // A fixed goalkeeper is out of the rotation: not selectable, not movable.
-      selectable: !fixedGk,
+      // A keeper meant to play the whole match is neither picked nor dragged
+      // by accident — but a tap still asks, rather than doing nothing at all.
+      selectable: !lockedGk,
+      asksFirst: lockedGk,
       x: spots[index]?.x ?? 50,
       y: spots[index]?.y ?? 50,
     }
@@ -238,7 +241,25 @@ function onClick(chip) {
     suppressClick = false
     return
   }
+  if (chip.asksFirst) {
+    unlockingSlotId.value = chip.slotId
+    return
+  }
   match.toggleOffSlot(chip.slotId)
+}
+
+/**
+ * Changing a keeper who was meant to play the whole match is a decision, not a
+ * mis-tap — so it is asked once. After that the keeper is like anyone else for
+ * the rest of the match, and nobody is asked again mid-change.
+ */
+const unlockingSlotId = ref(null)
+
+function onUnlockGoalkeeper() {
+  const slotId = unlockingSlotId.value
+  unlockingSlotId.value = null
+  match.unlockGoalkeeper()
+  match.toggleOffSlot(slotId)
 }
 </script>
 
@@ -262,7 +283,7 @@ function onClick(chip) {
         'chip--moved': chip.moved,
       }"
       :style="chipStyle(chip)"
-      :disabled="!chip.selectable"
+      :disabled="!chip.selectable && !chip.asksFirst"
       :aria-pressed="chip.selected"
       :title="chipTitle(chip)"
       @pointerdown="onPointerDown($event, chip)"
@@ -294,6 +315,15 @@ function onClick(chip) {
       </span>
     </button>
   </div>
+
+  <UiConfirmDialog
+    v-if="unlockingSlotId !== null"
+    :message="t('unlockGkConfirm')"
+    :confirm-label="t('yesBtn')"
+    :cancel-label="t('cancelBtn')"
+    @confirm="onUnlockGoalkeeper"
+    @cancel="unlockingSlotId = null"
+  />
 </template>
 
 <style scoped>

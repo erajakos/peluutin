@@ -18,7 +18,8 @@ Finnish and English. No accounts, no servers, no tracking.
   longest without a break, `DUE ON` for the bench player with the fewest
   minutes so far. The two sides answer different questions on purpose: who
   needs a rest now, and who is owed minutes. A fixed goalkeeper is kept out of
-  the maths entirely.
+  the maths entirely — though they can still be changed when the afternoon
+  calls for it: the pitch asks once, and then the keeper is like anyone else.
 - **Current spell** — the shirt on the pitch shows how long that player has
   been on *this time*, which is what says who needs a breather; one tap
   switches every shirt to the whole match instead. The bench is a two-column

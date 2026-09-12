@@ -58,6 +58,7 @@ export default {
   startSecondHalfBtn: 'Aloita toinen puoliaika',
   halfTimeBtn: 'Aloita puoliaikatauko',
   endHalfConfirmText: 'Päättyikö ensimmäinen puoliaika?',
+  unlockGkConfirm: 'Maalivahdin piti pelata koko ottelu. Sallitaanko maalivahdin vaihtaminen?',
   yesBtn: 'Kyllä',
   fieldSizeLabel: 'Pelaajia kentällä yhtä aikaa',
   hasGKLabel: 'Sisältää maalivahdin',

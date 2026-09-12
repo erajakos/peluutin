@@ -59,6 +59,12 @@ function emptyMatch() {
     autoSelectedOn: false,
     /** Enough of the last substitution to put it back, if it was a mis-tap. */
     lastSub: null,
+    /**
+     * A keeper meant to play the whole match is kept out of the way of a stray
+     * tap — until the coach says otherwise, because sometimes the keeper has
+     * to come off: a knock, a bad afternoon, or simply a change of plan.
+     */
+    goalkeeperUnlocked: false,
     goals: [],
     pendingGoal: false,
     cards: [],
@@ -96,6 +102,11 @@ export const useMatchStore = defineStore('match', {
 
     /** The draw only fills gaps, so it is on offer only while there is one. */
     canDrawLineup: (state) => state.slots.some((slot) => slot.playerId === null),
+
+    /** Whether the keeper is still being held out of the coach's reach. */
+    goalkeeperLocked(state) {
+      return this.rules.fixedGoalkeeper && !state.goalkeeperUnlocked
+    },
 
     /** The fixed goalkeeper, who sits outside the rotation and the fairness maths. */
     goalkeeperId(state) {
@@ -445,6 +456,11 @@ export const useMatchStore = defineStore('match', {
       }
     },
 
+    /** Let the keeper be changed after all. It stays allowed for this match. */
+    unlockGoalkeeper() {
+      this.goalkeeperUnlocked = true
+    },
+
     /** Put the last substitution back as it was, spell and allowance included. */
     undoSubstitution() {
       if (!this.canUndoSub) return false
@@ -593,6 +609,7 @@ export const useMatchStore = defineStore('match', {
         sentOff: [...this.sentOff],
         subsUsed: this.subsUsed,
         captainId: this.captainId,
+        goalkeeperUnlocked: this.goalkeeperUnlocked,
         goals: this.goals,
         cards: this.cards,
       }
@@ -614,6 +631,7 @@ export const useMatchStore = defineStore('match', {
         sentOff: new Set(saved.sentOff),
         subsUsed: saved.subsUsed,
         captainId: saved.captainId,
+        goalkeeperUnlocked: Boolean(saved.goalkeeperUnlocked),
         goals: saved.goals,
         cards: saved.cards,
       })

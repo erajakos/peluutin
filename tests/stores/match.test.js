@@ -119,6 +119,43 @@ describe('match store', () => {
     })
   })
 
+  describe('a keeper meant to play the whole match', () => {
+    it('is held out of reach until the coach says otherwise', () => {
+      const { match } = startMatch()
+      expect(match.goalkeeperLocked).toBe(true)
+      match.unlockGoalkeeper()
+      expect(match.goalkeeperLocked).toBe(false)
+    })
+
+    it('is never locked when the format does not fix one', () => {
+      const { match } = startMatch({ fixedGoalkeeper: false })
+      expect(match.goalkeeperLocked).toBe(false)
+    })
+
+    it('can be substituted once unlocked, and the new keeper takes their place', () => {
+      const { match } = startMatch()
+      const keeperSlot = match.slots.find((slot) => slot.isGoalkeeper)
+      expect(match.goalkeeperId).toBe(ROSTER[0].id)
+
+      match.unlockGoalkeeper()
+      match.toggleOffSlot(keeperSlot.id)
+      match.confirmSubstitution()
+      expect(keeperSlot.playerId).toBe(ROSTER[5].id)
+      // Whoever stands in goal is the one kept out of the fairness maths.
+      expect(match.goalkeeperId).toBe(ROSTER[5].id)
+    })
+
+    it('stays unlocked for the rest of the match, across a reload', () => {
+      const { match } = startMatch()
+      match.unlockGoalkeeper()
+      const saved = JSON.parse(JSON.stringify(match.snapshot()))
+      match.reset()
+      expect(match.goalkeeperLocked).toBe(true)
+      match.restore(saved)
+      expect(match.goalkeeperLocked).toBe(false)
+    })
+  })
+
   describe('players with the same name', () => {
     it('are told apart by number in the squad', () => {
       const setup = useSetupStore()
