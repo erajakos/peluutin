@@ -1,11 +1,12 @@
 <script setup>
-import { ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import BenchPanel from '@/components/live/BenchPanel.vue'
 import MatchClock from '@/components/live/MatchClock.vue'
 import MatchEventsSheet from '@/components/live/MatchEventsSheet.vue'
 import PitchPanel from '@/components/live/PitchPanel.vue'
 import ScoreBoard from '@/components/live/ScoreBoard.vue'
 import { useI18n } from '@/i18n/index.js'
+import { createScreenWakeLock } from '@/services/wakeLock.js'
 import { useAppStore } from '@/stores/app.js'
 import { useMatchStore } from '@/stores/match.js'
 import { useSetupStore } from '@/stores/setup.js'
@@ -13,6 +14,15 @@ import { useSetupStore } from '@/stores/setup.js'
 const app = useAppStore()
 const match = useMatchStore()
 const setup = useSetupStore()
+
+/**
+ * The screen stays on for as long as this screen is open — half time included,
+ * since the clock is the thing the coach keeps glancing at. It sleeps again at
+ * full time, when the summary takes over.
+ */
+const screen = createScreenWakeLock()
+onMounted(() => screen.keepAwake())
+onBeforeUnmount(() => screen.destroy())
 const { t } = useI18n()
 
 /**

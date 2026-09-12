@@ -33,6 +33,10 @@ Finnish and English. No accounts, no servers, no tracking.
   produced, and minutes per player measured against the outfield average.
 - **The day's stats** — wins, draws and losses in form-guide colours, goals,
   top scorers, cards and total minutes across every match played that day.
+- **The screen stays on during a match** — no unlocking the phone every time
+  you want the clock. The browser's wake lock is asked for while the live
+  screen is open and released at full time; where a browser does not offer it,
+  everything else still works.
 - **Nothing lost to a stray swipe** — the squad is remembered from week to
   week, and a match in progress survives a reload, a closed tab or an
   accidental back: open the app again and it is exactly where it was, the
@@ -133,6 +137,7 @@ src/
 │   ├── rosterPersistence.js    Remembers the squad
 │   ├── sessionPersistence.js   Brings back today's matches after a reload
 │   ├── installPrompt.js        The browser's install offer, kept for later
+│   ├── wakeLock.js             Keeps the screen on while a match is on
 │   └── ticker.js               A clock that measures elapsed time, not callbacks
 │
 ├── stores/          Pinia. State and the transitions between states.
