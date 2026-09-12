@@ -17,9 +17,11 @@ Finnish and English. No accounts, no servers, no tracking.
 - **Rotation prompts** — `DUE OFF` for the outfield player with the most
   minutes, `DUE ON` for the least-rested player on the bench. A fixed
   goalkeeper is kept out of the maths entirely.
-- **Current stint** — not just total minutes, but how long a player has been
-  sitting on the bench *right now*, which is the number a coach actually gets
-  asked about.
+- **Current spell** — the shirt on the pitch shows how long that player has
+  been on *this time*, which is what says who needs a breather; one tap
+  switches every shirt to the whole match instead. The bench is a two-column
+  list: how long each player has been sitting right now, and how long they
+  have played.
 - **The shape on the pitch** — the lineup drawn as a formation, tap a player to
   pick them for a substitution.
 - **Substitutions** — one-for-one applies instantly; multi-player changes ask

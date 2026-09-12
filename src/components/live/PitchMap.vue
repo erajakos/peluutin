@@ -7,6 +7,19 @@ import { formatTime } from '@/domain/time.js'
 import { useI18n } from '@/i18n/index.js'
 import { useMatchStore } from '@/stores/match.js'
 
+const props = defineProps({
+  /**
+   * Which time each shirt shows: how long this spell on the field has lasted,
+   * or the player's total for the match. One number, never two — a shirt is
+   * read at a glance from the touchline, and two unlabelled times are a puzzle.
+   */
+  timeMode: {
+    type: String,
+    default: 'stint',
+    validator: (value) => ['total', 'stint'].includes(value),
+  },
+})
+
 const match = useMatchStore()
 const { t } = useI18n()
 
@@ -114,11 +127,17 @@ const chips = computed(() => {
  */
 const renderedChips = computed(() => [...chips.value].sort((a, b) => a.key.localeCompare(b.key)))
 
+/** The number on the shirt, following the switch above the pitch. */
+function shownTime(chip) {
+  return props.timeMode === 'stint' ? chip.stintSeconds : chip.seconds
+}
+
 function chipTitle(chip) {
   if (chip.vacant) return `${chip.position} — ${t('vacantLabel')}`
   const spell = t('playingFor', formatTime(chip.stintSeconds))
+  const total = t('totalFor', formatTime(chip.seconds))
   const due = chip.dueOff ? ` · ${t('dueOffBadge')}` : ''
-  return `${chip.position} — ${chip.name} · ${spell}${due}`
+  return `${chip.position} — ${chip.name} · ${spell} · ${total}${due}`
 }
 
 function chipStyle(chip) {
@@ -258,7 +277,7 @@ function onClick(chip) {
       </template>
       <template v-else>
         <span class="chip-name">{{ chip.name }}</span>
-        <span class="chip-time clock-face">{{ formatTime(chip.seconds) }}</span>
+        <span class="chip-time clock-face">{{ formatTime(shownTime(chip)) }}</span>
       </template>
 
       <!-- Booked: the card sits on the shirt, so it is never forgotten mid-match. -->

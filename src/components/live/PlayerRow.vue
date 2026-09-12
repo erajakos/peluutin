@@ -5,9 +5,10 @@ import { formatTime } from '@/domain/time.js'
 
 defineProps({
   name: { type: String, required: true },
+  /** The column that matters during play: how long this spell has lasted. */
   seconds: { type: Number, required: true },
-  /** Secondary line, e.g. how long this player has been sitting out. */
-  meta: { type: String, default: '' },
+  /** The quieter column beside it: the player's total for the match. */
+  totalSeconds: { type: Number, default: null },
   selected: { type: Boolean, default: false },
   selectable: { type: Boolean, default: true },
   badge: { type: String, default: '' },
@@ -29,9 +30,15 @@ defineEmits(['toggle'])
         <CardMarks :counts="cards" :size="13" class="cards" />
         <UiBadge v-if="badge" :tone="badgeTone">{{ badge }}</UiBadge>
       </span>
-      <span v-if="meta" class="meta">{{ meta }}</span>
     </span>
+    <!--
+      Two columns, under the headings the list carries once at the top: no
+      number has to explain itself on every row, and each player fits on one.
+    -->
     <span class="time clock-face">{{ formatTime(seconds) }}</span>
+    <span v-if="totalSeconds !== null" class="time-total clock-face">
+      {{ formatTime(totalSeconds) }}
+    </span>
     <input
       type="checkbox"
       class="check"
@@ -44,8 +51,13 @@ defineEmits(['toggle'])
 </template>
 
 <style scoped>
+/*
+ * The grid is the bench list's, handed down as a custom property so the
+ * headings above and every row below line up without either knowing the other.
+ */
 .player-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: var(--bench-grid, minmax(0, 1fr) auto auto 24px);
   align-items: center;
   gap: 12px;
   padding: 11px 12px;
@@ -75,7 +87,7 @@ defineEmits(['toggle'])
   color: var(--chalk);
 }
 
-.player-row--selected .meta {
+.player-row--selected .time-total {
   color: rgba(245, 251, 242, 0.85);
 }
 
@@ -84,7 +96,6 @@ defineEmits(['toggle'])
 }
 
 .detail {
-  flex: 1;
   min-width: 0;
 }
 
@@ -99,20 +110,15 @@ defineEmits(['toggle'])
   font-weight: 600;
 }
 
-/* How long this player has been waiting to come back on. */
-.meta {
-  display: block;
-  font-size: 14.5px;
-  font-weight: 500;
-  line-height: 1.35;
-  color: var(--chalk-dim);
-  margin-top: 2px;
-}
-
 .time {
   font-size: 18px;
   color: var(--chalk);
-  min-width: 48px;
+  text-align: right;
+}
+
+.time-total {
+  font-size: 16px;
+  color: var(--chalk-dim);
   text-align: right;
 }
 
