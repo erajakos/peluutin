@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { rotationHints } from '@/domain/rotation.js'
 
+/** `seconds` is the match total; `stintSeconds` the current spell on or off. */
 const players = [
-  { id: 1, name: 'Keeper', seconds: 600 },
-  { id: 2, name: 'Aino', seconds: 500 },
-  { id: 3, name: 'Bo', seconds: 300 },
-  { id: 4, name: 'Cai', seconds: 100 },
-  { id: 5, name: 'Dev', seconds: 200 },
+  { id: 1, name: 'Keeper', seconds: 600, stintSeconds: 600 },
+  { id: 2, name: 'Aino', seconds: 500, stintSeconds: 500 },
+  { id: 3, name: 'Bo', seconds: 300, stintSeconds: 300 },
+  { id: 4, name: 'Cai', seconds: 100, stintSeconds: 100 },
+  { id: 5, name: 'Dev', seconds: 200, stintSeconds: 200 },
 ]
 
 const slots = [
@@ -26,8 +27,16 @@ function hints({ allowReentry = true, outForGood = new Set(), sentOff = new Set(
 }
 
 describe('rotationHints', () => {
-  it('flags the outfield player with the most minutes as due off', () => {
+  it('flags the outfield player who has been on longest without a break', () => {
     expect([...hints().dueOffSlotIds]).toEqual([11])
+  })
+
+  it('leaves a player just brought on alone, however many minutes they have', () => {
+    // Aino has by far the most minutes, but has only been back on for seconds.
+    const justOn = players.map((player) =>
+      player.id === 2 ? { ...player, stintSeconds: 20 } : player,
+    )
+    expect([...hints({ players: justOn }).dueOffSlotIds]).toEqual([12])
   })
 
   it('never flags a fixed goalkeeper, however many minutes they have', () => {
@@ -62,19 +71,19 @@ describe('rotationHints', () => {
   })
 
   it('shows no badges when everyone is level, since that advises nothing', () => {
-    const level = players.map((player) => ({ ...player, seconds: 300 }))
+    const level = players.map((player) => ({ ...player, seconds: 300, stintSeconds: 300 }))
     const result = hints({ players: level })
     expect(result.dueOffSlotIds.size).toBe(0)
     expect(result.dueOnPlayerIds.size).toBe(0)
   })
 
-  it('flags every player tied for the most minutes', () => {
+  it('flags every player tied for the longest spell', () => {
     const tied = [
-      { id: 1, seconds: 0 },
-      { id: 2, seconds: 500 },
-      { id: 3, seconds: 500 },
-      { id: 4, seconds: 100 },
-      { id: 5, seconds: 200 },
+      { id: 1, seconds: 0, stintSeconds: 0 },
+      { id: 2, seconds: 500, stintSeconds: 500 },
+      { id: 3, seconds: 500, stintSeconds: 500 },
+      { id: 4, seconds: 100, stintSeconds: 100 },
+      { id: 5, seconds: 200, stintSeconds: 200 },
     ]
     const threeUp = [...slots, { id: 13, isGoalkeeper: false, playerId: 5 }]
     expect([...hints({ players: tied, slots: threeUp }).dueOffSlotIds]).toEqual([11, 12])

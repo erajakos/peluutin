@@ -2,17 +2,23 @@
  * Rotation hints — the "DUE OFF" / "DUE ON" badges.
  *
  * The rule is deliberately blunt so a coach can trust it at a glance: whoever
- * has the most minutes on the field is due off, whoever has the fewest on the
- * bench is due on. Badges are suppressed when everyone is level, since a badge
- * on every player says nothing. A fixed goalkeeper is outside the rotation and
- * never counts towards either extreme.
+ * has been on longest without a break is due off, whoever has the fewest
+ * minutes on the bench is due on. The two sides ask different questions on
+ * purpose — who needs a rest now, and who is owed minutes — which is why one
+ * counts the current spell and the other the whole match.
+ *
+ * Badges are suppressed when everyone is level, since a badge on every player
+ * says nothing. A fixed goalkeeper is outside the rotation and never counts
+ * towards either extreme.
  */
 export function rotationHints({ slots, players, fixedGoalkeeper, availability }) {
   const byId = new Map(players.map((player) => [player.id, player]))
   const filled = slots.filter((slot) => slot.playerId !== null)
 
   const rotatingOnField = filled.filter((slot) => !(slot.isGoalkeeper && fixedGoalkeeper))
-  const fieldSeconds = rotatingOnField.map((slot) => byId.get(slot.playerId)?.seconds ?? 0)
+  // The current spell, not the match total: a player just brought on is not
+  // due off however many minutes they had earlier in the game.
+  const fieldSeconds = rotatingOnField.map((slot) => byId.get(slot.playerId)?.stintSeconds ?? 0)
   const maxFieldSeconds = fieldSeconds.length ? Math.max(...fieldSeconds) : null
   const fieldVaries = fieldSeconds.length > 0 && Math.min(...fieldSeconds) !== maxFieldSeconds
 
@@ -27,7 +33,7 @@ export function rotationHints({ slots, players, fixedGoalkeeper, availability })
   const dueOffSlotIds = new Set(
     fieldVaries
       ? rotatingOnField
-          .filter((slot) => byId.get(slot.playerId)?.seconds === maxFieldSeconds)
+          .filter((slot) => byId.get(slot.playerId)?.stintSeconds === maxFieldSeconds)
           .map((slot) => slot.id)
       : [],
   )

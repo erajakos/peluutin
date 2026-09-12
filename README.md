@@ -14,9 +14,11 @@ Finnish and English. No accounts, no servers, no tracking.
 
 - **Playing-time clock** — per-player minutes, counted only while a player is
   actually in a position on the field.
-- **Rotation prompts** — `DUE OFF` for the outfield player with the most
-  minutes, `DUE ON` for the least-rested player on the bench. A fixed
-  goalkeeper is kept out of the maths entirely.
+- **Rotation prompts** — `DUE OFF` for the outfield player who has been on
+  longest without a break, `DUE ON` for the bench player with the fewest
+  minutes so far. The two sides answer different questions on purpose: who
+  needs a rest now, and who is owed minutes. A fixed goalkeeper is kept out of
+  the maths entirely.
 - **Current spell** — the shirt on the pitch shows how long that player has
   been on *this time*, which is what says who needs a breather; one tap
   switches every shirt to the whole match instead. The bench is a two-column
