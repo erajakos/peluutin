@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import { isAssignmentComplete, slotAssignedTo } from '@/domain/substitutions.js'
 import { useI18n } from '@/i18n/index.js'
@@ -9,6 +9,30 @@ const match = useMatchStore()
 const { t } = useI18n()
 
 const assignment = computed(() => match.pendingAssignment)
+
+/**
+ * A way back from a mis-tap, and nothing more: the offer appears when a change
+ * is made and goes quietly a few seconds later. A coach who meant the change
+ * never has to dismiss anything, and never taps it by accident either, since
+ * by then it is gone.
+ */
+const UNDO_WINDOW_MS = 12_000
+const undoOffered = ref(false)
+let undoTimer = null
+
+watch(
+  () => match.lastSub,
+  (last) => {
+    clearTimeout(undoTimer)
+    undoOffered.value = Boolean(last)
+    if (!last) return
+    undoTimer = setTimeout(() => {
+      undoOffered.value = false
+    }, UNDO_WINDOW_MS)
+  },
+)
+
+onBeforeUnmount(() => clearTimeout(undoTimer))
 
 /**
  * One row per vacated position, offering every incoming player as a chip.
@@ -122,6 +146,15 @@ const status = computed(() => {
       <button v-if="match.hasSelection" type="button" class="minor" @click="match.clearSelection()">
         {{ t('clearBtn') }}
       </button>
+
+      <button
+        v-if="undoOffered && match.canUndoSub && !match.hasSelection"
+        type="button"
+        class="minor undo"
+        @click="match.undoSubstitution()"
+      >
+        {{ t('undoSubBtn') }}
+      </button>
     </template>
   </div>
 </template>
@@ -220,6 +253,26 @@ const status = computed(() => {
 }
 
 /* A way to undo a selection — available, but never competing with the commit. */
+/* Fades in where it will be looked for, and leaves without being dismissed. */
+.undo {
+  animation: undo-in 0.25s ease-out;
+}
+
+@keyframes undo-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .undo {
+    animation: none;
+  }
+}
+
 .minor {
   display: block;
   margin: 12px auto 2px;

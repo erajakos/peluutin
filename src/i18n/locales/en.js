@@ -95,6 +95,8 @@ export default {
   onFieldTitle: 'On the field',
   eventsTitle: 'Score & events',
   openEventsAria: 'Open score and events',
+  adjustClockTitle: 'Adjust the clock',
+  doneBtn: 'Done',
   closeBtn: 'Close',
   benchedHeading: 'Resting',
   playedHeading: 'Played',
@@ -117,6 +119,7 @@ export default {
   comingOffOn: (off, on) => `Off: ${off} · On: ${on}`,
   comingOffOnly: (off) => `Off: ${off} · now pick someone from the bench`,
   subsUsedNote: (used, limit) => `Subs used: ${used} / ${limit}`,
+  undoSubBtn: 'Undo the change',
   clearBtn: 'Clear',
   confirmSubBtn: 'Confirm substitution',
   limitReachedNote: (used, limit) =>

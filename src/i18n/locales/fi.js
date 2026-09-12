@@ -95,6 +95,8 @@ export default {
   onFieldTitle: 'Kentällä',
   eventsTitle: 'Tulos & tapahtumat',
   openEventsAria: 'Avaa tulos ja tapahtumat',
+  adjustClockTitle: 'Säädä kelloa',
+  doneBtn: 'Valmis',
   closeBtn: 'Sulje',
   benchedHeading: 'Penkillä',
   playedHeading: 'Peliaika',
@@ -117,6 +119,7 @@ export default {
   comingOffOn: (off, on) => `Pois: ${off} · Sisään: ${on}`,
   comingOffOnly: (off) => `Pois: ${off} · valitse tulija penkiltä`,
   subsUsedNote: (used, limit) => `Vaihtoja käytetty: ${used} / ${limit}`,
+  undoSubBtn: 'Kumoa vaihto',
   clearBtn: 'Tyhjennä',
   confirmSubBtn: 'Vahvista vaihto',
   limitReachedNote: (used, limit) =>

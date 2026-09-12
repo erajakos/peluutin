@@ -30,6 +30,95 @@ function startMatch(overrides = {}) {
 describe('match store', () => {
   beforeEach(() => setActivePinia(createPinia()))
 
+  describe('nudging the clock', () => {
+    it('adds the minute to everyone on the field, as if it had been running', () => {
+      const { match } = startMatch()
+      match.tick(30)
+      match.adjustClock(60)
+      expect(match.elapsedSeconds).toBe(90)
+      const onField = match.players.find((player) => player.id === ROSTER[1].id)
+      expect(onField.seconds).toBe(90)
+      const bench = match.players.find((player) => player.id === ROSTER[5].id)
+      expect(bench.seconds).toBe(0)
+      expect(bench.stintSeconds).toBe(90)
+    })
+
+    it('takes a minute back off the clock and off the players who were on', () => {
+      const { match } = startMatch()
+      match.tick(120)
+      match.adjustClock(-60)
+      expect(match.elapsedSeconds).toBe(60)
+      expect(match.players.find((player) => player.id === ROSTER[1].id).seconds).toBe(60)
+    })
+
+    it('never winds back past kickoff', () => {
+      const { match } = startMatch()
+      match.tick(20)
+      match.adjustClock(-60)
+      expect(match.elapsedSeconds).toBe(0)
+      expect(match.players.every((player) => player.seconds === 0)).toBe(true)
+      expect(match.players.every((player) => player.stintSeconds === 0)).toBe(true)
+    })
+  })
+
+  describe('taking back a substitution', () => {
+    function subbed() {
+      const { setup, match } = startMatch()
+      match.tick(300)
+      // With one player on the bench, picking someone off selects them to come on.
+      match.toggleOffSlot(match.slots[1].id)
+      match.confirmSubstitution()
+      return { setup, match }
+    }
+
+    it('is not on offer until something has been changed', () => {
+      const { match } = startMatch()
+      expect(match.canUndoSub).toBe(false)
+      expect(match.undoSubstitution()).toBe(false)
+    })
+
+    it('puts both players back where they were, spell included', () => {
+      const { match } = subbed()
+      const off = ROSTER[1].id
+      const on = ROSTER[5].id
+      expect(match.slots[1].playerId).toBe(on)
+      expect(match.playersById.get(off).stintSeconds).toBe(0)
+
+      expect(match.undoSubstitution()).toBe(true)
+      expect(match.slots[1].playerId).toBe(off)
+      expect(match.playersById.get(off).stintSeconds).toBe(300)
+      expect(match.playersById.get(on).stintSeconds).toBe(300)
+      expect(match.subsUsed).toBe(0)
+      expect(match.canUndoSub).toBe(false)
+    })
+
+    it('gives back the allowance and the right to return', () => {
+      const { setup, match } = startMatch({ allowReentry: false, subLimitEnabled: true })
+      match.toggleOffSlot(match.slots[1].id)
+      match.confirmSubstitution()
+      expect(match.outForGood.has(ROSTER[1].id)).toBe(true)
+      expect(match.subsUsed).toBe(1)
+
+      match.undoSubstitution()
+      expect(match.outForGood.has(ROSTER[1].id)).toBe(false)
+      expect(match.subsUsed).toBe(0)
+      expect(setup.allowReentry).toBe(false)
+    })
+
+    it('lapses once one of the players has been sent off', () => {
+      const { match } = subbed()
+      match.addCard(ROSTER[5].id, CARD_RED)
+      expect(match.canUndoSub).toBe(false)
+      expect(match.undoSubstitution()).toBe(false)
+    })
+
+    it('lapses once the players on the field have been rearranged', () => {
+      const { match } = subbed()
+      match.swapSlotPlayers(match.slots[1].id, match.slots[2].id)
+      expect(match.canUndoSub).toBe(false)
+    })
+  })
+
   describe('players with the same name', () => {
     it('are told apart by number in the squad', () => {
       const setup = useSetupStore()

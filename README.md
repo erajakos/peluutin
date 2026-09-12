@@ -26,6 +26,10 @@ Finnish and English. No accounts, no servers, no tracking.
   have played.
 - **The shape on the pitch** — the lineup drawn as a formation, tap a player to
   pick them for a substitution.
+- **A way back** — a substitution can be taken back for a few seconds after it
+  is made, spell and allowance included; the offer then goes on its own, so a
+  change made on purpose is never nagged at. Tapping the clock opens a minute
+  either way, for when it was started late.
 - **Substitutions** — one-for-one applies instantly; multi-player changes ask
   who takes which position, and tapping a player already pencilled in elsewhere
   simply trades the two. When the numbers only allow one answer, it is filled

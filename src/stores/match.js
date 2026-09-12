@@ -57,6 +57,8 @@ function emptyMatch() {
     captainId: null,
     /** True while the bench selection was made for the coach, not by them. */
     autoSelectedOn: false,
+    /** Enough of the last substitution to put it back, if it was a mis-tap. */
+    lastSub: null,
     goals: [],
     pendingGoal: false,
     cards: [],
@@ -130,6 +132,15 @@ export const useMatchStore = defineStore('match', {
       const fromBench = state.autoSelectedOn ? [] : [...state.selectedOnPlayerIds]
       const picked = [...onField, ...fromBench]
       return picked.length === 1 ? picked[0] : null
+    },
+
+    /**
+     * Whether the last substitution can still be taken back. A player sent off
+     * since cannot be put back on the field, so the offer quietly lapses.
+     */
+    canUndoSub(state) {
+      if (!state.lastSub) return false
+      return state.lastSub.stints.every(({ id }) => !state.sentOff.has(id))
     },
 
     /** Cards shown so far, per player — for marking them on the pitch and bench. */
@@ -252,6 +263,26 @@ export const useMatchStore = defineStore('match', {
       })
     },
 
+    /**
+     * Nudge the clock when it was started late, or left running too long. The
+     * minutes move with it: a minute added is a minute every player on the
+     * field was playing, exactly as if the clock had been running for it.
+     */
+    adjustClock(seconds) {
+      if (seconds > 0) {
+        this.tick(seconds)
+        return
+      }
+      const taken = Math.min(-seconds, this.elapsedSeconds)
+      if (taken <= 0) return
+      this.elapsedSeconds -= taken
+      const onField = new Set(this.slots.map((slot) => slot.playerId))
+      this.players.forEach((player) => {
+        player.stintSeconds = Math.max(0, player.stintSeconds - taken)
+        if (onField.has(player.id)) player.seconds = Math.max(0, player.seconds - taken)
+      })
+    },
+
     start() {
       // During half time the only way on is to start the second half.
       if (this.running || this.period === PERIOD.HALF_TIME) return
@@ -343,6 +374,7 @@ export const useMatchStore = defineStore('match', {
         this.pendingAssignment = createAssignment(offSlotIds, onPlayerIds)
         return
       }
+      this.rememberSubstitution(offSlotIds, onPlayerIds)
       this.swapPlayer(offSlotIds[0], onPlayerIds[0])
       this.clearSelection()
     },
@@ -355,6 +387,10 @@ export const useMatchStore = defineStore('match', {
     applyAssignment() {
       if (!this.pendingAssignment || !isAssignmentComplete(this.pendingAssignment)) return
       const { offSlotIds, map } = this.pendingAssignment
+      this.rememberSubstitution(
+        offSlotIds,
+        offSlotIds.map((slotId) => map[slotId]),
+      )
       offSlotIds.forEach((slotId) => this.swapPlayer(slotId, map[slotId]))
       this.clearSelection()
     },
@@ -375,12 +411,56 @@ export const useMatchStore = defineStore('match', {
       const first = this.slots.find((slot) => slot.id === slotIdA)
       const second = this.slots.find((slot) => slot.id === slotIdB)
       if (!first || !second) return false
+      this.lastSub = null
       // One may be a vacancy — moving into it is a reshuffle, not a swap.
       if (first.playerId === null && second.playerId === null) return false
 
       const held = first.playerId
       first.playerId = second.playerId
       second.playerId = held
+      return true
+    },
+
+    /**
+     * Keep what the next change is about to overwrite, so one mis-tap can be
+     * put back. Only the substitution's own doing is kept — not the clock, not
+     * a goal scored since — so taking it back cannot rewind anything else.
+     */
+    rememberSubstitution(slotIds, incomingIds) {
+      const affected = new Set(incomingIds.filter((id) => id !== null && id !== undefined))
+      const slots = slotIds.map((slotId) => {
+        const slot = this.slots.find((candidate) => candidate.id === slotId)
+        if (slot?.playerId !== null && slot?.playerId !== undefined) affected.add(slot.playerId)
+        return { id: slotId, playerId: slot?.playerId ?? null }
+      })
+      this.lastSub = {
+        at: Date.now(),
+        subsUsed: this.subsUsed,
+        outForGood: [...this.outForGood],
+        slots,
+        stints: [...affected].map((id) => ({
+          id,
+          stintSeconds: this.playersById.get(id)?.stintSeconds ?? 0,
+        })),
+      }
+    },
+
+    /** Put the last substitution back as it was, spell and allowance included. */
+    undoSubstitution() {
+      if (!this.canUndoSub) return false
+      const last = this.lastSub
+      last.slots.forEach(({ id, playerId }) => {
+        const slot = this.slots.find((candidate) => candidate.id === id)
+        if (slot) slot.playerId = playerId
+      })
+      last.stints.forEach(({ id, stintSeconds }) => {
+        const player = this.playersById.get(id)
+        if (player) player.stintSeconds = stintSeconds
+      })
+      this.outForGood = new Set(last.outForGood)
+      this.subsUsed = last.subsUsed
+      this.lastSub = null
+      this.clearSelection()
       return true
     },
 
@@ -462,6 +542,7 @@ export const useMatchStore = defineStore('match', {
 
       const slot = this.slots.find((candidate) => candidate.playerId === playerId)
       if (!slot) return
+      this.lastSub = null
       slot.playerId = null
       const player = this.playersById.get(playerId)
       if (player) player.stintSeconds = 0

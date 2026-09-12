@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue'
+import ClockDialog from '@/components/live/ClockDialog.vue'
 import UiConfirmDialog from '@/components/ui/UiConfirmDialog.vue'
 import { formatTime } from '@/domain/time.js'
 import { useI18n } from '@/i18n/index.js'
@@ -60,6 +61,13 @@ const overtime = computed(
  * Every stop asks first, in words: the icon is shared, so the question is what
  * tells the coach whether they are calling half time or ending the match.
  */
+/**
+ * A clock started a minute late, or stopped a minute after the whistle, is the
+ * commonest thing to get wrong on a touchline — so the readout opens, with the
+ * same chevron the scoreboard uses, onto a dialog offering a minute either way.
+ */
+const adjusting = ref(false)
+
 const CONFIRM = Object.freeze({ HALF: 'half', MATCH: 'match' })
 const confirming = ref(null)
 
@@ -94,10 +102,18 @@ const progress = computed(() =>
     :class="{ 'clock-card--waiting': waiting, 'clock-card--over': overtime && !waiting }"
   >
     <div class="clock" :class="{ 'clock--running': match.running }">
-      <div class="readout">
+      <button
+        type="button"
+        class="readout"
+        :aria-label="t('adjustClockTitle')"
+        @click="adjusting = true"
+      >
         <span class="elapsed clock-face">{{ formatTime(match.elapsedSeconds) }}</span>
         <span class="total">{{ t('ofLabel', formatTime(match.totalSeconds)) }}</span>
-      </div>
+        <span class="chevron" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="m9.5 5.5 7 6.5-7 6.5" /></svg>
+        </span>
+      </button>
 
       <!-- Play/pause and stop: the transport controls everyone already knows. -->
       <div v-if="!waiting" class="transport">
@@ -157,6 +173,8 @@ const progress = computed(() =>
     </button>
   </div>
 
+  <ClockDialog v-if="adjusting" @close="adjusting = false" />
+
   <UiConfirmDialog
     v-if="confirming"
     :message="confirmText"
@@ -190,6 +208,27 @@ const progress = computed(() =>
   align-items: baseline;
   gap: 10px;
   min-width: 0;
+  background: none;
+  padding: 2px 0;
+  color: inherit;
+  text-align: left;
+}
+
+/* The same quiet chevron the scoreboard carries: this opens something too. */
+.chevron {
+  align-self: center;
+  display: flex;
+  color: var(--chalk-dim);
+}
+
+.chevron svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .elapsed {
