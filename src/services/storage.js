@@ -15,6 +15,7 @@ const MATCH_SETTINGS_KEY = 'sortOfAPlanMatchSettings'
 const ROSTER_KEY = 'peluutinRoster'
 const SESSION_KEY = 'peluutinSession'
 const DRAG_HINT_KEY = 'peluutinDragHintSeen'
+const KNOWN_PLAYERS_KEY = 'peluutinKnownPlayers'
 
 function safeGet(key) {
   try {
@@ -88,6 +89,27 @@ export function saveRoster(players) {
   return safeSet(ROSTER_KEY, JSON.stringify(players))
 }
 
+/**
+ * Every player this device has known, so one taken out of the squad and typed
+ * in again comes back as themselves rather than as a stranger with the same
+ * name — which would split their minutes across two rows in the day's stats.
+ */
+export function loadKnownPlayers() {
+  const saved = loadJson(KNOWN_PLAYERS_KEY)
+  if (!Array.isArray(saved)) return []
+  return saved.filter(
+    (player) =>
+      player &&
+      Number.isInteger(player.id) &&
+      typeof player.name === 'string' &&
+      player.name.trim(),
+  )
+}
+
+export function saveKnownPlayers(players) {
+  return safeSet(KNOWN_PLAYERS_KEY, JSON.stringify(players))
+}
+
 /** The saved matchday, or null. Validation is the caller's job. */
 export function loadSession() {
   return loadJson(SESSION_KEY)
@@ -115,5 +137,12 @@ export function markDragHintSeen() {
 
 /** Forget everything this app has ever kept on the device. */
 export function clearAllSaved() {
-  ;[TEAM_NAME_KEY, MATCH_SETTINGS_KEY, ROSTER_KEY, SESSION_KEY, DRAG_HINT_KEY].forEach(safeRemove)
+  ;[
+    TEAM_NAME_KEY,
+    MATCH_SETTINGS_KEY,
+    ROSTER_KEY,
+    SESSION_KEY,
+    DRAG_HINT_KEY,
+    KNOWN_PLAYERS_KEY,
+  ].forEach(safeRemove)
 }

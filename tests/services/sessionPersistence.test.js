@@ -200,7 +200,13 @@ describe('keeping the matchday across a reload', () => {
     kickOff(first)
     first.app.endMatch()
     await settle()
-    expect(storage.size).toBe(4)
+    expect([...storage.keys()].sort()).toEqual([
+      'peluutinKnownPlayers',
+      'peluutinRoster',
+      'peluutinSession',
+      'sortOfAPlanMatchSettings',
+      'sortOfAPlanTeamName',
+    ])
 
     first.app.forgetEverything()
     await settle()

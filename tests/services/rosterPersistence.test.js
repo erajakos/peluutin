@@ -62,6 +62,50 @@ describe('remembering the squad', () => {
     expect(visit().roster).toEqual([])
   })
 
+  it('gives a player typed in again the id they had before', () => {
+    const first = visit()
+    first.addPlayer('Aino')
+    first.addPlayer('Bo')
+    const ainoId = first.roster[0].id
+
+    // Taken out of the squad — a no-show, or a clear-out between matches.
+    first.removePlayer(ainoId)
+    first.addPlayer('Aino')
+    expect(first.roster.find((player) => player.typedName === 'Aino').id).toBe(ainoId)
+
+    // And still themselves on a later visit, after the whole squad was cleared.
+    const next = visit()
+    next.clearRoster()
+    next.addPlayer('Aino')
+    expect(next.roster[0].id).toBe(ainoId)
+  })
+
+  it('gives namesakes an id each, rather than one of them twice', () => {
+    const setup = visit()
+    setup.addPlayer('Aino')
+    setup.addPlayer('Aino')
+    const [first, second] = setup.roster
+    expect(first.id).not.toBe(second.id)
+
+    const next = visit()
+    next.clearRoster()
+    next.addPlayer('Aino')
+    next.addPlayer('Aino')
+    expect(next.roster.map((player) => player.id)).toEqual([first.id, second.id])
+  })
+
+  it('keeps the book of names when the squad is cleared, and loses it with everything else', () => {
+    const setup = visit()
+    setup.addPlayer('Aino')
+    const ainoId = setup.roster[0].id
+    setup.clearRoster()
+    expect(storage.has('peluutinKnownPlayers')).toBe(true)
+
+    const next = visit()
+    next.addPlayer('Aino')
+    expect(next.roster[0].id).toBe(ainoId)
+  })
+
   it('ignores a saved squad it cannot read', () => {
     storage.set(KEY, '{not json')
     expect(visit().roster).toEqual([])

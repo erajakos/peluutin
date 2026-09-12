@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { findFormation, getFormationsFor, outfieldCount } from '@/domain/formations.js'
 import { buildSlots } from '@/domain/lineup.js'
 import { nextId } from '@/domain/ids.js'
-import { numberDuplicateNames } from '@/domain/roster.js'
+import { knownPlayerId, numberDuplicateNames, rememberPlayers } from '@/domain/roster.js'
 import { isStockPositionLabel, t, tPosition } from '@/i18n/index.js'
 
 /** Below this many players on the field, a substitution cap makes no sense. */
@@ -35,6 +35,12 @@ export const useSetupStore = defineStore('setup', {
     subLimit: 5,
     trackCards: false,
     roster: [],
+    /**
+     * Everyone this device has had in a squad, and the id they were given. A
+     * player taken out and typed in again is the same child, and the day's
+     * stats add their minutes up by id — so the id has to come back with them.
+     */
+    knownPlayers: [],
   }),
 
   getters: {
@@ -136,9 +142,20 @@ export const useSetupStore = defineStore('setup', {
     addPlayer(name) {
       const trimmed = name.trim()
       if (!trimmed) return false
-      this.roster.push({ id: nextId(), typedName: trimmed, name: trimmed })
+      const used = this.roster.map((player) => player.id)
+      const id = knownPlayerId(this.knownPlayers, trimmed, used) ?? nextId()
+      this.roster.push({ id, typedName: trimmed, name: trimmed })
+      this.rememberRoster()
       this.renumberNames()
       return true
+    },
+
+    /** Keep the book of names up to date with whoever is in the squad now. */
+    rememberRoster() {
+      this.knownPlayers = rememberPlayers(
+        this.knownPlayers,
+        this.roster.map((player) => ({ id: player.id, name: player.typedName })),
+      )
     },
 
     removePlayer(id) {
@@ -158,7 +175,14 @@ export const useSetupStore = defineStore('setup', {
     restoreRoster(players) {
       players.forEach((player) => nextId.skipPast(player.id))
       this.roster = players.map(({ id, name }) => ({ id, typedName: name, name }))
+      this.rememberRoster()
       this.renumberNames()
+    },
+
+    /** The book of names from a previous visit. */
+    restoreKnownPlayers(players) {
+      players.forEach((player) => nextId.skipPast(player.id))
+      this.knownPlayers = players.map(({ id, name }) => ({ id, name }))
     },
 
     renumberNames() {

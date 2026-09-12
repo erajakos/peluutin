@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { numberDuplicateNames } from '@/domain/roster.js'
+import { knownPlayerId, numberDuplicateNames, rememberPlayers } from '@/domain/roster.js'
 
 describe('numberDuplicateNames', () => {
   it('leaves unique names alone', () => {
@@ -25,5 +25,41 @@ describe('numberDuplicateNames', () => {
       'Aino 2',
       'Leo 2',
     ])
+  })
+})
+
+describe('who a player is', () => {
+  const known = [
+    { id: 1, name: 'Aino' },
+    { id: 2, name: 'Bo' },
+    { id: 3, name: 'Aino' },
+  ]
+
+  it('gives a name back the id it had before', () => {
+    expect(knownPlayerId(known, 'Aino', [])).toBe(1)
+    expect(knownPlayerId(known, ' bo ', [])).toBe(2)
+  })
+
+  it('never hands out an id already standing in the squad', () => {
+    expect(knownPlayerId(known, 'Aino', [1])).toBe(3)
+    expect(knownPlayerId(known, 'Aino', [1, 3])).toBe(null)
+  })
+
+  it('has nothing to say about a name it has not seen', () => {
+    expect(knownPlayerId(known, 'Cai', [])).toBe(null)
+  })
+
+  it('writes players into the book without repeating them', () => {
+    const book = rememberPlayers(known, [
+      { id: 1, name: 'Aino' },
+      { id: 4, name: 'Cai' },
+    ])
+    expect(book.filter((player) => player.id === 1)).toHaveLength(1)
+    expect(book.map((player) => player.id)).toEqual([2, 3, 1, 4])
+  })
+
+  it('keeps the book from growing for ever', () => {
+    const many = Array.from({ length: 30 }, (_, i) => ({ id: i + 1, name: `P${i}` }))
+    expect(rememberPlayers([], many, 10)).toHaveLength(10)
   })
 })

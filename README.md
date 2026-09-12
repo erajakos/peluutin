@@ -59,7 +59,9 @@ no database and no build-time or run-time analytics. What is kept is kept in
 that browser's own `localStorage`, and only so you do not re-enter it every
 week: your team name, how you play the match (length, halves, format,
 formation, rules), your squad's names, and the current day's matches — the
-last one so an interrupted match can pick up where it left off. A saved
+last one so an interrupted match can pick up where it left off. Names you have
+had in a squad before are remembered with them, so a player typed in again is
+the same player and keeps their minutes. A saved
 matchday is dropped once the day is over.
 
 *Tietoja & tietosuoja* has a button that wipes all of it and returns the app to
