@@ -3,6 +3,9 @@ import { computed } from 'vue'
 import PitchMarkings from '@/components/ui/PitchMarkings.vue'
 import { GOALKEEPER_KEY } from '@/domain/lineup.js'
 import { pitchLayout } from '@/domain/pitch.js'
+import { useI18n } from '@/i18n/index.js'
+
+const { tPositionCode } = useI18n()
 
 const props = defineProps({
   /** `{ key, label }` pairs, in the order the coach listed them. */
@@ -24,9 +27,18 @@ const spots = computed(() => {
   return pitchLayout(slots).map((spot, index) => ({
     ...spot,
     isGoalkeeper: slots[index].key === GOALKEEPER_KEY,
-    initials: initialsOf(slots[index].label),
+    code: codeFor(slots[index]),
   }))
 })
+
+/**
+ * A stock position has a code of its own; anything the coach has renamed is cut
+ * down from their own wording, which is the only thing that would mean anything
+ * to them.
+ */
+function codeFor({ key, label }) {
+  return tPositionCode(key, label) || initialsOf(label)
+}
 
 /** Up to two letters, enough to tell a left back from a right back at this size. */
 function initialsOf(label) {
@@ -47,7 +59,7 @@ function initialsOf(label) {
       :class="{ 'spot--gk': spot.isGoalkeeper }"
       :style="{ left: `${spot.x}%`, top: `${spot.y}%` }"
     >
-      {{ spot.isGoalkeeper ? 'MV' : spot.initials }}
+      {{ spot.code }}
     </span>
   </div>
 </template>

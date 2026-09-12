@@ -42,6 +42,51 @@ const FORMATION_LABELS = {
   },
 }
 
+/**
+ * Short codes for the drawn formation, where only a couple of letters fit.
+ *
+ * There is no official Finnish set — Palloliitto writes positions out in full,
+ * and the codes on international team sheets are English (GK, DF, MF, FW and
+ * the detailed CB, LB, DM, AM, ST). MV is the one Finnish abbreviation in
+ * common use, so the rest follow it: two letters that read as the Finnish word
+ * rather than as a truncation of it.
+ *
+ * Only positions still carrying their stock name are listed. A position the
+ * coach has renamed is abbreviated from their own wording instead.
+ */
+const CODES = {
+  fi: {
+    Goalkeeper: 'MV',
+    Defender: 'PU',
+    Midfielder: 'KK',
+    Attacker: 'HY',
+    Striker: 'KÄ',
+    Playmaker: 'PR',
+    'Centre Back': 'KP',
+    'Defensive Midfielder': 'PK',
+    'Centre Midfielder': 'KK',
+    'Centre Forward': 'KH',
+    'Centre Attacking Mid': 'HK',
+  },
+  en: {
+    Goalkeeper: 'GK',
+    Defender: 'DF',
+    Midfielder: 'MF',
+    Attacker: 'FW',
+    Striker: 'ST',
+    Playmaker: 'PM',
+    'Centre Back': 'CB',
+    'Defensive Midfielder': 'DM',
+    'Centre Midfielder': 'CM',
+    'Centre Forward': 'CF',
+    'Centre Attacking Mid': 'AM',
+  },
+}
+
+export function positionCode(name, locale) {
+  return CODES[locale]?.[name] ?? ''
+}
+
 export function translatePosition(name, locale) {
   return POSITIONS[locale]?.[name] ?? name
 }

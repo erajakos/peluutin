@@ -1,7 +1,7 @@
 import { computed, ref } from 'vue'
 import en from './locales/en.js'
 import fi from './locales/fi.js'
-import { translateFormationLabel, translatePosition } from './positions.js'
+import { positionCode, translateFormationLabel, translatePosition } from './positions.js'
 
 const MESSAGES = { en, fi }
 export const DEFAULT_LOCALE = 'fi'
@@ -70,6 +70,16 @@ function stockPositionLabel(code, key) {
  * opposed to a name the coach typed. Only stock names are translated when the
  * language changes; the coach's own wording is theirs to keep.
  */
+/**
+ * The two-letter code for a position, for places too small for its name. Empty
+ * for a position the coach has renamed, whose own wording is abbreviated
+ * instead, and for one with no code of its own.
+ */
+export function tPositionCode(key, label) {
+  if (label && !isStockPositionLabel(key, label)) return ''
+  return positionCode(key, locale.value)
+}
+
 export function isStockPositionLabel(key, label) {
   return Object.keys(MESSAGES).some((code) => stockPositionLabel(code, key) === label)
 }
@@ -83,6 +93,7 @@ export function useI18n() {
     t,
     tIn,
     tPosition,
+    tPositionCode,
     tFormationLabel,
     setLocale,
     locale: computed(() => locale.value),
