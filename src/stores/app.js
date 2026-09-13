@@ -58,8 +58,60 @@ export const useAppStore = defineStore('app', {
       this.phase = phase
     },
 
+    /**
+     * Out of the detour in one step, however deep it went. The list of changes
+     * is opened from the info page, and pressing back twice to get out of two
+     * pages nobody thinks of as separate is a chore — so back returns to the
+     * screen the detour started from.
+     */
     closePage() {
-      this.phase = this.pageStack.pop() ?? PHASES.MENU
+      const [root] = this.pageStack
+      this.pageStack = []
+      this.phase = root ?? PHASES.MENU
+    },
+
+    /**
+     * One step back, whatever "back" means from here — what the screen's own
+     * back control would do. The browser's back gesture asks this rather than
+     * trusting the address bar, since a URL cannot conjure up a match that is
+     * not being played.
+     *
+     * Returns false when there is nowhere to go: on the front screen, which is
+     * the app's own edge, and during a match, which is not a screen to leave by
+     * accident.
+     */
+    goBack() {
+      if (this.pageStack.length) {
+        this.closePage()
+        return true
+      }
+
+      switch (this.phase) {
+        case PHASES.MENU:
+          this.goTo(PHASES.SPLASH)
+          return true
+        case PHASES.TEAM:
+        case PHASES.OPPONENT:
+          this.goTo(PHASES.MENU)
+          return true
+        case PHASES.SETTINGS:
+          this.backToOpponent()
+          return true
+        case PHASES.SQUAD:
+          this.backToSettings()
+          return true
+        case PHASES.LINEUP:
+          this.backToSquad()
+          return true
+        case PHASES.SUMMARY:
+        case PHASES.STATS:
+          this.backToMenu()
+          return true
+        default:
+          // The splash has nothing behind it, and a match in progress is not
+          // somewhere to be taken out of by a stray swipe.
+          return false
+      }
     },
 
     /**
@@ -156,6 +208,7 @@ export const useAppStore = defineStore('app', {
         opponent: setup.opponentName,
         usScore: match.usScore,
         opponentScore: match.opponentScore,
+        captainId: match.captainId,
         players: match.players.map((player) => ({
           ...player,
           isGoalkeeper: player.id === match.goalkeeperId,

@@ -17,16 +17,24 @@ describe('the pages off the menu', () => {
     expect(app.phase).toBe(PHASES.MENU)
   })
 
-  it('finds its way back out of a page opened from another page', () => {
+  it('leaves a page opened from another page in one step', () => {
     const app = useAppStore()
     app.openPage(PHASES.INFO)
     // The info page offers what changed; that is a page of its own.
     app.openPage(PHASES.CHANGELOG)
 
     app.closePage()
-    expect(app.phase).toBe(PHASES.INFO)
-    app.closePage()
     expect(app.phase).toBe(PHASES.MENU)
+  })
+
+  it('goes back to wherever the detour started, not always the menu', () => {
+    const app = useAppStore()
+    app.phase = PHASES.SPLASH
+    app.openPage(PHASES.INFO)
+    app.openPage(PHASES.CHANGELOG)
+
+    app.closePage()
+    expect(app.phase).toBe(PHASES.SPLASH)
   })
 
   it('goes back to the menu when there is nothing to go back to', () => {

@@ -5,12 +5,23 @@ import { TEAM_US, cardTally, resultOf, scorerTally } from './scoring.js'
  * Snapshotting names and minutes here means later roster edits cannot rewrite
  * history.
  */
-export function createMatchRecord({ id, opponent, usScore, opponentScore, players, goals, cards }) {
+export function createMatchRecord({
+  id,
+  opponent,
+  usScore,
+  opponentScore,
+  captainId = null,
+  players,
+  goals,
+  cards,
+}) {
   return {
     id,
     opponent,
     usScore,
     opponentScore,
+    /** Who wore the armband, so a result can still say so months later. */
+    captainId,
     players: players.map((player) => ({ ...player })),
     goals: goals.map((goal) => ({ ...goal })),
     cards: cards.map((card) => ({ ...card })),

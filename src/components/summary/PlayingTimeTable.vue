@@ -8,7 +8,11 @@ defineProps({
   minutesHeading: { type: String, required: true },
   showDelta: { type: Boolean, default: false },
   /** Marked with an armband, when the match had one. */
-  captainId: { type: Number, default: null },
+  /**
+   * Who wore the armband. A list, because a day's stats cover several matches
+   * and the armband may have moved between them.
+   */
+  captainIds: { type: Array, default: () => [] },
 })
 const { t } = useI18n()
 
@@ -30,7 +34,7 @@ function sign(delta) {
         <td>
           {{ row.name }}
           <span
-            v-if="captainId !== null && row.id === captainId"
+            v-if="captainIds.includes(row.id)"
             class="armband"
             :title="t('captainLabel')"
             :aria-label="t('captainLabel')"

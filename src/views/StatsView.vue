@@ -17,6 +17,11 @@ const { t } = useI18n()
 
 const summary = computed(() => matchday.summary)
 
+/** The armband may have moved between matches; everyone who wore it is marked. */
+const captainIds = computed(() =>
+  matchday.matches.map((match) => match.captainId).filter((id) => id !== null && id !== undefined),
+)
+
 const totals = computed(() => [
   { value: summary.value.played, label: t('matchesLabel') },
   { value: `${summary.value.goalsFor}–${summary.value.goalsAgainst}`, label: t('goalsLabel') },
@@ -56,7 +61,11 @@ const scorerItems = computed(() => {
   </UiPanel>
 
   <UiPanel :title="t('totalMinutesTitle')">
-    <PlayingTimeTable :rows="summary.minutes" :minutes-heading="t('tableMinutes')" />
+    <PlayingTimeTable
+      :rows="summary.minutes"
+      :minutes-heading="t('tableMinutes')"
+      :captain-ids="captainIds"
+    />
   </UiPanel>
 
   <UiButton @click="app.playAnotherMatch()">{{ t('playAnotherBtn') }}</UiButton>

@@ -22,6 +22,23 @@ function match({ id, usScore, opponentScore, players, goals = [], cards = [] }) 
 }
 
 describe('createMatchRecord', () => {
+  it('remembers who wore the armband, and nobody when there was none', () => {
+    const players = [{ id: 1, name: 'Aino', seconds: 900 }]
+    expect(
+      createMatchRecord({
+        id: 1,
+        opponent: 'PPJ',
+        usScore: 1,
+        opponentScore: 0,
+        captainId: 1,
+        players,
+        goals: [],
+        cards: [],
+      }).captainId,
+    ).toBe(1)
+    expect(match({ id: 2, usScore: 0, opponentScore: 0, players }).captainId).toBe(null)
+  })
+
   it('snapshots players so later roster edits cannot rewrite history', () => {
     const players = [{ id: 1, name: 'Aino', seconds: 600 }]
     const record = createMatchRecord({

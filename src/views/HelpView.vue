@@ -1,4 +1,5 @@
 <script setup>
+import UiBackLink from '@/components/ui/UiBackLink.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import { useI18n } from '@/i18n/index.js'
 import { useAppStore } from '@/stores/app.js'
@@ -14,6 +15,9 @@ const { t } = useI18n()
 </script>
 
 <template>
+  <!-- A way out at the top as well as the foot: a page can be long. -->
+  <UiBackLink @click="app.closePage()">{{ t('backBtn') }}</UiBackLink>
+
   <h1 class="title">{{ t('helpTitle') }}</h1>
   <p class="body intro">{{ t('helpIntro') }}</p>
 

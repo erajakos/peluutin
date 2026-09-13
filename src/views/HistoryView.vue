@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import MatchDetail from '@/components/history/MatchDetail.vue'
 import ResultBadge from '@/components/ui/ResultBadge.vue'
+import UiBackLink from '@/components/ui/UiBackLink.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiPanel from '@/components/ui/UiPanel.vue'
 import { resultOf } from '@/domain/scoring.js'
@@ -33,6 +34,9 @@ function toggle(id) {
 </script>
 
 <template>
+  <!-- A way out at the top as well as the foot: a page can be long. -->
+  <UiBackLink @click="app.closePage()">{{ t('backBtn') }}</UiBackLink>
+
   <h1 class="title">{{ t('historyTitle') }}</h1>
 
   <p v-if="!history.hasEntries" class="empty">{{ t('historyEmpty') }}</p>

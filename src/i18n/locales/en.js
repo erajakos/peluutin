@@ -40,7 +40,7 @@ export default {
     },
     {
       title: 'Substitutions',
-      body: 'Drag a substitute onto a player on the pitch, or a player down to the bench. Plan as many changes as you like — nothing happens until you confirm them. Tapping does the same: one, then the other. A change can be taken back right after it is made.',
+      body: 'Drag a substitute onto a player on the pitch — or a player on the pitch onto the substitute you want in their place. Plan as many changes as you like — nothing happens until you confirm them. Tapping does the same: one, then the other. A change can be taken back right after it is made.',
     },
     {
       title: 'Positions',

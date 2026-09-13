@@ -54,7 +54,7 @@ const average = computed(() => {
     <PlayingTimeTable
       :rows="rows"
       :minutes-heading="t('tableMinutes')"
-      :captain-id="match.captainId"
+      :captain-ids="match.captainId === null ? [] : [match.captainId]"
       show-delta
     />
     <!-- A +/- figure means nothing until you know what it is measured against. -->

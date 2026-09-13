@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import UiBackLink from '@/components/ui/UiBackLink.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import { RELEASES } from '@/changelog.js'
 import { useI18n } from '@/i18n/index.js'
@@ -28,6 +29,9 @@ const releases = computed(() =>
 </script>
 
 <template>
+  <!-- A way out at the top as well as the foot: a page can be long. -->
+  <UiBackLink @click="app.closePage()">{{ t('backBtn') }}</UiBackLink>
+
   <h1 class="title">{{ t('changelogTitle') }}</h1>
 
   <section v-for="release in releases" :key="release.version" class="release">

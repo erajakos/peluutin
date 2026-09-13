@@ -53,6 +53,7 @@ const benchPreview = computed(() => {
       :lineup-slot="slot"
       :slots="match.slots"
       :roster="setup.roster"
+      :captain-id="match.captainId"
       @assign="match.assignSlot(slot.id, $event)"
     />
   </UiPanel>

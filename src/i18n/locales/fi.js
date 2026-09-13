@@ -40,7 +40,7 @@ export default {
     },
     {
       title: 'Vaihdot',
-      body: 'Vedä vaihtopelaaja kentällä olevan pelaajan päälle tai kenttäpelaaja penkille. Voit suunnitella monta vaihtoa kerralla; mitään ei tapahdu ennen kuin vahvistat ne. Napauttaminen toimii samoin: ensin toinen, sitten toinen. Vaihdon voi kumota heti sen jälkeen.',
+      body: 'Vedä vaihtopelaaja kentällä olevan pelaajan päälle — tai kenttäpelaaja sen vaihtopelaajan päälle, jonka haluat tilalle. Voit suunnitella monta vaihtoa kerralla; mitään ei tapahdu ennen kuin vahvistat ne. Napauttaminen toimii samoin: ensin toinen, sitten toinen. Vaihdon voi kumota heti sen jälkeen.',
     },
     {
       title: 'Pelipaikat',

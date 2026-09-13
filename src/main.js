@@ -5,6 +5,8 @@ import { setLocale } from './i18n/index.js'
 import { listenForInstallPrompt } from './services/installPrompt.js'
 import { askToKeepStorage } from './services/persistentStorage.js'
 import { loadLanguage } from './services/storage.js'
+import { installUrlNavigation } from './services/urlNavigation.js'
+import { useAppStore } from './stores/app.js'
 import { persistHistory } from './services/historyPersistence.js'
 import { persistRoster } from './services/rosterPersistence.js'
 import { keepSessionSaved, resumeSession } from './services/sessionPersistence.js'
@@ -44,5 +46,8 @@ const app = createApp(App).use(pinia)
 // stray swipe back out of the app.
 resumeSession()
 keepSessionSaved()
+
+// The address bar follows the app, and the back gesture moves inside it.
+installUrlNavigation(useAppStore())
 
 app.mount('#app')

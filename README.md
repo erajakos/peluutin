@@ -41,6 +41,9 @@ Finnish and English. No accounts, no servers, no tracking.
 - **Score, scorers and cards** — logged against the match clock.
 - **Full-time summary** — the final score, every goal with the scoreline it
   produced, and minutes per player measured against the outfield average.
+- **The captain** — named on the lineup screen and marked with an armband
+  wherever that player appears: on the pitch, in the result, in the day's
+  stats, and in a match read back weeks later.
 - **The day's stats** — wins, draws and losses in form-guide colours, goals,
   top scorers, cards and total minutes across every match played that day.
 - **Played matches** — every match this device has played, filed by the day it
@@ -167,6 +170,7 @@ src/
 │   ├── rosterPersistence.js    Remembers the squad
 │   ├── historyPersistence.js   Remembers every match played
 │   ├── persistentStorage.js    Asks the browser not to clear any of it
+│   ├── urlNavigation.js        The address bar, and the back gesture
 │   ├── sessionPersistence.js   Brings back today's matches after a reload
 │   ├── installPrompt.js        The browser's install offer, kept for later
 │   ├── wakeLock.js             Keeps the screen on while a match is on
@@ -197,7 +201,17 @@ src/
 **Phases, not routes.** The app is a linear matchday: splash → menu → team →
 setup → lineup → live → summary → stats, with the menu's three other doors —
 played matches, how it works, about — as detours that return where they came
-from. A deep link into the middle of it would land
+from. `stores/app.js` owns the phase; nothing else decides where to go next.
+
+**The address follows the app, never the other way round.** `services/
+urlNavigation.js` names each screen in the URL so the browser's back gesture
+moves inside the app rather than out of it, and so the pages that stand on
+their own — `#/help`, `#/matches`, `#/about`, `#/changes` — can be opened by
+link. A link to anything that needs steps before it (a lineup, a match, a
+result) is refused and the address corrected: no URL can conjure up a match
+that is not being played. During a match, or a squad half typed in, address
+changes are refused outright, so a stale bookmark cannot take a coach off the
+pitch. A deep link into the middle of it would land
 on an empty match, so there are no URLs to link to. `stores/app.js` owns the
 phase and every transition; `App.vue` is just a lookup table. The info page is
 the one detour, and it returns wherever it came from.

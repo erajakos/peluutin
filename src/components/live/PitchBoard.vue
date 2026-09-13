@@ -144,6 +144,7 @@ const fieldChips = computed(() => {
       seconds: player?.seconds ?? 0,
       stintSeconds: player?.stintSeconds ?? 0,
       isGoalkeeper: slot.isGoalkeeper,
+      captain: player !== null && player.id === match.captainId,
       due: match.hints.dueOffSlotIds.has(slot.id),
       picked: match.pickedSlotId === slot.id,
       planned,
@@ -229,6 +230,7 @@ let startY = 0
 let dragging = false
 let suppressClick = false
 let slotTargets = []
+let benchTargets = []
 /** Where inside the chip the finger landed, so the ghost sits under it. */
 let grabOffsetX = 0
 let grabOffsetY = 0
@@ -243,36 +245,59 @@ function chipStyle(chip, kind) {
 }
 
 /** Every shirt on the field, with where it actually sits right now. */
-function collectSlotTargets() {
-  const board = pitch.value
-  if (!board) return []
-  return [...board.querySelectorAll('[data-slot-id]')].map((element) => {
+function centresOf(root, read) {
+  if (!root) return []
+  return [...root.querySelectorAll('[data-player-id], [data-slot-id]')].map((element) => {
     const rect = element.getBoundingClientRect()
-    return {
-      slotId: Number(element.dataset.slotId),
-      x: rect.left + rect.width / 2,
-      y: rect.top + rect.height / 2,
-    }
+    return { ...read(element), x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
   })
 }
 
-function findDropTarget(clientX, clientY) {
-  const bench = sideline.value?.getBoundingClientRect()
-  if (bench && clientY >= bench.top && clientX >= bench.left && clientX <= bench.right) {
-    return 'sideline'
-  }
+function collectTargets() {
+  slotTargets = centresOf(pitch.value, (element) => ({ slotId: Number(element.dataset.slotId) }))
+  // Every substitute is a target of their own: dropping a player on one names
+  // that substitute for the change, rather than leaving it to the suggestion.
+  benchTargets = centresOf(sideline.value, (element) => ({
+    playerId: Number(element.dataset.playerId),
+  }))
+}
 
+/** The nearest of these centres to the pointer, if any is near enough. */
+function nearest(targets, clientX, clientY, skip) {
   let best = null
   let bestDistance = DROP_RADIUS
-  slotTargets.forEach((target) => {
-    if (origin?.slotId === target.slotId) return
+  targets.forEach((target) => {
+    if (skip(target)) return
     const distance = Math.hypot(clientX - target.x, clientY - target.y)
     if (distance < bestDistance) {
       bestDistance = distance
-      best = target.slotId
+      best = target
     }
   })
   return best
+}
+
+/**
+ * Where a drop would land: a shirt on the pitch, one substitute in particular,
+ * or the touchline itself. A substitute under the finger wins over the strip
+ * they are standing on — naming them is the whole point of dropping on them.
+ */
+function findDropTarget(clientX, clientY) {
+  const strip = sideline.value?.getBoundingClientRect()
+  const overStrip = strip && clientY >= strip.top && clientX >= strip.left && clientX <= strip.right
+
+  if (overStrip) {
+    const substitute = nearest(
+      benchTargets,
+      clientX,
+      clientY,
+      (target) => origin?.playerId === target.playerId,
+    )
+    return substitute ? { playerId: substitute.playerId } : 'sideline'
+  }
+
+  const shirt = nearest(slotTargets, clientX, clientY, (target) => origin?.slotId === target.slotId)
+  return shirt ? shirt.slotId : null
 }
 
 function onPointerDown(event, chip, kind) {
@@ -282,7 +307,7 @@ function onPointerDown(event, chip, kind) {
   startX = event.clientX
   startY = event.clientY
   dragging = false
-  slotTargets = collectSlotTargets()
+  collectTargets()
 
   const rect = event.currentTarget.getBoundingClientRect()
   grabOffsetX = event.clientX - rect.left
@@ -338,21 +363,27 @@ function onPointerUp(event) {
   if (target === null) return
 
   if (from.slotId !== undefined) {
-    // A shirt dropped on another trades their positions; dropped on the bench,
-    // that player is planned to come off — or, with nobody to bring on, asks
-    // whether they should simply walk off and leave the position empty.
-    if (target !== 'sideline') {
-      match.swapSlotPlayers(from.slotId, target)
+    // Dropped on one substitute in particular: that is the change, and no
+    // suggestion gets a say in it.
+    if (target?.playerId !== undefined) {
+      match.stageChange(from.slotId, target.playerId)
       return
     }
-    if (spareSubstitutes.value) match.planOff(from.slotId)
-    else takingOffSlotId.value = from.slotId
+    // Dropped on the touchline itself: planned off, with whoever is due on
+    // pencilled in — or, with nobody to bring on, asked about first.
+    if (target === 'sideline') {
+      if (spareSubstitutes.value) match.planOff(from.slotId)
+      else takingOffSlotId.value = from.slotId
+      return
+    }
+    // Dropped on another shirt: the two trade positions.
+    match.swapSlotPlayers(from.slotId, target)
     return
   }
 
-  // A substitute dropped on a shirt is planned to take it; dropped back on the
-  // bench, whatever they were planned for is called off.
-  if (target === 'sideline') {
+  // A substitute dropped on a shirt is planned to take it; dropped back among
+  // the substitutes, whatever they were planned for is called off.
+  if (target === 'sideline' || target?.playerId !== undefined) {
     const planned = match.plannedSlotFor(from.playerId)
     if (planned !== null) match.unstage(planned)
     return
@@ -370,6 +401,7 @@ function endGesture() {
   origin = null
   dragging = false
   slotTargets = []
+  benchTargets = []
   pendingGhost = null
   dragged.value = null
   dropTarget.value = null
@@ -477,6 +509,9 @@ function onUnlockGoalkeeper() {
         <!-- Booked: the card sits on the shirt, so it is never forgotten mid-match. -->
         <CardMarks v-if="chip.cards" class="chip-cards" :counts="chip.cards" :size="11" />
 
+        <!-- The armband, worn where an armband is worn. -->
+        <span v-if="chip.captain" class="armband" :title="t('captainLabel')">C</span>
+
         <!-- Planned to come off, with who is coming on written underneath. -->
         <span v-if="chip.planned" class="chip-mark chip-mark--off" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M12 5v13m0 0-5.5-5.5M12 18l5.5-5.5" /></svg>
@@ -515,6 +550,7 @@ function onUnlockGoalkeeper() {
             'chip--planned': chip.planned,
             'chip--locked': !chip.selectable,
             'chip--dragging': dragged?.playerId === chip.playerId,
+            'chip--target': dropTarget?.playerId === chip.playerId,
           }"
           :style="chipStyle(chip, 'bench')"
           :disabled="!chip.selectable"
@@ -714,6 +750,24 @@ function onUnlockGoalkeeper() {
   font-weight: 700;
   color: var(--chalk-dim);
   letter-spacing: 0.3px;
+}
+
+/* The same armband the lineup and the results use. */
+.armband {
+  position: absolute;
+  bottom: -7px;
+  left: -7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: var(--amber);
+  border: 1.5px solid var(--amber-ink);
+  color: var(--amber-ink);
+  font-size: 11.5px;
+  font-weight: 700;
 }
 
 /* Who is coming on in this shirt, written where the change is happening. */

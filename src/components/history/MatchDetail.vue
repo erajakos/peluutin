@@ -36,7 +36,11 @@ const scorers = computed(() => {
       </span>
     </div>
 
-    <PlayingTimeTable :rows="summary.minutes" :minutes-heading="t('tableMinutes')" />
+    <PlayingTimeTable
+      :rows="summary.minutes"
+      :minutes-heading="t('tableMinutes')"
+      :captain-ids="match.captainId === null ? [] : [match.captainId]"
+    />
   </div>
 </template>
 

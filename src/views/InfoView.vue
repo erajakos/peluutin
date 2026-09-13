@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import BrandWordmark from '@/components/BrandWordmark.vue'
+import UiBackLink from '@/components/ui/UiBackLink.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiConfirmDialog from '@/components/ui/UiConfirmDialog.vue'
 import { VERSION } from '@/changelog.js'
@@ -28,6 +29,9 @@ const confirmingClear = ref(false)
 </script>
 
 <template>
+  <!-- A way out at the top as well as the foot: a page can be long. -->
+  <UiBackLink @click="app.closePage()">{{ t('backBtn') }}</UiBackLink>
+
   <BrandWordmark size="compact" class="wordmark" />
   <p class="body intro">{{ t('infoIntro') }}</p>
 
@@ -71,7 +75,7 @@ const confirmingClear = ref(false)
 
 <style scoped>
 .wordmark {
-  margin-top: 14px;
+  margin-top: 2px;
 }
 
 .label {
