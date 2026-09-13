@@ -8,8 +8,12 @@
  */
 import { matchdaySummary } from './matchday.js'
 
-/** Roughly a season and a half of junior football, then the oldest fall off. */
-export const HISTORY_LIMIT = 300
+/**
+ * Several seasons of junior football. The list is bounded so it cannot grow
+ * without end, and the storage layer trims further if the device runs short —
+ * always from the oldest end.
+ */
+export const HISTORY_LIMIT = 500
 
 export function createHistoryEntry(record, playedAt) {
   return { ...record, playedAt }

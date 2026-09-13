@@ -1,0 +1,62 @@
+# Changelog
+
+What changed in each version, in the words the app itself shows under
+_Tietoja → Mitä uutta_. Generated from [`src/changelog.js`](src/changelog.js) by
+`npm run changelog`; edit that file, not this one.
+
+## 1.5 — A front door and a memory
+
+_2026-09-13_
+
+- The app opens onto a menu: start a match, played matches, how it works, and about.
+- Played matches are kept by date. Open one for its scorers, its cards and everyone’s minutes.
+- A short guide explains how a match runs from first whistle to last.
+- Everything is kept on the device for as long as the browser allows — including a match still being set up, and the language you use.
+- Fixed: a player removed and typed in again became a new person and appeared twice in the stats.
+- Fixed: a substitution could send on a different player than the one chosen.
+
+## 1.4 — Changes by dragging
+
+_2026-09-12_
+
+- The pitch and the bench share one view: a change is made by dragging a player from one to the other.
+- Changes are planned first and confirmed after — several at once, with nothing happening until you confirm.
+- Players walk to their new places once confirmed, so the change can be seen happening.
+- A player can come off even when there is nobody on the bench to replace them.
+- The goalkeeper questions left the settings: the number of players always counts the keeper.
+
+## 1.3 — Room to be wrong
+
+_2026-09-12_
+
+- The clock can be nudged a minute either way, for when it was started or stopped late.
+- A substitution just made can be taken back.
+- The goalkeeper can be changed, even one meant to play the whole match.
+
+## 1.2 — On the touchline
+
+_2026-09-12_
+
+- The screen stays awake for as long as the match is on.
+- Each shirt shows the current spell: how long that player has been on, or sitting, right now.
+- The change prompt follows the current spell rather than total minutes — a player just brought on is never flagged.
+- Positions have proper short codes (GK, PM, CB…).
+
+## 1.1 — Nothing is lost
+
+_2026-09-11_
+
+- The squad is remembered from week to week, and can be cleared in one go.
+- An interrupted match carries on, even if the app is closed or the browser goes back. A running clock catches up on the time away.
+- Wins, draws and losses are told apart by colour and mark.
+- Everything kept on the device can be wiped from the privacy page.
+
+## 1.0 — Peluutin
+
+_2026-09-11_
+
+- The app was named Peluutin and rebuilt: the clock, the lineup on the pitch, substitutions and playing time.
+- A match can be played in two halves, with the coach deciding when the half turns.
+- Goals with their scorers, and yellow and red cards.
+- Match settings are remembered for next time.
+- It can be installed on a phone and works with no connection.

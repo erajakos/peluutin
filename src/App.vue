@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRegisterSW } from 'virtual:pwa-register/vue'
+import ChangelogView from '@/views/ChangelogView.vue'
 import HelpView from '@/views/HelpView.vue'
 import MenuView from '@/views/MenuView.vue'
 import HistoryView from '@/views/HistoryView.vue'
@@ -26,6 +27,7 @@ const VIEWS = {
   [PHASES.MENU]: MenuView,
   [PHASES.INFO]: InfoView,
   [PHASES.HELP]: HelpView,
+  [PHASES.CHANGELOG]: ChangelogView,
   [PHASES.HISTORY]: HistoryView,
   [PHASES.TEAM]: TeamNameView,
   [PHASES.OPPONENT]: OpponentView,

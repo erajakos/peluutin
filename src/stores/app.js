@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { nextId } from '@/domain/ids.js'
 import { createMatchRecord } from '@/domain/matchday.js'
 import { setLocale } from '@/i18n/index.js'
-import { clearAllSaved, loadTeamName, saveTeamName } from '@/services/storage.js'
+import { clearAllSaved, loadTeamName, saveLanguage, saveTeamName } from '@/services/storage.js'
 import { useMatchStore } from './match.js'
 import { useHistoryStore } from './history.js'
 import { useMatchdayStore } from './matchday.js'
@@ -22,6 +22,7 @@ export const PHASES = Object.freeze({
   MENU: 'menu',
   INFO: 'info',
   HELP: 'help',
+  CHANGELOG: 'changelog',
   HISTORY: 'history',
   TEAM: 'team',
   OPPONENT: 'opponent',
@@ -36,8 +37,12 @@ export const PHASES = Object.freeze({
 export const useAppStore = defineStore('app', {
   state: () => ({
     phase: PHASES.SPLASH,
-    /** Where to return to when the info page is closed. */
-    previousPhase: PHASES.SPLASH,
+    /**
+     * The screens a page was opened from, innermost last. A stack rather than
+     * one remembered screen: the info page opens the list of changes, and
+     * coming back from that must not cost the info page its own way out.
+     */
+    pageStack: [],
     teamName: loadTeamName(),
   }),
 
@@ -49,16 +54,27 @@ export const useAppStore = defineStore('app', {
      */
     openPage(phase) {
       if (this.phase === phase) return
-      this.previousPhase = this.phase
+      this.pageStack.push(this.phase)
       this.phase = phase
     },
 
     closePage() {
-      this.phase = this.previousPhase
+      this.phase = this.pageStack.pop() ?? PHASES.MENU
+    },
+
+    /**
+     * A step in the matchday itself, as opposed to a detour off it. The way
+     * back through the pages is dropped: it led to screens this match has
+     * moved on from.
+     */
+    goTo(phase) {
+      this.pageStack = []
+      this.phase = phase
     },
 
     setLanguage(code) {
       setLocale(code)
+      saveLanguage(code)
       // Name the positions in the chosen language, keeping the chosen shape.
       useSetupStore().relabelPositionsForLocale()
     },
@@ -66,12 +82,12 @@ export const useAppStore = defineStore('app', {
     /** The splash asks one question — which language — and then stands aside. */
     chooseLanguage(code) {
       this.setLanguage(code)
-      this.phase = PHASES.MENU
+      this.goTo(PHASES.MENU)
     },
 
     /** A returning coach has already told us their team; do not ask again. */
     startNewMatch() {
-      this.phase = this.teamName ? PHASES.OPPONENT : PHASES.TEAM
+      this.goTo(this.teamName ? PHASES.OPPONENT : PHASES.TEAM)
     },
 
     /** The team name is remembered across visits; the opponent never is. */
@@ -80,12 +96,12 @@ export const useAppStore = defineStore('app', {
       if (!trimmed) return false
       this.teamName = trimmed
       saveTeamName(trimmed)
-      this.phase = PHASES.OPPONENT
+      this.goTo(PHASES.OPPONENT)
       return true
     },
 
     editTeamName() {
-      this.phase = PHASES.TEAM
+      this.goTo(PHASES.TEAM)
     },
 
     // --- Setting up a match, one question per screen ---------------------
@@ -94,24 +110,24 @@ export const useAppStore = defineStore('app', {
       const trimmed = name.trim()
       if (!trimmed) return false
       setup.opponentName = trimmed
-      this.phase = PHASES.SETTINGS
+      this.goTo(PHASES.SETTINGS)
       return true
     },
 
     backToOpponent() {
-      this.phase = PHASES.OPPONENT
+      this.goTo(PHASES.OPPONENT)
     },
 
     openSquad() {
-      this.phase = PHASES.SQUAD
+      this.goTo(PHASES.SQUAD)
     },
 
     backToSettings() {
-      this.phase = PHASES.SETTINGS
+      this.goTo(PHASES.SETTINGS)
     },
 
     backToSquad() {
-      this.phase = PHASES.SQUAD
+      this.goTo(PHASES.SQUAD)
     },
 
     /** Setup is complete: build the empty starting lineup and go fill it in. */
@@ -119,7 +135,7 @@ export const useAppStore = defineStore('app', {
       const setup = useSetupStore()
       if (!setup.hasEnoughPlayers) return false
       useMatchStore().startLineup(setup.createStartingSlots())
-      this.phase = PHASES.LINEUP
+      this.goTo(PHASES.LINEUP)
       return true
     },
 
@@ -127,7 +143,7 @@ export const useAppStore = defineStore('app', {
       const match = useMatchStore()
       if (!match.lineupComplete) return
       match.kickOff(useSetupStore().roster)
-      this.phase = PHASES.LIVE
+      this.goTo(PHASES.LIVE)
     },
 
     /** Stop the clock, file the result, and show the playing-time summary. */
@@ -150,24 +166,24 @@ export const useAppStore = defineStore('app', {
       useMatchdayStore().record(record)
       // The same match twice over: today's stats clear tonight, this one keeps.
       useHistoryStore().record(createMatchRecord(record))
-      this.phase = PHASES.SUMMARY
+      this.goTo(PHASES.SUMMARY)
     },
 
     /** Same squad, same format, new fixture — so it starts at the opponent. */
     playAnotherMatch() {
       useMatchStore().reset()
       useSetupStore().prepareNextMatch()
-      this.phase = PHASES.OPPONENT
+      this.goTo(PHASES.OPPONENT)
     },
 
     finishSession() {
-      this.phase = PHASES.STATS
+      this.goTo(PHASES.STATS)
     },
 
     /** Done for now: back to the front, with the day's results still standing. */
     backToMenu() {
       useMatchStore().reset()
-      this.phase = PHASES.MENU
+      this.goTo(PHASES.MENU)
     },
 
     /**
@@ -182,8 +198,7 @@ export const useAppStore = defineStore('app', {
       // After the resets, which save their now-empty state on the way through.
       clearAllSaved()
       this.teamName = ''
-      this.previousPhase = PHASES.SPLASH
-      this.phase = PHASES.SPLASH
+      this.goTo(PHASES.SPLASH)
     },
   },
 })

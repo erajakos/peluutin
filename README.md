@@ -61,9 +61,12 @@ Everything stays on the device. There are no accounts, no servers, no cloud,
 no database and no build-time or run-time analytics. What is kept is kept in
 that browser's own `localStorage`, and only so you do not re-enter it every
 week: your team name, how you play the match (length, halves, format,
-formation, rules), your squad's names, the matches you have played, and the
-match in progress — the last one so an interrupted match can pick up where it
-left off. Names you have
+formation, rules), your squad's names, the language you use it in, the matches
+you have played, and the match in progress — the last one so an interrupted
+match, or one still being set up, can pick up where it left off. The app also
+asks the browser to keep that storage rather than treat it as something to
+clear when the device runs short of room; where the browser refuses, or has
+run out of room anyway, the oldest matches are the first to go. Names you have
 had in a squad before are remembered with them, so a player typed in again is
 the same player and keeps their minutes. A saved
 matchday is dropped once the day is over.
@@ -94,6 +97,7 @@ npm run dev        # http://localhost:5173
 | `npm run lint` | ESLint over the whole project |
 | `npm run format` | Prettier over `src/` and `tests/` |
 | `npm run generate-pwa-assets` | Regenerate the app icons from `public/icon.svg` |
+| `npm run changelog` | Rewrite `CHANGELOG.md` from `src/changelog.js` |
 
 The build output in `dist/` is fully static — any file host will serve it. The
 Vite `base` is `./`, so it also works from a subdirectory. It must be served
@@ -125,6 +129,14 @@ How it is put together, in [`vite.config.js`](vite.config.js):
   Maskable and Apple icons get padding and the pitch green behind them, so the
   platforms' own cropping never cuts into the ball.
 
+## Versions
+
+The version this build is, and what every version brought with it, live in one
+place: [`src/changelog.js`](src/changelog.js). The app shows it under *Tietoja →
+Mitä uutta* in the reader's own language, [`CHANGELOG.md`](CHANGELOG.md) is
+generated from it, and a test keeps it in step with `package.json`. Releases are
+grouped by what they did for the coach rather than listed change by change.
+
 ## How the code is organised
 
 The guiding rule is that **match rules do not know about Vue, and components do
@@ -153,6 +165,8 @@ src/
 │   ├── storage.js              localStorage that cannot throw
 │   ├── settingsPersistence.js  Remembers how the match is played
 │   ├── rosterPersistence.js    Remembers the squad
+│   ├── historyPersistence.js   Remembers every match played
+│   ├── persistentStorage.js    Asks the browser not to clear any of it
 │   ├── sessionPersistence.js   Brings back today's matches after a reload
 │   ├── installPrompt.js        The browser's install offer, kept for later
 │   ├── wakeLock.js             Keeps the screen on while a match is on
@@ -241,4 +255,11 @@ Vibe coded during my son's football practice, with Claude, on a mobile phone,
 at the side of the pitch.
 
 By **Erkki Rajakoski** — [Studio Rajakoski](https://github.com/erajakos).
+
+The best ideas came from the touchline, from coaches using it in real matches:
+
+- **Kristiina (LPS)** — pushed for seeing the lineup on the pitch and making
+  changes by dragging, and has found the bugs.
+- **Taina (LPS)** — wanted the screen to stay on for the whole match, and
+  playing time shown for the current spell rather than the whole game.
 

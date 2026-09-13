@@ -61,6 +61,9 @@ export default {
   ],
 
   // Info
+  versionLabel: (version) => `Version ${version}`,
+  whatsNewBtn: 'What’s new',
+  changelogTitle: 'What’s new',
   infoIntro: 'A small tool for planning the match and the substitutions from the touchline.',
   privacyTitle: 'Your data stays yours',
   privacyBody:
@@ -75,6 +78,13 @@ export default {
     'Vibe coded during my son\u2019s football practice, with Claude, on a mobile phone, at the side of the pitch.',
   authorTitle: 'Author',
   authorBody: 'Erkki Rajakoski, Studio Rajakoski',
+  thanksTitle: 'Thanks',
+  thanksIntro:
+    'The best ideas have come from the touchline. These are the people who have used the app in real matches:',
+  thanksKristiina:
+    'Kristiina (LPS) — pushed for seeing the lineup on the pitch and making changes by dragging, and has found the bugs.',
+  thanksTaina:
+    'Taina (LPS) — wanted the screen to stay on for the whole match, and playing time shown for the current spell rather than the whole game.',
   licenseTitle: 'Free to use',
   licenseBody:
     'Completely free. Use it, change it, fork it — MIT licensed. No warranty, no strings.',

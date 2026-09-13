@@ -1,10 +1,11 @@
 <script setup>
-import BrandWordmark from '@/components/BrandWordmark.vue'
 import { ref } from 'vue'
+import BrandWordmark from '@/components/BrandWordmark.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiConfirmDialog from '@/components/ui/UiConfirmDialog.vue'
+import { VERSION } from '@/changelog.js'
 import { useI18n } from '@/i18n/index.js'
-import { useAppStore } from '@/stores/app.js'
+import { PHASES, useAppStore } from '@/stores/app.js'
 
 const app = useAppStore()
 const { t } = useI18n()
@@ -18,6 +19,7 @@ const SECTIONS = [
   { label: 'installTitle', paragraphs: ['installBody', 'installIos'] },
   { label: 'madeTitle', paragraphs: ['madeBody'] },
   { label: 'authorTitle', paragraphs: ['authorBody'] },
+  { label: 'thanksTitle', paragraphs: ['thanksIntro', 'thanksKristiina', 'thanksTaina'] },
   { label: 'licenseTitle', paragraphs: ['licenseBody'] },
 ]
 
@@ -45,6 +47,14 @@ const confirmingClear = ref(false)
       {{ t('clearDataBtn') }}
     </button>
   </section>
+
+  <!-- Which version this is, and what it brought with it. -->
+  <p class="version">
+    {{ t('versionLabel', VERSION) }}
+    <button type="button" class="version-link" @click="app.openPage(PHASES.CHANGELOG)">
+      {{ t('whatsNewBtn') }}
+    </button>
+  </p>
 
   <UiButton variant="secondary" @click="app.closePage()">{{ t('backBtn') }}</UiButton>
 
@@ -110,6 +120,22 @@ const confirmingClear = ref(false)
 
 .clear-data:active {
   background: rgba(233, 105, 79, 0.12);
+}
+
+.version {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--chalk-dim);
+  text-align: center;
+  margin: 0 0 16px;
+}
+
+.version-link {
+  background: none;
+  color: var(--amber-text);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 6px 8px;
 }
 
 .block:last-of-type {

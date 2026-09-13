@@ -62,13 +62,40 @@ describe('keeping the matchday across a reload', () => {
     delete globalThis.window
   })
 
-  it('saves nothing before the match has started', async () => {
+  it('saves nothing while the app is still on its own front page', async () => {
     const first = visit()
-    first.app.confirmOpponent('PPJ')
     first.setup.addPlayer('Aino')
     await settle()
     expect(storage.has(KEY)).toBe(false)
     expect(visit().resumed).toBe(false)
+  })
+
+  it('keeps a match still being set up, half-typed squad and all', async () => {
+    const first = visit()
+    first.app.confirmOpponent('PPJ')
+    first.app.openSquad()
+    ;['Aino', 'Bo', 'Cai'].forEach((name) => first.setup.addPlayer(name))
+    await settle()
+
+    const next = visit()
+    expect(next.resumed).toBe(true)
+    expect(next.app.phase).toBe(PHASES.SQUAD)
+    expect(next.setup.opponentName).toBe('PPJ')
+    expect(next.setup.roster.map((player) => player.name)).toEqual(['Aino', 'Bo', 'Cai'])
+  })
+
+  it('keeps a starting lineup half picked', async () => {
+    const first = visit()
+    first.app.confirmOpponent('PPJ')
+    ;['Aino', 'Bo', 'Cai', 'Dev', 'Eve', 'Fay'].forEach((name) => first.setup.addPlayer(name))
+    first.app.openLineup()
+    first.match.assignSlot(first.match.slots[0].id, first.setup.roster[0].id)
+    await settle()
+
+    const next = visit()
+    expect(next.app.phase).toBe(PHASES.LINEUP)
+    expect(next.match.slots[0].playerId).toBe(first.setup.roster[0].id)
+    expect(next.match.lineupComplete).toBe(false)
   })
 
   it('puts a match under way back on the live screen, as it was', async () => {
@@ -143,7 +170,7 @@ describe('keeping the matchday across a reload', () => {
     expect(next.matchday.matches).toHaveLength(1)
   })
 
-  it('keeps the day’s results while the next match is being set up', async () => {
+  it('comes back to the next match being set up, with the day’s results intact', async () => {
     const first = visit()
     kickOff(first)
     first.app.endMatch()
@@ -151,8 +178,8 @@ describe('keeping the matchday across a reload', () => {
     await settle()
 
     const next = visit()
-    expect(next.resumed).toBe(false)
-    expect(next.app.phase).toBe(PHASES.SPLASH)
+    expect(next.resumed).toBe(true)
+    expect(next.app.phase).toBe(PHASES.OPPONENT)
     expect(next.matchday.matches.map((match) => match.opponent)).toEqual(['PPJ'])
   })
 

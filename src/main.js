@@ -1,7 +1,10 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
+import { setLocale } from './i18n/index.js'
 import { listenForInstallPrompt } from './services/installPrompt.js'
+import { askToKeepStorage } from './services/persistentStorage.js'
+import { loadLanguage } from './services/storage.js'
 import { persistHistory } from './services/historyPersistence.js'
 import { persistRoster } from './services/rosterPersistence.js'
 import { keepSessionSaved, resumeSession } from './services/sessionPersistence.js'
@@ -21,6 +24,14 @@ import './assets/styles/base.css'
 
 // Caught before mounting: the browser may offer installation straight away.
 listenForInstallPrompt()
+
+// Everything this app knows lives on the device, so ask the browser to keep it
+// rather than treat it as something to clear when room runs short.
+askToKeepStorage()
+
+// Opened in the language it was last used in, before anything is drawn.
+const language = loadLanguage()
+if (language) setLocale(language)
 
 const pinia = createPinia()
 pinia.use(persistMatchSettings)

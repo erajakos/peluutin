@@ -61,6 +61,9 @@ export default {
   ],
 
   // Info
+  versionLabel: (version) => `Versio ${version}`,
+  whatsNewBtn: 'Mitä uutta',
+  changelogTitle: 'Mitä uutta',
   infoIntro: 'Pieni työkalu ottelun ja vaihtojen suunnitteluun kentän laidalla.',
   privacyTitle: 'Tietosi pysyvät sinulla',
   privacyBody:
@@ -75,6 +78,13 @@ export default {
     'Tämä on vibe-koodattu pojan futistreenin aikana Claudella ja kännykällä, kentän laidalla.',
   authorTitle: 'Tekijä',
   authorBody: 'Erkki Rajakoski, Studio Rajakoski',
+  thanksTitle: 'Kiitokset',
+  thanksIntro:
+    'Parhaat ideat ovat tulleet kentän laidalta. Kiitos näistä kuuluu heille, jotka ovat käyttäneet sovellusta oikeissa otteluissa:',
+  thanksKristiina:
+    'Kristiina (LPS) — ajoi eteenpäin kokoonpanon näkemistä kentällä ja vaihtojen tekemistä vetämällä, ja on löytänyt bugit.',
+  thanksTaina:
+    'Taina (LPS) — halusi, että näyttö pysyy päällä koko ottelun ajan ja että peliaika näkyy nykyisen vaihdon mukaan eikä koko ottelun.',
   licenseTitle: 'Vapaa käyttää',
   licenseBody:
     'Täysin ilmainen. Käytä, muokkaa ja haaroita vapaasti — MIT-lisenssi. Ei takuuta, ei ehtoja.',

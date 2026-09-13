@@ -21,8 +21,21 @@ import { clearSession, loadSession, saveSession } from './storage.js'
 /** Bumped whenever the saved shape changes, so an old one is never misread. */
 const VERSION = 1
 
-/** From kickoff on, the screen itself is worth coming back to. */
-const RESUMABLE_PHASES = [PHASES.LIVE, PHASES.SUMMARY, PHASES.STATS]
+/**
+ * Screens worth coming back to. Setting a match up counts: a coach who typed an
+ * opponent and half a squad before the phone locked should find both still
+ * there, not start again. The menu and the splash do not — there is nothing on
+ * them to lose, and opening the app onto its own front page is not a fault.
+ */
+const RESUMABLE_PHASES = [
+  PHASES.OPPONENT,
+  PHASES.SETTINGS,
+  PHASES.SQUAD,
+  PHASES.LINEUP,
+  PHASES.LIVE,
+  PHASES.SUMMARY,
+  PHASES.STATS,
+]
 
 function localDay(timestamp) {
   const date = new Date(timestamp)

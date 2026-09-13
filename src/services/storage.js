@@ -17,6 +17,7 @@ const SESSION_KEY = 'peluutinSession'
 const DRAG_HINT_KEY = 'peluutinDragHintSeen'
 const KNOWN_PLAYERS_KEY = 'peluutinKnownPlayers'
 const HISTORY_KEY = 'peluutinHistory'
+const LANGUAGE_KEY = 'peluutinLanguage'
 
 function safeGet(key) {
   try {
@@ -142,8 +143,27 @@ export function loadHistory() {
   )
 }
 
+/**
+ * Saved oldest-first, so a device that has run out of room loses the matches
+ * nobody is looking at any more rather than the list as a whole.
+ */
 export function saveHistory(entries) {
-  return safeSet(HISTORY_KEY, JSON.stringify(entries))
+  let keep = entries
+  while (keep.length) {
+    if (safeSet(HISTORY_KEY, JSON.stringify(keep))) return true
+    // Storage refused it — almost always the quota. Drop the oldest and retry.
+    keep = keep.slice(Math.max(1, Math.ceil(keep.length / 10)))
+  }
+  return safeSet(HISTORY_KEY, '[]')
+}
+
+/** The language chosen last time, so the app opens in it. */
+export function loadLanguage() {
+  return safeGet(LANGUAGE_KEY) || ''
+}
+
+export function saveLanguage(code) {
+  return safeSet(LANGUAGE_KEY, code)
 }
 
 /**
@@ -168,5 +188,6 @@ export function clearAllSaved() {
     DRAG_HINT_KEY,
     KNOWN_PLAYERS_KEY,
     HISTORY_KEY,
+    LANGUAGE_KEY,
   ].forEach(safeRemove)
 }
