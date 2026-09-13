@@ -52,7 +52,7 @@ export default {
     },
     {
       title: 'Maalit ja kortit',
-      body: 'Napauta tulostaulua: siellä kirjataan maalit tekijöineen ja kortit. Kaksi keltaista tarkoittaa ulosajoa, jolloin pelipaikka jää tyhjäksi.',
+      body: 'Maalin kirjaat ottelunäkymästä: paina oman tai vastustajan painiketta tuloksen alla. Omasta maalista kysytään tekijä — napauta pelaajaa kentällä. Kortit sekä maalien korjaukset löytyvät tulostaulua napauttamalla. Kaksi keltaista tarkoittaa ulosajoa, jolloin pelipaikka jää tyhjäksi.',
     },
     {
       title: 'Lopetus',
@@ -196,6 +196,8 @@ export default {
 
   // Goals and cards
   goalsTitle: 'Tulos',
+  goalForAria: (team) => `Maali: ${team}`,
+  benchScorerConfirm: (name) => `${name} on vaihtopenkillä. Kirjataanko maali silti hänelle?`,
   whoScoredLabel: 'Kuka teki maalin?',
   changeScorerLabel: 'Vaihda maalintekijä',
   unknownScorerOption: 'Tuntematon',

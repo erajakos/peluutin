@@ -9,9 +9,35 @@
  * `VERSION` is the version this build is. It must match package.json, and a
  * test says so.
  */
-export const VERSION = '1.5'
+export const VERSION = '1.6'
 
 export const RELEASES = [
+  {
+    version: '1.6',
+    date: '2026-09-13',
+    fi: {
+      title: 'Silmät pelissä',
+      changes: [
+        'Maalin kirjaaminen ei enää vie pois ottelunäkymästä: painikkeet ovat tuloksen alla, ja tekijän napautat suoraan kentältä.',
+        'Vaihtopelaajalle kirjattavasta maalista kysytään varmistus.',
+        'Kenttäpelaajan voi vetää suoraan sen vaihtopelaajan päälle, jonka haluaa tilalle — ei enää ehdotettua pelaajaa väärään aikaan.',
+        'Kapteeni näkyy C-merkillä kaikkialla: kokoonpanossa, kentällä, tuloksessa, päivän tilastoissa ja vanhoissa otteluissa.',
+        'Sivuilla on Takaisin myös ylhäällä, ja yksi painallus riittää palaamaan.',
+        'Selaimen paluuele liikkuu sovelluksen sisällä, eikä vie ulos ottelusta. Ohjeet ja ottelut voi avata myös suoralla linkillä.',
+      ],
+    },
+    en: {
+      title: 'Eyes on the game',
+      changes: [
+        'Logging a goal no longer leaves the match screen: the buttons sit under the score, and the scorer is tapped on the pitch.',
+        'A goal credited to a substitute is asked about first.',
+        'A player can be dragged straight onto the substitute you want in their place — no more suggestion arriving at the wrong moment.',
+        'The captain wears a C everywhere: in the lineup, on the pitch, in the result, in the day’s stats and in old matches.',
+        'Pages carry a back control at the top as well, and one press is enough to leave.',
+        'The browser’s back gesture moves inside the app rather than out of a match. The instructions and played matches can be opened by link.',
+      ],
+    },
+  },
   {
     version: '1.5',
     date: '2026-09-13',

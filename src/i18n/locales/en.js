@@ -52,7 +52,7 @@ export default {
     },
     {
       title: 'Goals and cards',
-      body: 'Tap the scoreline: goals with their scorers and cards are logged there. Two yellows send a player off, and their position is left empty.',
+      body: 'Goals are logged from the match screen: press your side or theirs, under the score. For your own goal the scorer is asked for — tap the player on the pitch. Cards, and corrections to a goal, are behind the scoreline. Two yellows send a player off, and their position is left empty.',
     },
     {
       title: 'Full time',
@@ -196,6 +196,8 @@ export default {
 
   // Goals and cards
   goalsTitle: 'Score',
+  goalForAria: (team) => `Goal for ${team}`,
+  benchScorerConfirm: (name) => `${name} is on the bench. Log the goal for them anyway?`,
   whoScoredLabel: 'Who scored?',
   changeScorerLabel: 'Change scorer',
   unknownScorerOption: 'Unknown',

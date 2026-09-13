@@ -38,7 +38,9 @@ Finnish and English. No accounts, no servers, no tracking.
 - **Match rules** — match length and whether it is played in halves, how many
   players a side (the keeper among them), re-entry after a substitution, and an
   optional cap on total substitutions.
-- **Score, scorers and cards** — logged against the match clock.
+- **Score, scorers and cards** — logged against the match clock, and logged
+  without leaving the pitch: the goal buttons sit under the scoreline, and the
+  scorer is named by tapping that player where they already stand.
 - **Full-time summary** — the final score, every goal with the scoreline it
   produced, and minutes per player measured against the outfield average.
 - **The captain** — named on the lineup screen and marked with an armband

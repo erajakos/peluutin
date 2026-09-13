@@ -301,7 +301,7 @@ function findDropTarget(clientX, clientY) {
 }
 
 function onPointerDown(event, chip, kind) {
-  if (!chip.selectable) return
+  if (match.pendingGoal || !chip.selectable) return
   activePointerId = event.pointerId
   origin = kind === 'field' ? { slotId: chip.slotId } : { playerId: chip.playerId }
   startX = event.clientX
@@ -408,12 +408,37 @@ function endGesture() {
   ghost.value = null
 }
 
+/**
+ * A goal waiting for a scorer turns every player into the answer: the coach is
+ * already looking at the pitch, and the player who scored is drawn on it. Until
+ * that is answered, a tap means "this one scored" and nothing else.
+ *
+ * A substitute is asked about first. They can have scored — the goal may be
+ * being logged after they came off, or the record put right later — but a
+ * player on the touchline is a surprising answer, and a surprising answer is
+ * usually a mis-tap.
+ */
+function answersGoal(playerId, fromBench = false) {
+  if (!match.pendingGoal || playerId === null) return false
+  if (fromBench) scorerFromBenchId.value = playerId
+  else match.confirmOurGoal(playerId)
+  return true
+}
+
+const scorerFromBenchId = ref(null)
+
+function onBenchScorerConfirmed() {
+  match.confirmOurGoal(scorerFromBenchId.value)
+  scorerFromBenchId.value = null
+}
+
 /** Keeps keyboard activation working, while a completed drag stays silent. */
 function onFieldClick(chip) {
   if (suppressClick) {
     suppressClick = false
     return
   }
+  if (answersGoal(chip.playerId)) return
   if (chip.asksFirst) {
     unlockingSlotId.value = chip.slotId
     return
@@ -426,6 +451,7 @@ function onBenchClick(chip) {
     suppressClick = false
     return
   }
+  if (answersGoal(chip.playerId, true)) return
   match.pickBenchPlayer(chip.playerId)
 }
 
@@ -465,7 +491,14 @@ function onUnlockGoalkeeper() {
     works if both are on the screen at once, hence the bench living here rather
     than in a panel of its own further down the page.
   -->
-  <div ref="board" class="pitch-board" :class="{ 'pitch-board--dragging': dragged !== null }">
+  <div
+    ref="board"
+    class="pitch-board"
+    :class="{
+      'pitch-board--dragging': dragged !== null,
+      'pitch-board--asking': match.pendingGoal,
+    }"
+  >
     <div ref="pitch" class="pitch">
       <PitchMarkings />
 
@@ -488,7 +521,7 @@ function onUnlockGoalkeeper() {
           'chip--moved': chip.moved,
         }"
         :style="chipStyle(chip, 'field')"
-        :disabled="!chip.selectable && !chip.asksFirst"
+        :disabled="!chip.selectable && !chip.asksFirst && !match.pendingGoal"
         :aria-pressed="chip.picked || chip.planned"
         :title="fieldTitle(chip)"
         @pointerdown="onPointerDown($event, chip, 'field')"
@@ -553,7 +586,7 @@ function onUnlockGoalkeeper() {
             'chip--target': dropTarget?.playerId === chip.playerId,
           }"
           :style="chipStyle(chip, 'bench')"
-          :disabled="!chip.selectable"
+          :disabled="!chip.selectable && !match.pendingGoal"
           :aria-pressed="chip.picked || chip.planned"
           :title="benchTitle(chip)"
           @pointerdown="onPointerDown($event, chip, 'bench')"
@@ -609,6 +642,15 @@ function onUnlockGoalkeeper() {
   </Teleport>
 
   <UiConfirmDialog
+    v-if="scorerFromBenchId !== null"
+    :message="t('benchScorerConfirm', match.playerName(scorerFromBenchId))"
+    :confirm-label="t('yesBtn')"
+    :cancel-label="t('cancelBtn')"
+    @confirm="onBenchScorerConfirmed"
+    @cancel="scorerFromBenchId = null"
+  />
+
+  <UiConfirmDialog
     v-if="takingOffSlotId !== null"
     :message="t('takeOffConfirm')"
     :confirm-label="t('yesBtn')"
@@ -628,6 +670,54 @@ function onUnlockGoalkeeper() {
 </template>
 
 <style scoped>
+/*
+ * Waiting on a scorer: every player is an answer, so every player is lit —
+ * and lit properly. A soft glow is invisible on a bright afternoon, so the
+ * shirts turn over entirely: green ground, dark ink, which reads at arm's
+ * length in sunlight where a coloured outline does not.
+ */
+.pitch-board--asking .chip {
+  background: var(--go);
+  border-color: #08281a;
+  color: #08281a;
+  opacity: 1;
+  animation: scorer-wanted 1.6s ease-in-out infinite;
+}
+
+.pitch-board--asking .chip .chip-time {
+  color: rgba(8, 40, 26, 0.78);
+}
+
+.pitch-board--asking .chip--vacant {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: var(--line-strong);
+  color: var(--chalk-dim);
+  opacity: 0.45;
+  animation: none;
+}
+
+@keyframes scorer-wanted {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(250, 255, 250, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(250, 255, 250, 0.12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pitch-board--asking .chip {
+    animation: none;
+    box-shadow: 0 0 0 2px rgba(250, 255, 250, 0.5);
+  }
+}
+
+.pitch-board--asking .chip--vacant {
+  border-color: var(--line-strong);
+  opacity: 0.5;
+}
+
 .pitch-board {
   border-radius: var(--radius);
   overflow: hidden;

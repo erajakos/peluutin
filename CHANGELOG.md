@@ -4,6 +4,17 @@ What changed in each version, in the words the app itself shows under
 _Tietoja → Mitä uutta_. Generated from [`src/changelog.js`](src/changelog.js) by
 `npm run changelog`; edit that file, not this one.
 
+## 1.6 — Eyes on the game
+
+_2026-09-13_
+
+- Logging a goal no longer leaves the match screen: the buttons sit under the score, and the scorer is tapped on the pitch.
+- A goal credited to a substitute is asked about first.
+- A player can be dragged straight onto the substitute you want in their place — no more suggestion arriving at the wrong moment.
+- The captain wears a C everywhere: in the lineup, on the pitch, in the result, in the day’s stats and in old matches.
+- Pages carry a back control at the top as well, and one press is enough to leave.
+- The browser’s back gesture moves inside the app rather than out of a match. The instructions and played matches can be opened by link.
+
 ## 1.5 — A front door and a memory
 
 _2026-09-13_

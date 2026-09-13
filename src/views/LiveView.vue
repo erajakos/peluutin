@@ -5,6 +5,7 @@ import MatchClock from '@/components/live/MatchClock.vue'
 import MatchEventsSheet from '@/components/live/MatchEventsSheet.vue'
 import PitchPanel from '@/components/live/PitchPanel.vue'
 import ScoreBoard from '@/components/live/ScoreBoard.vue'
+import BallIcon from '@/components/ui/BallIcon.vue'
 import { useI18n } from '@/i18n/index.js'
 import { hasSeenDragHint, markDragHintSeen } from '@/services/storage.js'
 import { createScreenWakeLock } from '@/services/wakeLock.js'
@@ -48,21 +49,52 @@ function closeHint() {
 <template>
   <MatchClock />
 
-  <!-- The scoreline is the way into logging goals and cards; the chevron says so. -->
-  <button type="button" class="header" :aria-label="t('openEventsAria')" @click="eventsOpen = true">
-    <!-- Balances the chevron, so the score stays centred on the card. -->
-    <span class="chevron-balance" aria-hidden="true" />
-    <ScoreBoard
-      size="compact"
-      :us-name="app.teamName"
-      :opponent-name="setup.opponentName"
-      :us-score="match.usScore"
-      :opponent-score="match.opponentScore"
-    />
-    <span class="chevron" aria-hidden="true">
-      <svg viewBox="0 0 24 24"><path d="m9.5 5.5 7 6.5-7 6.5" /></svg>
-    </span>
-  </button>
+  <!--
+    Goals are logged here, on the match screen, because a goal is scored while
+    the coach is watching the pitch — sending them to another screen for it is
+    the surest way to have a substitution missed. The scoreline itself still
+    opens the full list of events, where a goal can be corrected.
+  -->
+  <div class="header">
+    <button
+      type="button"
+      class="events"
+      :aria-label="t('openEventsAria')"
+      @click="eventsOpen = true"
+    >
+      <!-- Balances the chevron, so the score stays centred on the card. -->
+      <span class="chevron-balance" aria-hidden="true" />
+      <ScoreBoard
+        size="compact"
+        :us-name="app.teamName"
+        :opponent-name="setup.opponentName"
+        :us-score="match.usScore"
+        :opponent-score="match.opponentScore"
+      />
+      <span class="chevron" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="m9.5 5.5 7 6.5-7 6.5" /></svg>
+      </span>
+    </button>
+
+    <div class="goals">
+      <button
+        type="button"
+        class="goal"
+        :aria-label="t('goalForAria', app.teamName)"
+        @click="match.beginOurGoal()"
+      >
+        <BallIcon :size="16" /> {{ app.teamName }}
+      </button>
+      <button
+        type="button"
+        class="goal goal--theirs"
+        :aria-label="t('goalForAria', setup.opponentName)"
+        @click="match.addOpponentGoal()"
+      >
+        <BallIcon :size="16" /> {{ setup.opponentName }}
+      </button>
+    </div>
+  </div>
 
   <PitchPanel class="pitch-panel" />
 
@@ -73,24 +105,61 @@ function closeHint() {
 
 <style scoped>
 .header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   width: 100%;
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 13px 12px 15px;
+  padding: 13px 12px 12px;
   color: var(--chalk);
+  margin-bottom: 12px;
+}
+
+.events {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: none;
+  color: inherit;
+  padding: 0;
   transition: background 0.12s ease;
 }
 
-.header:active {
+/* One tap each, where the eyes already are when the ball goes in. */
+.goals {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.goal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 1;
+  min-height: 44px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1.5px solid var(--line-strong);
+  color: var(--chalk);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.goal:active {
   transform: translateY(1px);
+}
+
+.goal--theirs {
+  color: var(--against);
+}
+
+.events:active {
   background: #1a5436;
 }
 
-.header :deep(.board) {
+.events :deep(.board) {
   flex: 1;
   min-width: 0;
 }
