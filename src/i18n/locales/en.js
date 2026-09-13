@@ -5,11 +5,66 @@ export default {
   infoLink: 'About & privacy',
   localOnlyBadge: 'Everything stays on your phone',
 
+  // Front screen
+  backToMenuBtn: 'Back to the menu',
+  menuStartBtn: 'Start a match',
+  menuHistory: 'Played matches',
+  menuHistoryNote: (count) => (count === 1 ? '1 match kept' : `${count} matches kept`),
+  menuHistoryEmptyNote: 'Nothing played yet',
+  menuHelp: 'How it works',
+  menuHelpNote: 'A short guide',
+  menuInfo: 'About',
+  menuInfoNote: 'Privacy and author',
+
+  // Played matches
+  historyTitle: 'Played matches',
+  historyEmpty: 'Nothing here yet. Matches you play are kept in this list.',
+  historyDayNote: (played, goalsFor, goalsAgainst) =>
+    `${played === 1 ? '1 match' : `${played} matches`} · ${goalsFor}\u2013${goalsAgainst}`,
+
+  // Instructions
+  helpTitle: 'How it works',
+  helpIntro: 'Briefly: how a match runs, from first whistle to last.',
+  helpSections: [
+    {
+      title: 'Before the match',
+      body: 'Give the opponent, the length of the match and how many players a side (the keeper among them). Add your players — their names are remembered for next time.',
+    },
+    {
+      title: 'The starting lineup',
+      body: 'Choose a player for each position, or fill the rest at random. You can name a captain too.',
+    },
+    {
+      title: 'The clock',
+      body: 'Start the clock on the referee\u2019s whistle. If it was started late, tap the time: it can be nudged a minute either way. The screen stays awake for as long as the match is on.',
+    },
+    {
+      title: 'Substitutions',
+      body: 'Drag a substitute onto a player on the pitch, or a player down to the bench. Plan as many changes as you like — nothing happens until you confirm them. Tapping does the same: one, then the other. A change can be taken back right after it is made.',
+    },
+    {
+      title: 'Positions',
+      body: 'Drag one player on the pitch onto another and the two trade positions. It spends no substitution and interrupts neither player\u2019s spell.',
+    },
+    {
+      title: 'Who is due a change',
+      body: 'A red arrow marks the player who has been on longest without a break. A green one marks the substitute who has played least. The keeper is never suggested.',
+    },
+    {
+      title: 'Goals and cards',
+      body: 'Tap the scoreline: goals with their scorers and cards are logged there. Two yellows send a player off, and their position is left empty.',
+    },
+    {
+      title: 'Full time',
+      body: 'End a half or the match with the \u25a0 button. The summary shows the result and everyone\u2019s minutes, and the match is kept in Played matches.',
+    },
+  ],
+
   // Info
   infoIntro: 'A small tool for planning the match and the substitutions from the touchline.',
   privacyTitle: 'Your data stays yours',
   privacyBody:
-    'Everything stays on this device. There are no accounts, no servers, no cloud and no database. Your team name, players, settings and the day\u2019s matches are kept only in this device\u2019s own browser storage, so you need not type them in every time and an interrupted match carries on where it left off.',
+    'Everything stays on this device. There are no accounts, no servers, no cloud and no database. Your team name, players, settings and the matches you have played are kept only in this device\u2019s own browser storage, so you need not type them in every time, an interrupted match carries on where it left off, and old matches are still there later.',
   privacyNoTracking:
     'No tracking, no analytics, no telemetry, no cookies, no ads. Nothing is sent anywhere.',
   clearDataBtn: 'Clear all data',

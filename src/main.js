@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import { listenForInstallPrompt } from './services/installPrompt.js'
+import { persistHistory } from './services/historyPersistence.js'
 import { persistRoster } from './services/rosterPersistence.js'
 import { keepSessionSaved, resumeSession } from './services/sessionPersistence.js'
 import { persistMatchSettings } from './services/settingsPersistence.js'
@@ -24,6 +25,7 @@ listenForInstallPrompt()
 const pinia = createPinia()
 pinia.use(persistMatchSettings)
 pinia.use(persistRoster)
+pinia.use(persistHistory)
 
 const app = createApp(App).use(pinia)
 

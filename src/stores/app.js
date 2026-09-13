@@ -1,8 +1,10 @@
 import { defineStore } from 'pinia'
 import { nextId } from '@/domain/ids.js'
+import { createMatchRecord } from '@/domain/matchday.js'
 import { setLocale } from '@/i18n/index.js'
 import { clearAllSaved, loadTeamName, saveTeamName } from '@/services/storage.js'
 import { useMatchStore } from './match.js'
+import { useHistoryStore } from './history.js'
 import { useMatchdayStore } from './matchday.js'
 import { useSetupStore } from './setup.js'
 
@@ -17,7 +19,10 @@ import { useSetupStore } from './setup.js'
  */
 export const PHASES = Object.freeze({
   SPLASH: 'splash',
+  MENU: 'menu',
   INFO: 'info',
+  HELP: 'help',
+  HISTORY: 'history',
   TEAM: 'team',
   OPPONENT: 'opponent',
   SETTINGS: 'settings',
@@ -37,22 +42,35 @@ export const useAppStore = defineStore('app', {
   }),
 
   actions: {
-    /** The info page is a detour, not a step: it always returns where it came from. */
-    openInfo() {
-      if (this.phase === PHASES.INFO) return
+    /**
+     * The pages off the front screen — what has been played, how the app works,
+     * what it keeps — are detours rather than steps: each returns where it came
+     * from, so none of them can strand a coach mid-match.
+     */
+    openPage(phase) {
+      if (this.phase === phase) return
       this.previousPhase = this.phase
-      this.phase = PHASES.INFO
+      this.phase = phase
     },
 
-    closeInfo() {
+    closePage() {
       this.phase = this.previousPhase
     },
 
-    chooseLanguage(code) {
+    setLanguage(code) {
       setLocale(code)
       // Name the positions in the chosen language, keeping the chosen shape.
       useSetupStore().relabelPositionsForLocale()
-      // A returning coach has already told us their team; do not ask again.
+    },
+
+    /** The splash asks one question — which language — and then stands aside. */
+    chooseLanguage(code) {
+      this.setLanguage(code)
+      this.phase = PHASES.MENU
+    },
+
+    /** A returning coach has already told us their team; do not ask again. */
+    startNewMatch() {
       this.phase = this.teamName ? PHASES.OPPONENT : PHASES.TEAM
     },
 
@@ -117,7 +135,7 @@ export const useAppStore = defineStore('app', {
       const match = useMatchStore()
       const setup = useSetupStore()
       match.finish()
-      useMatchdayStore().record({
+      const record = {
         id: nextId(),
         opponent: setup.opponentName,
         usScore: match.usScore,
@@ -128,7 +146,10 @@ export const useAppStore = defineStore('app', {
         })),
         goals: match.goals,
         cards: setup.trackCards ? match.cards : [],
-      })
+      }
+      useMatchdayStore().record(record)
+      // The same match twice over: today's stats clear tonight, this one keeps.
+      useHistoryStore().record(createMatchRecord(record))
       this.phase = PHASES.SUMMARY
     },
 
@@ -143,6 +164,12 @@ export const useAppStore = defineStore('app', {
       this.phase = PHASES.STATS
     },
 
+    /** Done for now: back to the front, with the day's results still standing. */
+    backToMenu() {
+      useMatchStore().reset()
+      this.phase = PHASES.MENU
+    },
+
     /**
      * Start over as if on a new phone: the team, the squad, the settings and
      * the day's results are all forgotten, here and in the device's storage.
@@ -150,6 +177,7 @@ export const useAppStore = defineStore('app', {
     forgetEverything() {
       useMatchStore().reset()
       useMatchdayStore().clear()
+      useHistoryStore().clear()
       useSetupStore().$reset()
       // After the resets, which save their now-empty state on the way through.
       clearAllSaved()

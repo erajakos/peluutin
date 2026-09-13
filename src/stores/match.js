@@ -382,15 +382,23 @@ export const useMatchStore = defineStore('match', {
     },
 
     /**
-     * A player dragged off the field. Whoever the rotation says is due on is
-     * pencilled in beside them, since that is the change being made nine times
-     * out of ten — and dropping someone else on top replaces them.
+     * A player dragged off the field, with somebody pencilled in beside them.
+     *
+     * A substitute the coach has already picked out is the answer, if there is
+     * one — their choice outranks any suggestion. Otherwise it is whoever the
+     * rotation says is due on, and only from those not already spoken for: a
+     * suggestion must never take a player out of a change the coach has
+     * already made, which would send on someone they did not choose.
      */
     planOff(slotId) {
+      const picked = this.pickedPlayerId
+      if (picked !== null && this.canPlayerReturn(picked)) {
+        return this.stageChange(slotId, picked)
+      }
+
       const taken = new Set(Object.values(this.plan))
-      const suggestion =
-        this.availableBench.find((player) => this.hints.dueOnPlayerIds.has(player.id)) ??
-        this.availableBench.find((player) => !taken.has(player.id))
+      const free = this.availableBench.filter((player) => !taken.has(player.id))
+      const suggestion = free.find((player) => this.hints.dueOnPlayerIds.has(player.id)) ?? free[0]
       return this.stageChange(slotId, suggestion?.id ?? null)
     },
 

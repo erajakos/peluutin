@@ -517,6 +517,45 @@ describe('match store', () => {
       expect(match.plan[slot.id]).toBe(7)
     })
 
+    it('leaves a substitute the coach has already chosen where they put them', () => {
+      const { match, setup } = startMatch()
+      setup.roster.push({ id: 7, name: 'Fay' })
+      match.kickOff(setup.roster)
+      match.slots.forEach((slot, index) => {
+        slot.playerId = ROSTER[index].id
+      })
+      match.tick(300)
+      // 6 has played least, so 6 is the one the rotation would suggest.
+      match.playersById.get(7).seconds = 200
+
+      const [first, second] = match.slots.filter((slot) => !slot.isGoalkeeper)
+      // The coach puts that same player into a position of their own choosing.
+      match.stageChange(first.id, 6)
+      // ...and then drags someone else off. The suggestion must not take 6 away.
+      match.planOff(second.id)
+
+      expect(match.plan[first.id]).toBe(6)
+      expect(match.plan[second.id]).toBe(7)
+    })
+
+    it('brings on the substitute already picked, not the one due on', () => {
+      const { match, setup } = startMatch()
+      setup.roster.push({ id: 7, name: 'Fay' })
+      match.kickOff(setup.roster)
+      match.slots.forEach((slot, index) => {
+        slot.playerId = ROSTER[index].id
+      })
+      match.tick(300)
+      match.playersById.get(7).seconds = 200
+
+      // Tap the substitute you want, then drag a player off to the touchline.
+      match.pickBenchPlayer(7)
+      const slot = match.slots.find((candidate) => candidate.playerId === 2)
+      match.planOff(slot.id)
+
+      expect(match.plan[slot.id]).toBe(7)
+    })
+
     it('moves a player rather than planning them into two positions at once', () => {
       const { match, setup } = startMatch()
       setup.roster.push({ id: 7, name: 'Fay' })

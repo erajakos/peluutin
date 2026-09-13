@@ -3,7 +3,7 @@ import BrandBadge from '@/components/BrandBadge.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import { useI18n } from '@/i18n/index.js'
 import { useInstallPrompt } from '@/services/installPrompt.js'
-import { useAppStore } from '@/stores/app.js'
+import { PHASES, useAppStore } from '@/stores/app.js'
 
 const app = useAppStore()
 const { t, tIn, locale, alternate } = useI18n()
@@ -25,7 +25,9 @@ const { canInstall, install } = useInstallPrompt()
 
     <!-- Said up front, before anything is typed in: nothing here leaves the device. -->
     <p class="local-badge">{{ t('localOnlyBadge') }}</p>
-    <button type="button" class="info-link" @click="app.openInfo()">{{ t('infoLink') }}</button>
+    <button type="button" class="info-link" @click="app.openPage(PHASES.INFO)">
+      {{ t('infoLink') }}
+    </button>
     <!-- Only when the browser can install it right now; iOS is covered on the info page. -->
     <button v-if="canInstall" type="button" class="install" @click="install">
       <svg viewBox="0 0 24 24" aria-hidden="true">

@@ -16,6 +16,7 @@ const ROSTER_KEY = 'peluutinRoster'
 const SESSION_KEY = 'peluutinSession'
 const DRAG_HINT_KEY = 'peluutinDragHintSeen'
 const KNOWN_PLAYERS_KEY = 'peluutinKnownPlayers'
+const HISTORY_KEY = 'peluutinHistory'
 
 function safeGet(key) {
   try {
@@ -124,6 +125,28 @@ export function clearSession() {
 }
 
 /**
+ * Every match this device has played, for the list of played games. Anything
+ * malformed is dropped: a broken record must not take the list down with it.
+ */
+export function loadHistory() {
+  const saved = loadJson(HISTORY_KEY)
+  if (!Array.isArray(saved)) return []
+  return saved.filter(
+    (entry) =>
+      entry &&
+      Number.isFinite(entry.playedAt) &&
+      typeof entry.opponent === 'string' &&
+      Number.isInteger(entry.usScore) &&
+      Number.isInteger(entry.opponentScore) &&
+      Array.isArray(entry.players),
+  )
+}
+
+export function saveHistory(entries) {
+  return safeSet(HISTORY_KEY, JSON.stringify(entries))
+}
+
+/**
  * Whether the coach has been shown how a change is made. Once is enough: it is
  * an introduction, not advice, and nobody wants it before every match.
  */
@@ -144,5 +167,6 @@ export function clearAllSaved() {
     SESSION_KEY,
     DRAG_HINT_KEY,
     KNOWN_PLAYERS_KEY,
+    HISTORY_KEY,
   ].forEach(safeRemove)
 }

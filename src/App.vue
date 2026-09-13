@@ -1,6 +1,9 @@
 <script setup>
 import { computed } from 'vue'
 import { useRegisterSW } from 'virtual:pwa-register/vue'
+import HelpView from '@/views/HelpView.vue'
+import MenuView from '@/views/MenuView.vue'
+import HistoryView from '@/views/HistoryView.vue'
 import InfoView from '@/views/InfoView.vue'
 import LineupView from '@/views/LineupView.vue'
 import LiveView from '@/views/LiveView.vue'
@@ -20,7 +23,10 @@ import { PHASES, useAppStore } from '@/stores/app.js'
  */
 const VIEWS = {
   [PHASES.SPLASH]: SplashView,
+  [PHASES.MENU]: MenuView,
   [PHASES.INFO]: InfoView,
+  [PHASES.HELP]: HelpView,
+  [PHASES.HISTORY]: HistoryView,
   [PHASES.TEAM]: TeamNameView,
   [PHASES.OPPONENT]: OpponentView,
   [PHASES.SETTINGS]: SettingsView,

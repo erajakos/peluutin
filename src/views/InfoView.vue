@@ -46,7 +46,7 @@ const confirmingClear = ref(false)
     </button>
   </section>
 
-  <UiButton variant="secondary" @click="app.closeInfo()">{{ t('backBtn') }}</UiButton>
+  <UiButton variant="secondary" @click="app.closePage()">{{ t('backBtn') }}</UiButton>
 
   <UiConfirmDialog
     v-if="confirmingClear"

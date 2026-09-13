@@ -5,11 +5,66 @@ export default {
   infoLink: 'Tietoja & tietosuoja',
   localOnlyBadge: 'Kaikki tiedot pysyvät puhelimessasi',
 
+  // Front screen
+  backToMenuBtn: 'Takaisin valikkoon',
+  menuStartBtn: 'Aloita ottelu',
+  menuHistory: 'Pelatut ottelut',
+  menuHistoryNote: (count) => (count === 1 ? '1 ottelu tallessa' : `${count} ottelua tallessa`),
+  menuHistoryEmptyNote: 'Ei vielä pelattuja otteluita',
+  menuHelp: 'Ohjeet',
+  menuHelpNote: 'Näin sovellus toimii',
+  menuInfo: 'Tietoja',
+  menuInfoNote: 'Tietosuoja ja tekijä',
+
+  // Played matches
+  historyTitle: 'Pelatut ottelut',
+  historyEmpty: 'Täällä ei ole vielä mitään. Pelatut ottelut tallentuvat tähän listaan.',
+  historyDayNote: (played, goalsFor, goalsAgainst) =>
+    `${played === 1 ? '1 ottelu' : `${played} ottelua`} · ${goalsFor}\u2013${goalsAgainst}`,
+
+  // Instructions
+  helpTitle: 'Ohjeet',
+  helpIntro: 'Lyhyesti: näin ottelu kulkee alusta loppuun.',
+  helpSections: [
+    {
+      title: 'Ennen ottelua',
+      body: 'Anna vastustajan nimi, ottelun kesto ja pelaajien lukumäärä (maalivahti mukaan lukien). Lisää pelaajat listaan — nimet muistetaan seuraavaa kertaa varten.',
+    },
+    {
+      title: 'Aloituskokoonpano',
+      body: 'Valitse jokaiseen pelipaikkaan pelaaja tai täytä loput satunnaisesti. Voit myös nimetä kapteenin.',
+    },
+    {
+      title: 'Kello',
+      body: 'Käynnistä kello tuomarin vihellyksestä. Jos kello unohtui käynnistää, napauta aikaa: sitä voi säätää minuutin verran suuntaan tai toiseen. Näyttö pysyy päällä ottelun ajan.',
+    },
+    {
+      title: 'Vaihdot',
+      body: 'Vedä vaihtopelaaja kentällä olevan pelaajan päälle tai kenttäpelaaja penkille. Voit suunnitella monta vaihtoa kerralla; mitään ei tapahdu ennen kuin vahvistat ne. Napauttaminen toimii samoin: ensin toinen, sitten toinen. Vaihdon voi kumota heti sen jälkeen.',
+    },
+    {
+      title: 'Pelipaikat',
+      body: 'Vedä kenttäpelaaja toisen kenttäpelaajan päälle, niin he vaihtavat pelipaikkaa. Se ei kuluta vaihtoa eikä katkaise kummankaan peliaikaa.',
+    },
+    {
+      title: 'Kuka vaihtoon',
+      body: 'Punainen nuoli kertoo, kuka on ollut kentällä pitkään ilman taukoa. Vihreä nuoli kertoo, kuka penkillä on pelannut vähiten. Maalivahtia ei ehdoteta vaihtoon.',
+    },
+    {
+      title: 'Maalit ja kortit',
+      body: 'Napauta tulostaulua: siellä kirjataan maalit tekijöineen ja kortit. Kaksi keltaista tarkoittaa ulosajoa, jolloin pelipaikka jää tyhjäksi.',
+    },
+    {
+      title: 'Lopetus',
+      body: 'Päätä puoliaika tai ottelu ■-painikkeesta. Yhteenveto näyttää tuloksen ja jokaisen peliajan, ja ottelu tallentuu Pelatut ottelut -listaan.',
+    },
+  ],
+
   // Info
   infoIntro: 'Pieni työkalu ottelun ja vaihtojen suunnitteluun kentän laidalla.',
   privacyTitle: 'Tietosi pysyvät sinulla',
   privacyBody:
-    'Kaikki tiedot pysyvät tällä laitteella. Sovelluksessa ei ole tilejä, palvelimia, pilveä eikä tietokantaa. Joukkueen nimi, pelaajat, asetukset ja päivän ottelut tallennetaan vain tämän laitteen omaan selainmuistiin, jotta niitä ei tarvitse kirjoittaa joka kerta ja keskeytynyt ottelu jatkuu siitä, mihin se jäi.',
+    'Kaikki tiedot pysyvät tällä laitteella. Sovelluksessa ei ole tilejä, palvelimia, pilveä eikä tietokantaa. Joukkueen nimi, pelaajat, asetukset ja pelatut ottelut tallennetaan vain tämän laitteen omaan selainmuistiin, jotta niitä ei tarvitse kirjoittaa joka kerta, keskeytynyt ottelu jatkuu siitä mihin se jäi ja vanhat ottelut löytyvät myöhemminkin.',
   privacyNoTracking:
     'Ei seurantaa, ei analytiikkaa, ei telemetriaa, ei evästeitä, ei mainoksia. Mitään ei lähetetä mihinkään.',
   clearDataBtn: 'Tyhjennä kaikki tiedot',

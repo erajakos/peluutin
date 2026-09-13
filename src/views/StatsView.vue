@@ -60,9 +60,16 @@ const scorerItems = computed(() => {
   </UiPanel>
 
   <UiButton @click="app.playAnotherMatch()">{{ t('playAnotherBtn') }}</UiButton>
+  <UiButton variant="secondary" class="menu-btn" @click="app.backToMenu()">
+    {{ t('backToMenuBtn') }}
+  </UiButton>
 </template>
 
 <style scoped>
+.menu-btn {
+  margin-top: 10px;
+}
+
 .stats-title {
   margin-bottom: 20px;
 }

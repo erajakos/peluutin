@@ -43,6 +43,9 @@ Finnish and English. No accounts, no servers, no tracking.
   produced, and minutes per player measured against the outfield average.
 - **The day's stats** — wins, draws and losses in form-guide colours, goals,
   top scorers, cards and total minutes across every match played that day.
+- **Played matches** — every match this device has played, filed by the day it
+  was played on. Open one for its scorers, its cards and everyone's minutes.
+  Last Saturday is still there next Saturday.
 - **The screen stays on during a match** — no unlocking the phone every time
   you want the clock. The browser's wake lock is asked for while the live
   screen is open and released at full time; where a browser does not offer it,
@@ -58,8 +61,9 @@ Everything stays on the device. There are no accounts, no servers, no cloud,
 no database and no build-time or run-time analytics. What is kept is kept in
 that browser's own `localStorage`, and only so you do not re-enter it every
 week: your team name, how you play the match (length, halves, format,
-formation, rules), your squad's names, and the current day's matches — the
-last one so an interrupted match can pick up where it left off. Names you have
+formation, rules), your squad's names, the matches you have played, and the
+match in progress — the last one so an interrupted match can pick up where it
+left off. Names you have
 had in a squad before are remembered with them, so a player typed in again is
 the same player and keeps their minutes. A saved
 matchday is dropped once the day is over.
@@ -135,6 +139,7 @@ src/
 │   ├── formations.js    Stock formations per outfield count
 │   ├── ids.js           One shared id sequence for every entity
 │   ├── lineup.js        Building slots and working out the bench
+│   ├── history.js       Played matches, gathered into the days they were played
 │   ├── pitch.js         Where each position sits on the drawn pitch
 │   ├── plan.js          A substitution being put together, before it happens
 │   ├── playingTime.js   Fairness: averages and deltas
@@ -157,7 +162,8 @@ src/
 │   ├── app.js           Which screen we are on; the matchday flow
 │   ├── setup.js         Format, rules, formation and squad
 │   ├── match.js         The match being played right now
-│   └── matchday.js      Finished matches
+│   ├── matchday.js      Finished matches of the day in progress
+│   └── history.js       Every match played, kept between visits
 │
 ├── i18n/            Finnish and English, one file per locale.
 │   ├── index.js         `t()`, locale state, position translation
@@ -174,8 +180,10 @@ src/
 
 ### A few decisions worth knowing
 
-**Phases, not routes.** The app is a linear matchday: splash → team → setup →
-lineup → live → summary → stats. A deep link into the middle of it would land
+**Phases, not routes.** The app is a linear matchday: splash → menu → team →
+setup → lineup → live → summary → stats, with the menu's three other doors —
+played matches, how it works, about — as detours that return where they came
+from. A deep link into the middle of it would land
 on an empty match, so there are no URLs to link to. `stores/app.js` owns the
 phase and every transition; `App.vue` is just a lookup table. The info page is
 the one detour, and it returns wherever it came from.
