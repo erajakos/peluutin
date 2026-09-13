@@ -28,10 +28,10 @@ const { t } = useI18n()
     -->
     <div v-if="match.pendingGoal" class="asking">
       <span class="asking-text">{{ t('whoScoredLabel') }}</span>
-      <button type="button" class="asking-btn" @click="match.confirmOurGoal(null)">
-        {{ t('unknownScorerOption') }}
+      <button type="button" class="asking-btn" @click="match.confirmGoal(null)">
+        {{ t('skipScorerBtn') }}
       </button>
-      <button type="button" class="asking-btn" @click="match.cancelOurGoal()">
+      <button type="button" class="asking-cancel" @click="match.cancelOurGoal()">
         {{ t('cancelBtn') }}
       </button>
     </div>
@@ -67,13 +67,30 @@ const { t } = useI18n()
   min-width: 0;
 }
 
+/* Buttons, not links: these are answers to the question, and get tapped. */
 .asking-btn {
-  background: none;
-  color: rgba(8, 40, 26, 0.8);
+  flex-shrink: 0;
+  padding: 8px 13px;
+  border-radius: 999px;
+  background: #0b3220;
+  border: 1.5px solid #08281a;
+  color: #eafaf0;
   font-size: 14.5px;
   font-weight: 700;
-  padding: 4px 6px;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+}
+
+.asking-btn:active {
+  transform: translateY(1px);
+  background: #08281a;
+}
+
+/* Backing out is the lesser answer: plain words, no box, no underline. */
+.asking-cancel {
+  flex-shrink: 0;
+  padding: 8px 4px;
+  background: none;
+  color: rgba(8, 40, 26, 0.75);
+  font-size: 14.5px;
+  font-weight: 600;
 }
 </style>

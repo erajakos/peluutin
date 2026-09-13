@@ -905,7 +905,7 @@ describe('match store', () => {
     it('records goals for both sides and can reattribute a scorer later', () => {
       const { match } = startMatch()
       match.beginOurGoal()
-      match.confirmOurGoal(null)
+      match.confirmGoal(null)
       match.addOpponentGoal()
 
       expect(match.usScore).toBe(1)

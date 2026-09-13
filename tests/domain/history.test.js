@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createHistoryEntry, dayKey, groupByDay, trimHistory } from '@/domain/history.js'
+import { createHistoryEntry, dayKey, groupByDay, playedBy, trimHistory } from '@/domain/history.js'
 
 const at = (...args) => new Date(...args).getTime()
 const match = (id, opponent, us, them, playedAt) =>
@@ -42,6 +42,18 @@ describe('matches kept beyond the day', () => {
     const many = Array.from({ length: 8 }, (_, i) => match(i, 'PPJ', 0, 0, at(2026, 0, i + 1)))
     const kept = trimHistory(many, 3)
     expect(kept.map((entry) => entry.id)).toEqual([5, 6, 7])
+  })
+
+  it('keeps each team to its own matches', () => {
+    const ours = { ...match(1, 'PPJ', 1, 0, at(2026, 8, 12)), teamId: 7 }
+    const theirs = { ...match(2, 'HJK', 0, 1, at(2026, 8, 12)), teamId: 8 }
+    // Played before the app knew about teams, so it names none.
+    const older = match(3, 'KäPa', 2, 2, at(2026, 8, 5))
+
+    expect(playedBy([ours, theirs, older], 7).map((entry) => entry.id)).toEqual([1])
+    // The first team inherits what the single squad played.
+    expect(playedBy([ours, theirs, older], 7, true).map((entry) => entry.id)).toEqual([1, 3])
+    expect(playedBy([ours, theirs, older], 8, false).map((entry) => entry.id)).toEqual([2])
   })
 
   it('has nothing to group when nothing has been played', () => {

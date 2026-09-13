@@ -19,14 +19,14 @@ const { t } = useI18n()
 /** The captain comes from the players starting, not the whole squad. */
 const captainOptions = computed(() => {
   const starting = onFieldPlayerIds(match.slots)
-  return setup.roster
+  return setup.attending
     .filter((player) => starting.has(player.id))
     .map((player) => ({ value: player.id, label: player.name }))
 })
 
 const benchPreview = computed(() => {
   const placed = onFieldPlayerIds(match.slots)
-  const names = setup.roster.filter((player) => !placed.has(player.id)).map((p) => p.name)
+  const names = setup.attending.filter((player) => !placed.has(player.id)).map((p) => p.name)
   return names.length ? names.join(', ') : t('benchPreviewEmpty')
 })
 </script>
@@ -41,7 +41,7 @@ const benchPreview = computed(() => {
     v-if="match.canDrawLineup"
     variant="secondary"
     class="draw"
-    @click="match.drawLineup(setup.roster)"
+    @click="match.drawLineup(setup.attending)"
   >
     {{ t('drawLineupBtn') }}
   </UiButton>
@@ -52,7 +52,7 @@ const benchPreview = computed(() => {
       :key="slot.id"
       :lineup-slot="slot"
       :slots="match.slots"
-      :roster="setup.roster"
+      :roster="setup.attending"
       :captain-id="match.captainId"
       @assign="match.assignSlot(slot.id, $event)"
     />

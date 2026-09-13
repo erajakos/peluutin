@@ -51,6 +51,19 @@ export function groupByDay(entries) {
     .map((day) => ({ ...day, summary: matchdaySummary(day.matches) }))
 }
 
+/**
+ * The matches one team has played.
+ *
+ * A record from before the app knew about more than one team names no team.
+ * Those belong to the first team, which is what that single squad became on
+ * the way in — not to every team, which would count them again and again.
+ */
+export function playedBy(entries, teamId, keepsUnnamed = false) {
+  return entries.filter(
+    (entry) => entry.teamId === teamId || (keepsUnnamed && entry.teamId == null),
+  )
+}
+
 /** The newest entries, oldest dropped, so storage cannot grow without end. */
 export function trimHistory(entries, limit = HISTORY_LIMIT) {
   return [...entries].sort((a, b) => a.playedAt - b.playedAt).slice(-limit)

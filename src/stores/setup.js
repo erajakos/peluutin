@@ -34,7 +34,14 @@ export const useSetupStore = defineStore('setup', {
     subLimitEnabled: false,
     subLimit: 5,
     trackCards: false,
+    /** Everyone in the team. Who plays today is a separate question. */
     roster: [],
+    /**
+     * Who turned up. A player missing from a match is still in the team — they
+     * were at a birthday party — so attendance is per match and the squad is
+     * left alone.
+     */
+    attendingIds: [],
     /**
      * Everyone this device has had in a squad, and the id they were given. A
      * player taken out and typed in again is the same child, and the day's
@@ -57,7 +64,12 @@ export const useSetupStore = defineStore('setup', {
 
     canLimitSubs: (state) => state.fieldSize >= SUB_LIMIT_MIN_FIELD_SIZE,
 
-    hasEnoughPlayers: (state) => state.roster.length >= state.fieldSize,
+    /** The players available for this match, in squad order. */
+    attending: (state) => state.roster.filter((player) => state.attendingIds.includes(player.id)),
+
+    hasEnoughPlayers() {
+      return this.attending.length >= this.fieldSize
+    },
 
     /** Rules the live match needs, bundled so the match store stays decoupled. */
     matchRules(state) {
@@ -145,6 +157,8 @@ export const useSetupStore = defineStore('setup', {
       const used = this.roster.map((player) => player.id)
       const id = knownPlayerId(this.knownPlayers, trimmed, used) ?? nextId()
       this.roster.push({ id, typedName: trimmed, name: trimmed })
+      // Someone just added is here: nobody types in a player who is not.
+      if (!this.attendingIds.includes(id)) this.attendingIds.push(id)
       this.rememberRoster()
       this.renumberNames()
       return true
@@ -160,12 +174,27 @@ export const useSetupStore = defineStore('setup', {
 
     removePlayer(id) {
       this.roster = this.roster.filter((player) => player.id !== id)
+      this.attendingIds = this.attendingIds.filter((playerId) => playerId !== id)
       this.renumberNames()
+    },
+
+    /** Here today, or not. Nothing about the team itself changes either way. */
+    toggleAttending(id) {
+      if (this.attendingIds.includes(id)) {
+        this.attendingIds = this.attendingIds.filter((playerId) => playerId !== id)
+      } else {
+        this.attendingIds.push(id)
+      }
+    },
+
+    setEveryoneAttending() {
+      this.attendingIds = this.roster.map((player) => player.id)
     },
 
     /** A different group of players this time: start the squad from nothing. */
     clearRoster() {
       this.roster = []
+      this.attendingIds = []
     },
 
     /**
@@ -175,6 +204,8 @@ export const useSetupStore = defineStore('setup', {
     restoreRoster(players) {
       players.forEach((player) => nextId.skipPast(player.id))
       this.roster = players.map(({ id, name }) => ({ id, typedName: name, name }))
+      // A squad taken out of the cupboard is all present until told otherwise.
+      this.setEveryoneAttending()
       this.rememberRoster()
       this.renumberNames()
     },

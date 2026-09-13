@@ -9,9 +9,31 @@
  * `VERSION` is the version this build is. It must match package.json, and a
  * test says so.
  */
-export const VERSION = '1.6'
+export const VERSION = '1.7'
 
 export const RELEASES = [
+  {
+    version: '1.7',
+    date: '2026-09-13',
+    fi: {
+      title: 'Useampi joukkue',
+      changes: [
+        'Voit lisätä useamman joukkueen ja vaihtaa niiden välillä valikon Joukkue-rivistä. Jokaisella joukkueella on omat pelaajansa, ja niitä muokataan samasta paikasta.',
+        'Ottelun alussa merkitään vain, ketkä ovat paikalla. Pois jättäminen ei poista pelaajaa joukkueesta.',
+        'Pelatut ottelut ja tilastot ovat joukkuekohtaisia.',
+        'Maalintekijän voi jättää kirjaamatta selvemmin sanoin — “Ei kirjata” eikä “Tuntematon”.',
+      ],
+    },
+    en: {
+      title: 'More than one team',
+      changes: [
+        'Teams can be added and switched from the Team row on the menu, and each keeps its own players, edited in the same place.',
+        'Setting up a match only asks who turned up. Leaving someone out of a match does not take them out of the team.',
+        'Played matches and stats belong to the team that played them.',
+        'Leaving a scorer unrecorded is said plainly — “Don’t record” rather than “Unknown”.',
+      ],
+    },
+  },
   {
     version: '1.6',
     date: '2026-09-13',

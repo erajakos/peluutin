@@ -63,6 +63,7 @@ describe('the address bar', () => {
   it('opens a page arrived at by link', () => {
     expect(landingPhase('#/help')).toBe(PHASES.HELP)
     expect(landingPhase('#/matches')).toBe(PHASES.HISTORY)
+    expect(landingPhase('#/teams')).toBe(PHASES.TEAMS)
     // A match cannot be conjured up by a link, so these open where the app does.
     expect(landingPhase('#/match')).toBe(null)
     expect(landingPhase('#/lineup')).toBe(null)

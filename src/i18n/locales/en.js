@@ -6,6 +6,19 @@ export default {
   localOnlyBadge: 'Everything stays on your phone',
 
   // Front screen
+  newTeamPlaceholder: 'e.g. LPS Black',
+  addTeamShort: '+ Add',
+  editTeamAria: 'Edit the team',
+  editTeamTitle: 'Edit the team',
+  teamNameLabel: 'Team name',
+  removeTeamBtn: 'Remove the team',
+  chooseTeamBtn: 'Choose',
+  teamsLead: 'Choose the team you are coaching. The pencil edits a team’s name and players.',
+  teamsTitle: 'Teams',
+  squadCountNote: (count) => (count === 1 ? '1 player' : `${count} players`),
+  addTeamAria: 'Add a team',
+  removeTeamConfirm: (name) => `Remove ${name} and its players?`,
+  menuTeam: 'Team',
   backToMenuBtn: 'Back to the menu',
   menuStartBtn: 'Start a match',
   menuHistory: 'Played matches',
@@ -27,8 +40,12 @@ export default {
   helpIntro: 'Briefly: how a match runs, from first whistle to last.',
   helpSections: [
     {
+      title: 'The team and its players',
+      body: 'The first team is made as the first match starts: the app asks what it is called. After that a Team row appears on the menu, where the team being coached is chosen and the pencil beside it edits its name and players. Each team keeps its own players and its own stats. A player can be added when starting a match too — and joins the team when they are.',
+    },
+    {
       title: 'Before the match',
-      body: 'Give the opponent, the length of the match and how many players a side (the keeper among them). Add your players — their names are remembered for next time.',
+      body: 'Give the opponent, the length of the match and how many players a side (the keeper among them). Then mark who turned up: tapping a name leaves them out of this match, not out of the team. A new name typed in joins the team. Teams and their players are managed from the Team row on the menu.',
     },
     {
       title: 'The starting lineup',
@@ -67,7 +84,7 @@ export default {
   infoIntro: 'A small tool for planning the match and the substitutions from the touchline.',
   privacyTitle: 'Your data stays yours',
   privacyBody:
-    'Everything stays on this device. There are no accounts, no servers, no cloud and no database. Your team name, players, settings and the matches you have played are kept only in this device\u2019s own browser storage, so you need not type them in every time, an interrupted match carries on where it left off, and old matches are still there later.',
+    'Everything stays on this device. There are no accounts, no servers, no cloud and no database. Your teams and their players, your settings and the matches you have played are kept only in this device\u2019s own browser storage, so you need not type them in every time, an interrupted match carries on where it left off, and old matches are still there later.',
   privacyNoTracking:
     'No tracking, no analytics, no telemetry, no cookies, no ads. Nothing is sent anywhere.',
   clearDataBtn: 'Clear all data',
@@ -99,6 +116,7 @@ export default {
   teamNameTitle: 'Enter your team name',
   teamNamePlaceholder: 'e.g. LPS',
   teamContinueBtn: 'Continue',
+  teamNameTaken: 'A team with that name already exists.',
   teamNameRequired: 'Enter your team name.',
 
   // Setup
@@ -110,7 +128,7 @@ export default {
   sectionMatch: 'Match',
   sectionCards: 'Cards',
   yourTeamLabel: 'Your team',
-  changeTeamLink: 'change',
+  changeTeamLink: 'switch',
   opponentPlaceholder: 'e.g. PPJ',
   opponentRequired: "Enter the opponent's name.",
   gameLengthLabel: 'Game length (minutes)',
@@ -141,8 +159,7 @@ export default {
   removeAria: 'Remove',
   clearRosterBtn: 'Clear all',
   clearRosterConfirm: 'Remove all players?',
-  rosterCountNote: (have, need) =>
-    `${have} player${have === 1 ? '' : 's'} added · need at least ${need} to start`,
+  rosterCountNote: (have, need) => `${have} here · at least ${need} needed to start`,
   continueBtn: 'Choose starting lineup',
   setupErrorNote: (need, have) => `Add at least ${need} players — you have ${have}.`,
 
@@ -198,9 +215,10 @@ export default {
   goalsTitle: 'Score',
   goalForAria: (team) => `Goal for ${team}`,
   benchScorerConfirm: (name) => `${name} is on the bench. Log the goal for them anyway?`,
+  skipScorerBtn: 'Don’t record',
   whoScoredLabel: 'Who scored?',
   changeScorerLabel: 'Change scorer',
-  unknownScorerOption: 'Unknown',
+  unknownScorerOption: 'Not recorded',
   noGoalsNote: 'No goals yet.',
   cardsTitle: 'Cards',
   noCardsNote: 'No cards yet.',

@@ -2,11 +2,12 @@ import { defineStore } from 'pinia'
 import { nextId } from '@/domain/ids.js'
 import { createMatchRecord } from '@/domain/matchday.js'
 import { setLocale } from '@/i18n/index.js'
-import { clearAllSaved, loadTeamName, saveLanguage, saveTeamName } from '@/services/storage.js'
+import { clearAllSaved, saveLanguage } from '@/services/storage.js'
 import { useMatchStore } from './match.js'
 import { useHistoryStore } from './history.js'
 import { useMatchdayStore } from './matchday.js'
 import { useSetupStore } from './setup.js'
+import { useTeamsStore } from './teams.js'
 
 /**
  * The phases a matchday moves through, in order. Each one is a full screen, and
@@ -24,6 +25,8 @@ export const PHASES = Object.freeze({
   HELP: 'help',
   CHANGELOG: 'changelog',
   HISTORY: 'history',
+  TEAMS: 'teams',
+  TEAM_SQUAD: 'teamSquad',
   TEAM: 'team',
   OPPONENT: 'opponent',
   SETTINGS: 'settings',
@@ -43,8 +46,12 @@ export const useAppStore = defineStore('app', {
      * coming back from that must not cost the info page its own way out.
      */
     pageStack: [],
-    teamName: loadTeamName(),
   }),
+
+  getters: {
+    /** Whoever is being coached right now. Teams own their own squads. */
+    teamName: () => useTeamsStore().name,
+  },
 
   actions: {
     /**
@@ -142,18 +149,20 @@ export const useAppStore = defineStore('app', {
       this.goTo(this.teamName ? PHASES.OPPONENT : PHASES.TEAM)
     },
 
-    /** The team name is remembered across visits; the opponent never is. */
+    /**
+     * The first team, or a new name for the one being coached. Teams are
+     * remembered across visits; the opponent never is.
+     */
     confirmTeamName(name) {
       const trimmed = name.trim()
       if (!trimmed) return false
-      this.teamName = trimmed
-      saveTeamName(trimmed)
+      const teams = useTeamsStore()
+      const named = teams.active
+        ? teams.rename(teams.activeId, trimmed)
+        : Boolean(teams.add(trimmed))
+      if (!named) return false
       this.goTo(PHASES.OPPONENT)
       return true
-    },
-
-    editTeamName() {
-      this.goTo(PHASES.TEAM)
     },
 
     // --- Setting up a match, one question per screen ---------------------
@@ -194,7 +203,7 @@ export const useAppStore = defineStore('app', {
     kickOff() {
       const match = useMatchStore()
       if (!match.lineupComplete) return
-      match.kickOff(useSetupStore().roster)
+      match.kickOff(useSetupStore().attending)
       this.goTo(PHASES.LIVE)
     },
 
@@ -203,9 +212,12 @@ export const useAppStore = defineStore('app', {
       const match = useMatchStore()
       const setup = useSetupStore()
       match.finish()
+      const teams = useTeamsStore()
       const record = {
         id: nextId(),
         opponent: setup.opponentName,
+        teamId: teams.activeId,
+        teamName: teams.name,
         usScore: match.usScore,
         opponentScore: match.opponentScore,
         captainId: match.captainId,
@@ -247,11 +259,15 @@ export const useAppStore = defineStore('app', {
       useMatchStore().reset()
       useMatchdayStore().clear()
       useHistoryStore().clear()
+      useTeamsStore().$reset()
       useSetupStore().$reset()
-      // After the resets, which save their now-empty state on the way through.
-      clearAllSaved()
-      this.teamName = ''
       this.goTo(PHASES.SPLASH)
+
+      // The stores save as they are emptied, each on its own schedule, so the
+      // device is swept once now and once more after they have all had their
+      // say. What "forget everything" promises is that nothing is left.
+      clearAllSaved()
+      queueMicrotask(clearAllSaved)
     },
   },
 })

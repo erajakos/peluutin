@@ -13,7 +13,7 @@ const error = ref('')
 
 function submit() {
   if (app.confirmTeamName(name.value)) error.value = ''
-  else error.value = t('teamNameRequired')
+  else error.value = name.value.trim() ? t('teamNameTaken') : t('teamNameRequired')
 }
 </script>
 

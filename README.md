@@ -12,6 +12,11 @@ Finnish and English. No accounts, no servers, no tracking.
 
 ## What it does
 
+- **Teams** — one, or several. A coach with two age groups adds both and
+  switches between them from the menu; each team keeps its own squad, edited
+  there too.
+- **Who turned up** — setting up a match asks only that. Leaving a player out
+  keeps them in the team; a new name typed in joins it.
 - **Playing-time clock** — per-player minutes, counted only while a player is
   actually in a position on the field.
 - **Rotation prompts** — `DUE OFF` for the outfield player who has been on
@@ -66,7 +71,8 @@ Everything stays on the device. There are no accounts, no servers, no cloud,
 no database and no build-time or run-time analytics. What is kept is kept in
 that browser's own `localStorage`, and only so you do not re-enter it every
 week: your team name, how you play the match (length, halves, format,
-formation, rules), your squad's names, the language you use it in, the matches
+formation, rules), your teams and their players, the language you use it in,
+the matches
 you have played, and the match in progress — the last one so an interrupted
 match, or one still being set up, can pick up where it left off. The app also
 asks the browser to keep that storage rather than treat it as something to
@@ -157,6 +163,7 @@ src/
 │   ├── ids.js           One shared id sequence for every entity
 │   ├── lineup.js        Building slots and working out the bench
 │   ├── history.js       Played matches, gathered into the days they were played
+│   ├── teams.js         Teams, each with its own squad
 │   ├── pitch.js         Where each position sits on the drawn pitch
 │   ├── plan.js          A substitution being put together, before it happens
 │   ├── playingTime.js   Fairness: averages and deltas
@@ -182,6 +189,7 @@ src/
 │   ├── app.js           Which screen we are on; the matchday flow
 │   ├── setup.js         Format, rules, formation and squad
 │   ├── match.js         The match being played right now
+│   ├── teams.js         Teams and which one is being coached
 │   ├── matchday.js      Finished matches of the day in progress
 │   └── history.js       Every match played, kept between visits
 │
@@ -208,8 +216,8 @@ from. `stores/app.js` owns the phase; nothing else decides where to go next.
 **The address follows the app, never the other way round.** `services/
 urlNavigation.js` names each screen in the URL so the browser's back gesture
 moves inside the app rather than out of it, and so the pages that stand on
-their own — `#/help`, `#/matches`, `#/about`, `#/changes` — can be opened by
-link. A link to anything that needs steps before it (a lineup, a match, a
+their own — `#/help`, `#/matches`, `#/teams`, `#/about`, `#/changes` — can be
+opened by link. A link to anything that needs steps before it (a lineup, a match, a
 result) is refused and the address corrected: no URL can conjure up a match
 that is not being played. During a match, or a squad half typed in, address
 changes are refused outright, so a stale bookmark cannot take a coach off the

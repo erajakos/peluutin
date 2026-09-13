@@ -421,14 +421,14 @@ function endGesture() {
 function answersGoal(playerId, fromBench = false) {
   if (!match.pendingGoal || playerId === null) return false
   if (fromBench) scorerFromBenchId.value = playerId
-  else match.confirmOurGoal(playerId)
+  else match.confirmGoal(playerId)
   return true
 }
 
 const scorerFromBenchId = ref(null)
 
 function onBenchScorerConfirmed() {
-  match.confirmOurGoal(scorerFromBenchId.value)
+  match.confirmGoal(scorerFromBenchId.value)
   scorerFromBenchId.value = null
 }
 

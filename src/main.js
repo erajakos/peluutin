@@ -7,8 +7,10 @@ import { askToKeepStorage } from './services/persistentStorage.js'
 import { loadLanguage } from './services/storage.js'
 import { installUrlNavigation } from './services/urlNavigation.js'
 import { useAppStore } from './stores/app.js'
+import { useTeamsStore } from './stores/teams.js'
 import { persistHistory } from './services/historyPersistence.js'
-import { persistRoster } from './services/rosterPersistence.js'
+import { persistPlayerIdentity } from './services/playerIdentity.js'
+import { persistTeams } from './services/teamsPersistence.js'
 import { keepSessionSaved, resumeSession } from './services/sessionPersistence.js'
 import { persistMatchSettings } from './services/settingsPersistence.js'
 
@@ -37,13 +39,17 @@ if (language) setLocale(language)
 
 const pinia = createPinia()
 pinia.use(persistMatchSettings)
-pinia.use(persistRoster)
+pinia.use(persistPlayerIdentity)
+pinia.use(persistTeams)
 pinia.use(persistHistory)
 
 const app = createApp(App).use(pinia)
 
 // Back where the coach left off: a match survives a reload, a closed tab, or a
 // stray swipe back out of the app.
+// The team last coached, and its squad, before anything else is restored.
+useTeamsStore()
+
 resumeSession()
 keepSessionSaved()
 

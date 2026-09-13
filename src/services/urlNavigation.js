@@ -22,6 +22,8 @@ const SLUGS = Object.freeze({
   [PHASES.INFO]: 'about',
   [PHASES.HELP]: 'help',
   [PHASES.HISTORY]: 'matches',
+  [PHASES.TEAMS]: 'teams',
+  [PHASES.TEAM_SQUAD]: 'team',
   [PHASES.CHANGELOG]: 'changes',
   [PHASES.TEAM]: 'team',
   [PHASES.OPPONENT]: 'opponent',
@@ -48,6 +50,8 @@ const LINKABLE = [
   PHASES.HELP,
   PHASES.HISTORY,
   PHASES.CHANGELOG,
+  PHASES.TEAMS,
+  PHASES.TEAM_SQUAD,
 ]
 
 export function slugFor(phase) {

@@ -69,6 +69,7 @@ function emptyMatch() {
      */
     goalkeeperUnlocked: false,
     goals: [],
+    /** True while a goal of ours is waiting to be told who scored it. */
     pendingGoal: false,
     cards: [],
   }
@@ -559,7 +560,7 @@ export const useMatchStore = defineStore('match', {
       this.pendingGoal = false
     },
 
-    confirmOurGoal(playerId) {
+    confirmGoal(playerId) {
       this.goals.push({
         id: nextId(),
         team: TEAM_US,

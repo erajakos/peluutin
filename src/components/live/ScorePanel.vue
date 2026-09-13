@@ -24,7 +24,7 @@ const editingGoalId = ref(null)
 const editingGoal = computed(() => match.goals.find((goal) => goal.id === editingGoalId.value))
 
 function logGoal(playerId) {
-  match.confirmOurGoal(playerId)
+  match.confirmGoal(playerId)
 }
 
 function reattribute(playerId) {
@@ -61,7 +61,7 @@ const timeline = computed(() => {
     <!-- Our goals pause for a scorer; the opponent's are a single tap. -->
     <PlayerPicker
       v-if="match.pendingGoal"
-      :players="setup.roster"
+      :players="setup.attending"
       :prompt="t('whoScoredLabel')"
       allow-unknown
       @pick="logGoal"
@@ -69,7 +69,7 @@ const timeline = computed(() => {
     />
     <PlayerPicker
       v-else-if="editingGoal"
-      :players="setup.roster"
+      :players="setup.attending"
       :prompt="t('changeScorerLabel')"
       :selected-id="editingGoal.playerId"
       allow-unknown

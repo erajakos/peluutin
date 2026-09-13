@@ -4,6 +4,15 @@ What changed in each version, in the words the app itself shows under
 _Tietoja → Mitä uutta_. Generated from [`src/changelog.js`](src/changelog.js) by
 `npm run changelog`; edit that file, not this one.
 
+## 1.7 — More than one team
+
+_2026-09-13_
+
+- Teams can be added and switched from the Team row on the menu, and each keeps its own players, edited in the same place.
+- Setting up a match only asks who turned up. Leaving someone out of a match does not take them out of the team.
+- Played matches and stats belong to the team that played them.
+- Leaving a scorer unrecorded is said plainly — “Don’t record” rather than “Unknown”.
+
 ## 1.6 — Eyes on the game
 
 _2026-09-13_

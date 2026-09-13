@@ -4,7 +4,8 @@ import { createPinia, setActivePinia } from 'pinia'
 import { nextId } from '@/domain/ids.js'
 import { TEAM_OPPONENT } from '@/domain/scoring.js'
 import { currentLocale, setLocale } from '@/i18n/index.js'
-import { persistRoster } from '@/services/rosterPersistence.js'
+import { persistPlayerIdentity } from '@/services/playerIdentity.js'
+import { persistTeams } from '@/services/teamsPersistence.js'
 import { keepSessionSaved, resumeSession } from '@/services/sessionPersistence.js'
 import { persistMatchSettings } from '@/services/settingsPersistence.js'
 import { PHASES, useAppStore } from '@/stores/app.js'
@@ -20,7 +21,8 @@ const SATURDAY_MORNING = new Date(2026, 8, 12, 10, 0, 0)
 function visit() {
   const pinia = createPinia()
   pinia.use(persistMatchSettings)
-  pinia.use(persistRoster)
+  pinia.use(persistPlayerIdentity)
+  pinia.use(persistTeams)
   createApp({}).use(pinia)
   setActivePinia(pinia)
   const resumed = resumeSession()
@@ -229,15 +231,14 @@ describe('keeping the matchday across a reload', () => {
     await settle()
     expect([...storage.keys()].sort()).toEqual([
       'peluutinKnownPlayers',
-      'peluutinRoster',
       'peluutinSession',
+      'peluutinTeams',
       'sortOfAPlanMatchSettings',
-      'sortOfAPlanTeamName',
     ])
 
     first.app.forgetEverything()
     await settle()
-    expect(storage.size).toBe(0)
+    expect([...storage.keys()]).toEqual([])
     expect(first.app.phase).toBe(PHASES.SPLASH)
     expect(first.app.teamName).toBe('')
     expect(first.setup.roster).toEqual([])

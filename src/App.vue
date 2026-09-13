@@ -4,6 +4,8 @@ import { useRegisterSW } from 'virtual:pwa-register/vue'
 import ChangelogView from '@/views/ChangelogView.vue'
 import HelpView from '@/views/HelpView.vue'
 import MenuView from '@/views/MenuView.vue'
+import TeamSquadView from '@/views/TeamSquadView.vue'
+import TeamsView from '@/views/TeamsView.vue'
 import HistoryView from '@/views/HistoryView.vue'
 import InfoView from '@/views/InfoView.vue'
 import LineupView from '@/views/LineupView.vue'
@@ -29,6 +31,8 @@ const VIEWS = {
   [PHASES.HELP]: HelpView,
   [PHASES.CHANGELOG]: ChangelogView,
   [PHASES.HISTORY]: HistoryView,
+  [PHASES.TEAMS]: TeamsView,
+  [PHASES.TEAM_SQUAD]: TeamSquadView,
   [PHASES.TEAM]: TeamNameView,
   [PHASES.OPPONENT]: OpponentView,
   [PHASES.SETTINGS]: SettingsView,

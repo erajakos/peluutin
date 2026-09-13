@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
-import { createHistoryEntry, groupByDay, trimHistory } from '@/domain/history.js'
+import { createHistoryEntry, groupByDay, playedBy, trimHistory } from '@/domain/history.js'
+import { useTeamsStore } from './teams.js'
 
 /**
  * Every match this device has played, not just today's.
@@ -14,9 +15,20 @@ export const useHistoryStore = defineStore('history', {
   }),
 
   getters: {
-    /** Newest day first, each with the matches played in it and their totals. */
-    days: (state) => groupByDay(state.entries),
-    hasEntries: (state) => state.entries.length > 0,
+    /** Only this team's matches count as "what we have played". */
+    ours: (state) => {
+      const teams = useTeamsStore()
+      return playedBy(state.entries, teams.activeId, teams.inheritsOldMatches)
+    },
+
+    /** What the team being coached has played, newest day first. */
+    days() {
+      return groupByDay(this.ours)
+    },
+
+    hasEntries() {
+      return this.ours.length > 0
+    },
   },
 
   actions: {

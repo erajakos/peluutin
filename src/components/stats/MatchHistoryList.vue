@@ -16,7 +16,8 @@ function result(match) {
 
 <template>
   <div v-for="match in matches" :key="match.id" class="match-row">
-    <span class="fixture">{{ teamName }} vs {{ match.opponent }}</span>
+    <!-- What the team was called then, which a rename later cannot rewrite. -->
+    <span class="fixture">{{ match.teamName || teamName }} vs {{ match.opponent }}</span>
     <span class="score">
       <span class="clock-face">{{ match.usScore }}–{{ match.opponentScore }}</span>
       <ResultBadge :result="result(match)" />

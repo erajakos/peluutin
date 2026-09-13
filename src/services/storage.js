@@ -17,6 +17,7 @@ const SESSION_KEY = 'peluutinSession'
 const DRAG_HINT_KEY = 'peluutinDragHintSeen'
 const KNOWN_PLAYERS_KEY = 'peluutinKnownPlayers'
 const HISTORY_KEY = 'peluutinHistory'
+const TEAMS_KEY = 'peluutinTeams'
 const LANGUAGE_KEY = 'peluutinLanguage'
 
 function safeGet(key) {
@@ -69,6 +70,18 @@ export function loadMatchSettings() {
 
 export function saveMatchSettings(settings) {
   return safeSet(MATCH_SETTINGS_KEY, JSON.stringify(settings))
+}
+
+/**
+ * The teams and their squads, as `{ activeId, teams }`. Validation is the
+ * caller's job; this only promises not to throw.
+ */
+export function loadTeams() {
+  return loadJson(TEAMS_KEY)
+}
+
+export function saveTeams(teams) {
+  return safeSet(TEAMS_KEY, JSON.stringify(teams))
 }
 
 /**
@@ -189,5 +202,6 @@ export function clearAllSaved() {
     KNOWN_PLAYERS_KEY,
     HISTORY_KEY,
     LANGUAGE_KEY,
+    TEAMS_KEY,
   ].forEach(safeRemove)
 }

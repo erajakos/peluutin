@@ -11,6 +11,8 @@ export function createMatchRecord({
   usScore,
   opponentScore,
   captainId = null,
+  teamId = null,
+  teamName = '',
   players,
   goals,
   cards,
@@ -18,6 +20,9 @@ export function createMatchRecord({
   return {
     id,
     opponent,
+    /** Which team played it, and what they were called at the time. */
+    teamId,
+    teamName,
     usScore,
     opponentScore,
     /** Who wore the armband, so a result can still say so months later. */

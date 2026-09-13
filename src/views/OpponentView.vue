@@ -1,10 +1,11 @@
 <script setup>
 import { ref } from 'vue'
 import SetupProgress from '@/components/setup/SetupProgress.vue'
+import UiBackLink from '@/components/ui/UiBackLink.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiTextField from '@/components/ui/UiTextField.vue'
 import { useI18n } from '@/i18n/index.js'
-import { useAppStore } from '@/stores/app.js'
+import { PHASES, useAppStore } from '@/stores/app.js'
 import { useSetupStore } from '@/stores/setup.js'
 
 const app = useAppStore()
@@ -22,6 +23,8 @@ function submit() {
 
 <template>
   <SetupProgress :step="1" />
+  <!-- The first step of the setup: back from here is out of it, to the menu. -->
+  <UiBackLink @click="app.goBack()">{{ t('backBtn') }}</UiBackLink>
 
   <div class="ask">
     <h1 class="question">{{ t('opponentTitle') }}</h1>
@@ -41,7 +44,10 @@ function submit() {
 
     <p class="team">
       {{ t('yourTeamLabel') }}: <b>{{ app.teamName }}</b>
-      <button class="link-inline" @click="app.editTeamName()">{{ t('changeTeamLink') }}</button>
+      <!-- Another team, not another name: renaming belongs to team management. -->
+      <button class="link-inline" @click="app.openPage(PHASES.TEAMS)">
+        {{ t('changeTeamLink') }}
+      </button>
     </p>
   </div>
 </template>

@@ -6,6 +6,19 @@ export default {
   localOnlyBadge: 'Kaikki tiedot pysyvät puhelimessasi',
 
   // Front screen
+  newTeamPlaceholder: 'esim. LPS Musta',
+  addTeamShort: '+ Lisää',
+  editTeamAria: 'Muokkaa joukkuetta',
+  editTeamTitle: 'Muokkaa joukkuetta',
+  teamNameLabel: 'Joukkueen nimi',
+  removeTeamBtn: 'Poista joukkue',
+  chooseTeamBtn: 'Valitse',
+  teamsLead: 'Valitse valmennettava joukkue. Kynästä muokkaat joukkueen nimeä ja pelaajia.',
+  teamsTitle: 'Joukkueet',
+  squadCountNote: (count) => (count === 1 ? '1 pelaaja' : `${count} pelaajaa`),
+  addTeamAria: 'Lisää joukkue',
+  removeTeamConfirm: (name) => `Poistetaanko ${name} ja sen pelaajat?`,
+  menuTeam: 'Joukkue',
   backToMenuBtn: 'Takaisin valikkoon',
   menuStartBtn: 'Aloita ottelu',
   menuHistory: 'Pelatut ottelut',
@@ -27,8 +40,12 @@ export default {
   helpIntro: 'Lyhyesti: näin ottelu kulkee alusta loppuun.',
   helpSections: [
     {
+      title: 'Joukkue ja pelaajat',
+      body: 'Ensimmäinen joukkue syntyy ensimmäistä ottelua aloittaessa: sovellus kysyy sen nimen. Sen jälkeen valikkoon ilmestyy Joukkue-rivi, josta valitset valmennettavan joukkueen ja kynästä muokkaat sen nimeä ja pelaajia. Jokaisella joukkueella on omat pelaajansa ja omat tilastonsa. Pelaajan voi lisätä myös ottelua aloitettaessa — silloinkin hän liittyy joukkueeseen.',
+    },
+    {
       title: 'Ennen ottelua',
-      body: 'Anna vastustajan nimi, ottelun kesto ja pelaajien lukumäärä (maalivahti mukaan lukien). Lisää pelaajat listaan — nimet muistetaan seuraavaa kertaa varten.',
+      body: 'Anna vastustajan nimi, ottelun kesto ja pelaajien lukumäärä (maalivahti mukaan lukien). Merkitse sitten, ketkä ovat tänään paikalla: napautus jättää pelaajan pois tästä ottelusta, muttei joukkueesta. Uuden nimen lisääminen liittää pelaajan joukkueeseen. Joukkueet ja niiden pelaajat hoituvat valikon Joukkue-rivistä.',
     },
     {
       title: 'Aloituskokoonpano',
@@ -67,7 +84,7 @@ export default {
   infoIntro: 'Pieni työkalu ottelun ja vaihtojen suunnitteluun kentän laidalla.',
   privacyTitle: 'Tietosi pysyvät sinulla',
   privacyBody:
-    'Kaikki tiedot pysyvät tällä laitteella. Sovelluksessa ei ole tilejä, palvelimia, pilveä eikä tietokantaa. Joukkueen nimi, pelaajat, asetukset ja pelatut ottelut tallennetaan vain tämän laitteen omaan selainmuistiin, jotta niitä ei tarvitse kirjoittaa joka kerta, keskeytynyt ottelu jatkuu siitä mihin se jäi ja vanhat ottelut löytyvät myöhemminkin.',
+    'Kaikki tiedot pysyvät tällä laitteella. Sovelluksessa ei ole tilejä, palvelimia, pilveä eikä tietokantaa. Joukkueet pelaajineen, asetukset ja pelatut ottelut tallennetaan vain tämän laitteen omaan selainmuistiin, jotta niitä ei tarvitse kirjoittaa joka kerta, keskeytynyt ottelu jatkuu siitä mihin se jäi ja vanhat ottelut löytyvät myöhemminkin.',
   privacyNoTracking:
     'Ei seurantaa, ei analytiikkaa, ei telemetriaa, ei evästeitä, ei mainoksia. Mitään ei lähetetä mihinkään.',
   clearDataBtn: 'Tyhjennä kaikki tiedot',
@@ -99,6 +116,7 @@ export default {
   teamNameTitle: 'Anna joukkueesi nimi',
   teamNamePlaceholder: 'esim. LPS',
   teamContinueBtn: 'Jatka',
+  teamNameTaken: 'Tämän niminen joukkue on jo olemassa.',
   teamNameRequired: 'Anna joukkueen nimi.',
 
   // Setup
@@ -110,7 +128,7 @@ export default {
   sectionMatch: 'Ottelu',
   sectionCards: 'Kortit',
   yourTeamLabel: 'Joukkueesi',
-  changeTeamLink: 'muuta',
+  changeTeamLink: 'vaihda',
   opponentPlaceholder: 'esim. PPJ',
   opponentRequired: 'Anna vastustajan nimi.',
   gameLengthLabel: 'Ottelun kesto (minuuttia)',
@@ -141,8 +159,7 @@ export default {
   removeAria: 'Poista',
   clearRosterBtn: 'Tyhjennä kaikki',
   clearRosterConfirm: 'Poistetaanko kaikki pelaajat?',
-  rosterCountNote: (have, need) =>
-    `${have} pelaaja${have === 1 ? '' : 'a'} lisätty · tarvitaan vähintään ${need} aloittaakseen`,
+  rosterCountNote: (have, need) => `${have} mukana · tarvitaan vähintään ${need} aloittamiseen`,
   continueBtn: 'Valitse aloituskokoonpano',
   setupErrorNote: (need, have) => `Lisää vähintään ${need} pelaajaa — nyt on ${have}.`,
 
@@ -198,9 +215,10 @@ export default {
   goalsTitle: 'Tulos',
   goalForAria: (team) => `Maali: ${team}`,
   benchScorerConfirm: (name) => `${name} on vaihtopenkillä. Kirjataanko maali silti hänelle?`,
+  skipScorerBtn: 'Ei kirjata',
   whoScoredLabel: 'Kuka teki maalin?',
   changeScorerLabel: 'Vaihda maalintekijä',
-  unknownScorerOption: 'Tuntematon',
+  unknownScorerOption: 'Ei kirjattu',
   noGoalsNote: 'Ei vielä maaleja.',
   cardsTitle: 'Kortit',
   noCardsNote: 'Ei vielä kortteja.',

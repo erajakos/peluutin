@@ -19,7 +19,7 @@ const summary = computed(() => matchday.summary)
 
 /** The armband may have moved between matches; everyone who wore it is marked. */
 const captainIds = computed(() =>
-  matchday.matches.map((match) => match.captainId).filter((id) => id !== null && id !== undefined),
+  matchday.ours.map((match) => match.captainId).filter((id) => id !== null && id !== undefined),
 )
 
 const totals = computed(() => [
@@ -49,7 +49,7 @@ const scorerItems = computed(() => {
   <StatGrid :stats="record" />
 
   <UiPanel :title="t('matchHistoryTitle')">
-    <MatchHistoryList :matches="matchday.matches" :team-name="app.teamName" />
+    <MatchHistoryList :matches="matchday.ours" :team-name="app.teamName" />
   </UiPanel>
 
   <TallyPanel :heading="t('topScorersTitle')" :items="scorerItems" />
