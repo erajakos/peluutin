@@ -36,10 +36,12 @@ Finnish and English. No accounts, no servers, no tracking.
   is made, spell and allowance included; the offer then goes on its own, so a
   change made on purpose is never nagged at. Tapping the clock opens a minute
   either way, for when it was started late.
-- **Substitutions** — one-for-one applies instantly; multi-player changes ask
-  who takes which position, and tapping a player already pencilled in elsewhere
-  simply trades the two. When the numbers only allow one answer, it is filled
-  in for you.
+- **Substitutions in one move** — drag a substitute onto a shirt, or a shirt
+  onto the substitute you want in its place, and the change is made there and
+  then; a hectic touchline is no place for a second step. A mis-drop can be
+  undone for a few seconds after. Tapping the two in turn does the same thing,
+  for cold hands and gloves. Dragging one shirt onto another just trades their
+  positions, and spends no substitution.
 - **Match rules** — match length and whether it is played in halves, how many
   players a side (the keeper among them), re-entry after a substitution, and an
   optional cap on total substitutions.

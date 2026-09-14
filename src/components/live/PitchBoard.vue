@@ -114,21 +114,11 @@ watch(
 
 onBeforeUnmount(() => clearTimeout(movedTimer))
 
-/** Which change a chip belongs to, when more than one is being planned. */
-const pairNumbers = computed(() => {
-  const numbers = new Map()
-  if (match.plannedCount < 2) return numbers
-  match.plannedSlotIds.forEach((slotId, index) => numbers.set(slotId, index + 1))
-  return numbers
-})
-
 const fieldChips = computed(() => {
   const spots = pitchLayout(match.slots)
   return match.slots.map((slot, index) => {
     const player = slot.playerId === null ? null : match.playersById.get(slot.playerId)
     const lockedGk = slot.isGoalkeeper && match.goalkeeperLocked
-    const incomingId = match.plannedIncomingId(slot.id)
-    const planned = match.plan[slot.id] !== undefined
     return {
       // Keyed by player, not by position: when two players trade places their
       // chips travel across the pitch to each other's spot, instead of two
@@ -147,9 +137,6 @@ const fieldChips = computed(() => {
       captain: player !== null && player.id === match.captainId,
       due: match.hints.dueOffSlotIds.has(slot.id),
       picked: match.pickedSlotId === slot.id,
-      planned,
-      incomingName: incomingId === null ? '' : match.playerName(incomingId),
-      pairNumber: pairNumbers.value.get(slot.id) ?? null,
       moved: player !== null && recentlyMoved.value.has(player.id),
       cards: player ? (match.cardCountsById.get(player.id) ?? null) : null,
       // A keeper meant to play the whole match is neither picked nor dragged
@@ -174,7 +161,6 @@ const renderedFieldChips = computed(() =>
 
 const benchChips = computed(() =>
   match.bench.map((player) => {
-    const plannedSlot = match.plannedSlotFor(player.id)
     return {
       key: `bench-${player.id}`,
       playerId: player.id,
@@ -185,10 +171,6 @@ const benchChips = computed(() =>
       selectable: match.canPlayerReturn(player.id),
       due: match.hints.dueOnPlayerIds.has(player.id),
       picked: match.pickedPlayerId === player.id,
-      planned: plannedSlot !== null,
-      pairNumber: plannedSlot === null ? null : (pairNumbers.value.get(plannedSlot) ?? null),
-      goingTo:
-        plannedSlot === null ? '' : (match.slots.find((s) => s.id === plannedSlot)?.label ?? ''),
       cards: match.cardCountsById.get(player.id) ?? null,
     }
   }),
@@ -199,15 +181,13 @@ function fieldTitle(chip) {
   const spell = t('playingFor', formatTime(chip.stintSeconds))
   const total = t('totalFor', formatTime(chip.seconds))
   const due = chip.due ? ` · ${t('dueOffBadge')}` : ''
-  const planned = chip.planned ? ` · ${t('plannedOffNote', chip.incomingName || '?')}` : ''
-  return `${chip.position} — ${chip.name} · ${spell} · ${total}${due}${planned}`
+  return `${chip.position} — ${chip.name} · ${spell} · ${total}${due}`
 }
 
 function benchTitle(chip) {
   const rest = t('restingFor', formatTime(chip.stintSeconds))
   const total = t('totalFor', formatTime(chip.seconds))
-  const planned = chip.planned ? ` · ${t('plannedOnNote', chip.goingTo)}` : ''
-  return `${chip.name} · ${rest} · ${total}${planned}`
+  return `${chip.name} · ${rest} · ${total}`
 }
 
 // --- Dragging ------------------------------------------------------------
@@ -301,6 +281,9 @@ function findDropTarget(clientX, clientY) {
 }
 
 function onPointerDown(event, chip, kind) {
+  // A new gesture. A drag across two elements fires no click to use up the
+  // flag it set, and left standing it would swallow this tap instead.
+  suppressClick = false
   if (match.pendingGoal || !chip.selectable) return
   activePointerId = event.pointerId
   origin = kind === 'field' ? { slotId: chip.slotId } : { playerId: chip.playerId }
@@ -363,14 +346,14 @@ function onPointerUp(event) {
   if (target === null) return
 
   if (from.slotId !== undefined) {
-    // Dropped on one substitute in particular: that is the change, and no
-    // suggestion gets a say in it.
+    // Dropped on one substitute in particular: that is the change, made now,
+    // and no suggestion gets a say in it.
     if (target?.playerId !== undefined) {
-      match.stageChange(from.slotId, target.playerId)
+      match.substitute(from.slotId, target.playerId)
       return
     }
-    // Dropped on the touchline itself: planned off, with whoever is due on
-    // pencilled in — or, with nobody to bring on, asked about first.
+    // Dropped on the touchline itself: off, with whoever is due on sent on —
+    // or, with nobody to bring on, asked about first.
     if (target === 'sideline') {
       if (spareSubstitutes.value) match.planOff(from.slotId)
       else takingOffSlotId.value = from.slotId
@@ -381,14 +364,10 @@ function onPointerUp(event) {
     return
   }
 
-  // A substitute dropped on a shirt is planned to take it; dropped back among
-  // the substitutes, whatever they were planned for is called off.
-  if (target === 'sideline' || target?.playerId !== undefined) {
-    const planned = match.plannedSlotFor(from.playerId)
-    if (planned !== null) match.unstage(planned)
-    return
-  }
-  match.stageChange(target, from.playerId)
+  // A substitute dropped on a shirt takes it, now. Dropped back among the
+  // substitutes, nothing happens: they never left.
+  if (target === 'sideline' || target?.playerId !== undefined) return
+  match.substitute(target, from.playerId)
 }
 
 function onPointerCancel() {
@@ -456,9 +435,7 @@ function onBenchClick(chip) {
 }
 
 /** Substitutes free to come on: nobody left over means nobody to swap with. */
-const spareSubstitutes = computed(() =>
-  match.availableBench.some((player) => match.plannedSlotFor(player.id) === null),
-)
+const spareSubstitutes = computed(() => match.availableBench.length > 0)
 
 /** Walking off with nobody replacing them is asked about, never assumed. */
 const takingOffSlotId = ref(null)
@@ -511,9 +488,8 @@ function onUnlockGoalkeeper() {
         :data-player-id="chip.playerId ?? undefined"
         :class="{
           'chip--gk': chip.isGoalkeeper,
-          'chip--due': chip.due && !chip.picked && !chip.planned,
+          'chip--due': chip.due && !chip.picked,
           'chip--picked': chip.picked,
-          'chip--planned': chip.planned,
           'chip--locked': !chip.selectable,
           'chip--dragging': dragged?.slotId === chip.slotId,
           'chip--target': dropTarget === chip.slotId,
@@ -522,7 +498,7 @@ function onUnlockGoalkeeper() {
         }"
         :style="chipStyle(chip, 'field')"
         :disabled="!chip.selectable && !chip.asksFirst && !match.pendingGoal"
-        :aria-pressed="chip.picked || chip.planned"
+        :aria-pressed="chip.picked"
         :title="fieldTitle(chip)"
         @pointerdown="onPointerDown($event, chip, 'field')"
         @pointermove="onPointerMove"
@@ -545,21 +521,12 @@ function onUnlockGoalkeeper() {
         <!-- The armband, worn where an armband is worn. -->
         <span v-if="chip.captain" class="armband" :title="t('captainLabel')">C</span>
 
-        <!-- Planned to come off, with who is coming on written underneath. -->
-        <span v-if="chip.planned" class="chip-mark chip-mark--off" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M12 5v13m0 0-5.5-5.5M12 18l5.5-5.5" /></svg>
-        </span>
-        <span v-else-if="chip.picked" class="chip-mark" aria-hidden="true">
+        <span v-if="chip.picked" class="chip-mark" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M5 12.5 10 17.5 19 7" /></svg>
         </span>
         <!-- Longest on the pitch: the rotation says this one comes off next. -->
         <span v-else-if="chip.due" class="chip-mark chip-mark--due" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M12 5v13m0 0-5.5-5.5M12 18l5.5-5.5" /></svg>
-        </span>
-
-        <span v-if="chip.planned" class="chip-swap">
-          <span v-if="chip.pairNumber" class="pair">{{ chip.pairNumber }}</span>
-          {{ chip.incomingName || '?' }}
         </span>
       </button>
     </div>
@@ -578,16 +545,15 @@ function onUnlockGoalkeeper() {
           class="chip chip--bench"
           :data-player-id="chip.playerId"
           :class="{
-            'chip--due': chip.due && !chip.picked && !chip.planned,
+            'chip--due': chip.due && !chip.picked,
             'chip--picked': chip.picked,
-            'chip--planned': chip.planned,
             'chip--locked': !chip.selectable,
             'chip--dragging': dragged?.playerId === chip.playerId,
             'chip--target': dropTarget?.playerId === chip.playerId,
           }"
           :style="chipStyle(chip, 'bench')"
           :disabled="!chip.selectable && !match.pendingGoal"
-          :aria-pressed="chip.picked || chip.planned"
+          :aria-pressed="chip.picked"
           :title="benchTitle(chip)"
           @pointerdown="onPointerDown($event, chip, 'bench')"
           @pointermove="onPointerMove"
@@ -600,18 +566,11 @@ function onUnlockGoalkeeper() {
 
           <CardMarks v-if="chip.cards" class="chip-cards" :counts="chip.cards" :size="11" />
 
-          <span v-if="chip.planned" class="chip-mark chip-mark--on" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M12 19V6m0 0-5.5 5.5M12 6l5.5 5.5" /></svg>
-          </span>
-          <span v-else-if="chip.picked" class="chip-mark" aria-hidden="true">
+          <span v-if="chip.picked" class="chip-mark" aria-hidden="true">
             <svg viewBox="0 0 24 24"><path d="M5 12.5 10 17.5 19 7" /></svg>
           </span>
           <span v-else-if="chip.due" class="chip-mark chip-mark--duein" aria-hidden="true">
             <svg viewBox="0 0 24 24"><path d="M12 19V6m0 0-5.5 5.5M12 6l5.5 5.5" /></svg>
-          </span>
-
-          <span v-if="chip.planned && chip.pairNumber" class="pair pair--bench">
-            {{ chip.pairNumber }}
           </span>
         </button>
       </div>
@@ -860,43 +819,6 @@ function onUnlockGoalkeeper() {
   font-weight: 700;
 }
 
-/* Who is coming on in this shirt, written where the change is happening. */
-.chip-swap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  max-width: 100%;
-  margin-top: 2px;
-  padding-top: 2px;
-  border-top: 1px solid rgba(95, 190, 139, 0.4);
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--go);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.pair {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  background: var(--go);
-  color: #08281a;
-  font-size: 10.5px;
-  font-weight: 700;
-}
-
-.pair--bench {
-  position: absolute;
-  bottom: -6px;
-  right: -6px;
-}
-
 .chip-mark {
   position: absolute;
   top: -8px;
@@ -939,29 +861,6 @@ function onUnlockGoalkeeper() {
   stroke: #08281a;
 }
 
-/*
- * The convention every team sheet uses: red down for the player coming off,
- * green up for the player coming on — the same pair of arrows the list of
- * changes shows underneath, so the two read as one thing.
- */
-.chip-mark--off {
-  background: var(--alert);
-  border-color: #2b0d06;
-}
-
-.chip-mark--off svg {
-  stroke: #2b0d06;
-}
-
-.chip-mark--on {
-  background: var(--go);
-  border-color: #08281a;
-}
-
-.chip-mark--on svg {
-  stroke: #08281a;
-}
-
 .chip-cards {
   position: absolute;
   top: -7px;
@@ -996,12 +895,6 @@ function onUnlockGoalkeeper() {
 
 .chip--picked .chip-time {
   color: rgba(42, 27, 4, 0.75);
-}
-
-/* In the plan: settled, but not yet done — hence the ring rather than a fill. */
-.chip--planned {
-  border-color: var(--go);
-  box-shadow: 0 0 0 2.5px rgba(95, 190, 139, 0.45);
 }
 
 .chip--locked {

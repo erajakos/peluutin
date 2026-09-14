@@ -342,12 +342,8 @@ export const useMatchStore = defineStore('match', {
      * picked, cancels the change it is already part of, or waits for a partner.
      */
     pickSlot(slotId) {
-      if (this.plan[slotId] !== undefined) {
-        this.plan = unstageSlot(this.plan, slotId)
-        return
-      }
       if (this.pickedPlayerId !== null) {
-        this.stageChange(slotId, this.pickedPlayerId)
+        this.substitute(slotId, this.pickedPlayerId)
         return
       }
       this.pickedSlotId = this.pickedSlotId === slotId ? null : slotId
@@ -355,17 +351,22 @@ export const useMatchStore = defineStore('match', {
 
     /** Tapping a player on the bench: the same idea from the other side. */
     pickBenchPlayer(playerId) {
-      const planned = slotPlannedFor(this.plan, playerId)
-      if (planned !== null) {
-        this.plan = unstageSlot(this.plan, planned)
-        return
-      }
       if (!this.canPlayerReturn(playerId)) return
       if (this.pickedSlotId !== null) {
-        this.stageChange(this.pickedSlotId, playerId)
+        this.substitute(this.pickedSlotId, playerId)
         return
       }
       this.pickedPlayerId = this.pickedPlayerId === playerId ? null : playerId
+    },
+
+    /**
+     * Make the change now. A touchline is no place for a second step: the drop
+     * is the decision, and a mis-drop is what the undo that follows is for.
+     */
+    substitute(slotId, playerId) {
+      if (playerId === null || playerId === undefined) return false
+      if (!this.stageChange(slotId, playerId)) return false
+      return this.confirmSubstitution()
     },
 
     /**
@@ -394,13 +395,12 @@ export const useMatchStore = defineStore('match', {
     planOff(slotId) {
       const picked = this.pickedPlayerId
       if (picked !== null && this.canPlayerReturn(picked)) {
-        return this.stageChange(slotId, picked)
+        return this.substitute(slotId, picked)
       }
 
-      const taken = new Set(Object.values(this.plan))
-      const free = this.availableBench.filter((player) => !taken.has(player.id))
+      const free = this.availableBench
       const suggestion = free.find((player) => this.hints.dueOnPlayerIds.has(player.id)) ?? free[0]
-      return this.stageChange(slotId, suggestion?.id ?? null)
+      return this.substitute(slotId, suggestion?.id ?? null)
     },
 
     /**

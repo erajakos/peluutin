@@ -57,7 +57,7 @@ export default {
     },
     {
       title: 'Substitutions',
-      body: 'Drag a substitute onto a player on the pitch — or a player on the pitch onto the substitute you want in their place. Plan as many changes as you like — nothing happens until you confirm them. Tapping does the same: one, then the other. A change can be taken back right after it is made.',
+      body: 'Drag a substitute onto a player on the pitch — or a player on the pitch onto the substitute you want in their place. The change happens the moment the player is dropped — there is no separate confirming. Tapping does the same: one, then the other. A change can be taken back right after it is made.',
     },
     {
       title: 'Positions',
@@ -194,17 +194,11 @@ export default {
   undoSubBtn: 'Undo the change',
   benchTitle: 'Bench',
   benchEmptyNote: 'No substitutes',
-  plannedOffNote: (name) => `coming off for ${name}`,
-  plannedOnNote: (position) => `going on at ${position}`,
-  whoComesOnNote: 'who comes on?',
-  pickPartnerNote: 'Pick a pair: one from the field and one from the bench.',
-  cancelChangeAria: 'Cancel this change',
   dragHintTitle: 'How to make a change',
   dragHintSub: 'Drag a substitute onto the pitch — or a player down to the bench.',
   dragHintSwap: 'Drag one player onto another and the two trade positions.',
-  dragHintConfirm: 'Nothing happens until you confirm the change.',
+  dragHintConfirm: 'The change happens at once — a mistake can be undone straight after.',
   dragHintOk: 'Got it',
-  confirmSubBtn: (count) => (count > 1 ? `Confirm the changes (${count})` : 'Confirm the change'),
   limitReachedNote: (used, limit) =>
     `Substitution limit reached (${used}/${limit}) — no more changes allowed.`,
   cancelBtn: 'Cancel',

@@ -9,9 +9,27 @@
  * `VERSION` is the version this build is. It must match package.json, and a
  * test says so.
  */
-export const VERSION = '1.7'
+export const VERSION = '1.8'
 
 export const RELEASES = [
+  {
+    version: '1.8',
+    date: '2026-09-14',
+    fi: {
+      title: 'Vaihto yhdellä liikkeellä',
+      changes: [
+        'Vaihto tapahtuu heti, kun pelaaja pudotetaan paikalleen — erillistä vahvistusta ei enää ole.',
+        'Vahingossa tehdyn vaihdon voi kumota heti sen jälkeen.',
+      ],
+    },
+    en: {
+      title: 'One move to make a change',
+      changes: [
+        'A substitution happens the moment a player is dropped into place — there is no separate confirming any more.',
+        'A change made by mistake can be undone straight after.',
+      ],
+    },
+  },
   {
     version: '1.7',
     date: '2026-09-13',

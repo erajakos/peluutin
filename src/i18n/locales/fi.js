@@ -57,7 +57,7 @@ export default {
     },
     {
       title: 'Vaihdot',
-      body: 'Vedä vaihtopelaaja kentällä olevan pelaajan päälle — tai kenttäpelaaja sen vaihtopelaajan päälle, jonka haluat tilalle. Voit suunnitella monta vaihtoa kerralla; mitään ei tapahdu ennen kuin vahvistat ne. Napauttaminen toimii samoin: ensin toinen, sitten toinen. Vaihdon voi kumota heti sen jälkeen.',
+      body: 'Vedä vaihtopelaaja kentällä olevan pelaajan päälle — tai kenttäpelaaja sen vaihtopelaajan päälle, jonka haluat tilalle. Vaihto tapahtuu heti, kun pelaaja pudotetaan — erillistä vahvistusta ei ole. Napauttaminen toimii samoin: ensin toinen, sitten toinen. Vaihdon voi kumota heti sen jälkeen.',
     },
     {
       title: 'Pelipaikat',
@@ -194,17 +194,11 @@ export default {
   undoSubBtn: 'Kumoa vaihto',
   benchTitle: 'Vaihtopenkki',
   benchEmptyNote: 'Ei vaihtopelaajia',
-  plannedOffNote: (name) => `vaihtuu: ${name}`,
-  plannedOnNote: (position) => `tulossa: ${position}`,
-  whoComesOnNote: 'kuka tilalle?',
-  pickPartnerNote: 'Valitse pari: pelaaja kentältä ja pelaaja penkiltä.',
-  cancelChangeAria: 'Peru tämä vaihto',
   dragHintTitle: 'Näin teet vaihdon',
   dragHintSub: 'Vedä vaihtopelaaja kentälle — tai kenttäpelaaja penkille.',
   dragHintSwap: 'Vedä pelaaja toisen päälle, niin he vaihtavat pelipaikkaa.',
-  dragHintConfirm: 'Vaihdot tapahtuvat vasta kun vahvistat ne.',
+  dragHintConfirm: 'Vaihto tapahtuu heti — vahingon voi kumota heti sen jälkeen.',
   dragHintOk: 'Selvä',
-  confirmSubBtn: (count) => (count > 1 ? `Vahvista vaihdot (${count})` : 'Vahvista vaihto'),
   limitReachedNote: (used, limit) =>
     `Vaihtojen enimmäismäärä täynnä (${used}/${limit}) — lisää vaihtoja ei sallita.`,
   cancelBtn: 'Peruuta',

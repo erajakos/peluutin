@@ -463,8 +463,22 @@ describe('match store', () => {
     })
   })
 
-  describe('putting a change together', () => {
-    it('pairs a position with a bench player, whichever is tapped first', () => {
+  describe('making a change', () => {
+    /** Five on, two waiting: Fay (7) has played least, so Fay is due on. */
+    function withTwoWaiting() {
+      const { match, setup } = startMatch()
+      setup.roster.push({ id: 7, name: 'Fay' })
+      match.kickOff(setup.roster)
+      match.slots.forEach((slot, index) => {
+        slot.playerId = ROSTER[index].id
+      })
+      match.tick(300)
+      match.playersById.get(6).seconds = 400
+      match.playersById.get(7).seconds = 100
+      return { match, setup }
+    }
+
+    it('happens the moment the second player is tapped, whichever is first', () => {
       const { match } = startMatch()
       const slot = match.slots.find((candidate) => candidate.playerId === 2)
 
@@ -472,9 +486,9 @@ describe('match store', () => {
       expect(match.pickedSlotId).toBe(slot.id)
       match.pickBenchPlayer(6)
 
-      expect(match.plan).toEqual({ [slot.id]: 6 })
-      expect(match.pickedSlotId).toBe(null)
-      expect(match.canConfirmSub).toBe(true)
+      expect(slot.playerId).toBe(6)
+      expect(match.subsUsed).toBe(1)
+      expect(match.hasSelection).toBe(false)
     })
 
     it('works the other way round as well', () => {
@@ -483,142 +497,70 @@ describe('match store', () => {
 
       match.pickBenchPlayer(6)
       match.pickSlot(slot.id)
-      expect(match.plan).toEqual({ [slot.id]: 6 })
+      expect(slot.playerId).toBe(6)
     })
 
-    it('unpicks a chip tapped twice, and cancels a change tapped again', () => {
+    it('unpicks a chip tapped twice, and changes nothing', () => {
       const { match } = startMatch()
       const slot = match.slots.find((candidate) => candidate.playerId === 2)
 
       match.pickSlot(slot.id)
       match.pickSlot(slot.id)
       expect(match.pickedSlotId).toBe(null)
+      expect(slot.playerId).toBe(2)
+      expect(match.subsUsed).toBe(0)
+    })
 
-      match.stageChange(slot.id, 6)
-      match.pickSlot(slot.id)
+    it('sends on whoever is due on when a player is dragged off', () => {
+      const { match } = withTwoWaiting()
+      const slot = match.slots.find((candidate) => candidate.playerId === 2)
+
+      expect(match.planOff(slot.id)).toBe(true)
+      expect(slot.playerId).toBe(7)
+    })
+
+    it('sends on the substitute already picked, not the one due on', () => {
+      const { match } = withTwoWaiting()
+      match.pickBenchPlayer(6)
+      const slot = match.slots.find((candidate) => candidate.playerId === 2)
+
+      match.planOff(slot.id)
+      expect(slot.playerId).toBe(6)
+    })
+
+    it('can be taken back straight away', () => {
+      const { match } = withTwoWaiting()
+      const slot = match.slots.find((candidate) => candidate.playerId === 2)
+      match.substitute(slot.id, 6)
+
+      expect(match.canUndoSub).toBe(true)
+      match.undoSubstitution()
+      expect(slot.playerId).toBe(2)
+      expect(match.subsUsed).toBe(0)
+    })
+
+    it('does nothing with nobody to send on', () => {
+      const { match } = startMatch()
+      const slot = match.slots.find((candidate) => candidate.playerId === 2)
+      expect(match.substitute(slot.id, null)).toBe(false)
+      expect(slot.playerId).toBe(2)
       expect(match.plan).toEqual({})
-      expect(match.hasSelection).toBe(false)
     })
 
-    it('pencils in whoever is due on when a player is dragged off', () => {
-      const { match, setup } = startMatch()
-      setup.roster.push({ id: 7, name: 'Fay' })
-      match.kickOff(setup.roster)
-      match.slots.forEach((slot, index) => {
-        slot.playerId = ROSTER[index].id
-      })
-      match.tick(300)
-      // Of the two waiting, 7 has played least — so 7 is the one due on.
-      match.playersById.get(6).seconds = 400
-      match.playersById.get(7).seconds = 100
-
-      const slot = match.slots.find((candidate) => candidate.playerId === 2)
-      match.planOff(slot.id)
-      expect(match.plan[slot.id]).toBe(7)
-    })
-
-    it('leaves a substitute the coach has already chosen where they put them', () => {
-      const { match, setup } = startMatch()
-      setup.roster.push({ id: 7, name: 'Fay' })
-      match.kickOff(setup.roster)
-      match.slots.forEach((slot, index) => {
-        slot.playerId = ROSTER[index].id
-      })
-      match.tick(300)
-      // 6 has played least, so 6 is the one the rotation would suggest.
-      match.playersById.get(7).seconds = 200
-
-      const [first, second] = match.slots.filter((slot) => !slot.isGoalkeeper)
-      // The coach puts that same player into a position of their own choosing.
-      match.stageChange(first.id, 6)
-      // ...and then drags someone else off. The suggestion must not take 6 away.
-      match.planOff(second.id)
-
-      expect(match.plan[first.id]).toBe(6)
-      expect(match.plan[second.id]).toBe(7)
-    })
-
-    it('brings on the substitute already picked, not the one due on', () => {
-      const { match, setup } = startMatch()
-      setup.roster.push({ id: 7, name: 'Fay' })
-      match.kickOff(setup.roster)
-      match.slots.forEach((slot, index) => {
-        slot.playerId = ROSTER[index].id
-      })
-      match.tick(300)
-      match.playersById.get(7).seconds = 200
-
-      // Tap the substitute you want, then drag a player off to the touchline.
-      match.pickBenchPlayer(7)
-      const slot = match.slots.find((candidate) => candidate.playerId === 2)
-      match.planOff(slot.id)
-
-      expect(match.plan[slot.id]).toBe(7)
-    })
-
-    it('moves a player rather than planning them into two positions at once', () => {
-      const { match, setup } = startMatch()
-      setup.roster.push({ id: 7, name: 'Fay' })
-      match.kickOff(setup.roster)
-      match.slots.forEach((slot, index) => {
-        slot.playerId = ROSTER[index].id
-      })
-      const [first, second] = match.slots.filter((slot) => !slot.isGoalkeeper)
-
-      match.stageChange(first.id, 6)
-      match.stageChange(second.id, 7)
-      match.stageChange(second.id, 6)
-
-      expect(match.plan).toEqual({ [first.id]: 7, [second.id]: 6 })
-    })
-
-    it('never plans a player who may not come back on', () => {
+    it('never sends on a player who may not come back on', () => {
       const { match } = startMatch({ allowReentry: false })
       const slot = match.slots.find((candidate) => candidate.playerId === 2)
       match.planOff(slot.id)
-      match.confirmSubstitution()
 
       const other = match.slots.find((candidate) => candidate.playerId === 3)
-      expect(match.stageChange(other.id, 2)).toBe(false)
-      expect(match.plan).toEqual({})
-    })
-
-    it('is unfinished while a position has nobody coming into it', () => {
-      const { match } = startMatch()
-      const slot = match.slots.find((candidate) => candidate.playerId === 2)
-      match.stageChange(slot.id, null)
-
-      expect(match.hasSelection).toBe(true)
-      expect(match.canConfirmSub).toBe(false)
-      expect(match.confirmSubstitution()).toBe(false)
-    })
-  })
-
-  describe('confirming a change', () => {
-    it('makes every planned swap at once', () => {
-      const { match, setup } = startMatch()
-      setup.roster.push({ id: 7, name: 'Fay' })
-      match.kickOff(setup.roster)
-      match.slots.forEach((slot, index) => {
-        slot.playerId = ROSTER[index].id
-      })
-      const [first, second] = match.slots.filter((slot) => !slot.isGoalkeeper)
-
-      match.stageChange(first.id, 7)
-      match.stageChange(second.id, 6)
-      expect(match.confirmSubstitution()).toBe(true)
-
-      expect(first.playerId).toBe(7)
-      expect(second.playerId).toBe(6)
-      expect(match.subsUsed).toBe(2)
-      expect(match.plan).toEqual({})
+      expect(match.substitute(other.id, 2)).toBe(false)
+      expect(other.playerId).toBe(3)
     })
 
     it('keeps a substituted player off when re-entry is not allowed', () => {
       const { match } = startMatch({ allowReentry: false })
       const slot = match.slots.find((candidate) => candidate.playerId === 2)
       match.planOff(slot.id)
-      match.confirmSubstitution()
 
       expect(match.canPlayerReturn(2)).toBe(false)
       expect(match.availableBench.map((player) => player.id)).not.toContain(2)
@@ -637,14 +579,13 @@ describe('match store', () => {
 
       const slot = match.slots.find((candidate) => candidate.playerId === 2)
       match.planOff(slot.id)
-      match.confirmSubstitution()
 
       expect(match.subsUsed).toBe(1)
       expect(match.limitReached).toBe(true)
-      expect(match.canConfirmSub).toBe(false)
 
       const other = match.slots.find((candidate) => candidate.playerId === 3)
-      expect(match.stageChange(other.id, 2)).toBe(false)
+      expect(match.substitute(other.id, 2)).toBe(false)
+      expect(other.playerId).toBe(3)
     })
   })
 

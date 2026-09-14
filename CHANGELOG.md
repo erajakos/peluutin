@@ -4,6 +4,13 @@ What changed in each version, in the words the app itself shows under
 _Tietoja → Mitä uutta_. Generated from [`src/changelog.js`](src/changelog.js) by
 `npm run changelog`; edit that file, not this one.
 
+## 1.8 — One move to make a change
+
+_2026-09-14_
+
+- A substitution happens the moment a player is dropped into place — there is no separate confirming any more.
+- A change made by mistake can be undone straight after.
+
 ## 1.7 — More than one team
 
 _2026-09-13_

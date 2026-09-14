@@ -1,6 +1,6 @@
 {
   "name": "peluutin",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "private": false,
   "description": "Peluuttajan työkalu: fair playing time and substitutions for youth football.",
   "type": "module",
