@@ -6,6 +6,7 @@ import PitchMarkings from '@/components/ui/PitchMarkings.vue'
 import { pitchLayout } from '@/domain/pitch.js'
 import { formatTime } from '@/domain/time.js'
 import { useI18n } from '@/i18n/index.js'
+import { buzz } from '@/services/haptics.js'
 import { useMatchStore } from '@/stores/match.js'
 
 const match = useMatchStore()
@@ -77,6 +78,14 @@ function playTravel() {
   })
   previousRects.clear()
 }
+
+// A change made is felt as well as seen: there is no confirm step to look at.
+watch(
+  () => match.lastSub,
+  (last) => {
+    if (last) buzz()
+  },
+)
 
 // Measured before the swap lands in the DOM, played once it has.
 watch(

@@ -62,6 +62,8 @@ function emptyMatch() {
     captainId: null,
     /** Enough of the last substitution to put it back, if it was a mis-tap. */
     lastSub: null,
+    /** The goal just logged, so a tap on the wrong team can be put right. */
+    lastGoalId: null,
     /**
      * The keeper stands outside the rotation: never prompted to come off, and
      * kept out of the way of a stray tap. Changing them is possible but never
@@ -329,8 +331,17 @@ export const useMatchStore = defineStore('match', {
       this.period = PERIOD.HALF_TIME
     },
 
+    /**
+     * Everyone has rested at half time, on the pitch and off it, so every
+     * spell starts again at nothing. Carried over, a player who played the
+     * whole first half would be flagged due off two minutes into the second,
+     * and the bench would count the break as time spent waiting.
+     */
     startSecondHalf() {
       if (!this.canStartSecondHalf) return
+      this.players.forEach((player) => {
+        player.stintSeconds = 0
+      })
       this.period = PERIOD.SECOND
       this.start()
     },
@@ -544,12 +555,14 @@ export const useMatchStore = defineStore('match', {
 
     // --- Goals ------------------------------------------------------------
     addOpponentGoal() {
+      const id = nextId()
       this.goals.push({
-        id: nextId(),
+        id,
         team: TEAM_OPPONENT,
         playerId: null,
         atSecond: this.elapsedSeconds,
       })
+      this.lastGoalId = id
     },
 
     beginOurGoal() {
@@ -561,13 +574,15 @@ export const useMatchStore = defineStore('match', {
     },
 
     confirmGoal(playerId) {
+      const id = nextId()
       this.goals.push({
-        id: nextId(),
+        id,
         team: TEAM_US,
         playerId: playerId ?? null,
         atSecond: this.elapsedSeconds,
       })
       this.pendingGoal = false
+      this.lastGoalId = id
     },
 
     /** Attribute a goal after the fact — a scorer is often identified late. */
@@ -578,6 +593,14 @@ export const useMatchStore = defineStore('match', {
 
     removeGoal(goalId) {
       this.goals = this.goals.filter((goal) => goal.id !== goalId)
+      if (this.lastGoalId === goalId) this.lastGoalId = null
+    },
+
+    /** The goal just logged, if it is still there to take back. */
+    undoGoal() {
+      if (this.lastGoalId === null) return false
+      this.removeGoal(this.lastGoalId)
+      return true
     },
 
     // --- Cards ------------------------------------------------------------

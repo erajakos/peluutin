@@ -4,6 +4,15 @@ What changed in each version, in the words the app itself shows under
 _Tietoja → Mitä uutta_. Generated from [`src/changelog.js`](src/changelog.js) by
 `npm run changelog`; edit that file, not this one.
 
+## 1.9 — A screen to trust
+
+_2026-09-14_
+
+- At half time every player’s current spell starts again, so the change prompts are right from the first minute of the second half.
+- A goal logged for the wrong team can be taken back straight after.
+- The undo says which change or goal it will undo.
+- The phone gives a short buzz when a change is made (Android).
+
 ## 1.8 — One move to make a change
 
 _2026-09-14_

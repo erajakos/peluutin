@@ -69,7 +69,7 @@ export default {
     },
     {
       title: 'Goals and cards',
-      body: 'Goals are logged from the match screen: press your side or theirs, under the score. For your own goal the scorer is asked for — tap the player on the pitch. Cards, and corrections to a goal, are behind the scoreline. Two yellows send a player off, and their position is left empty.',
+      body: 'Goals are logged from the match screen: press your side or theirs, under the score. For your own goal the scorer is asked for — tap the player on the pitch. A goal logged by mistake can be undone straight after. Cards, and corrections to a goal, are behind the scoreline. Two yellows send a player off, and their position is left empty.',
     },
     {
       title: 'Full time',
@@ -191,7 +191,11 @@ export default {
   pauseBtn: 'Pause',
   ofLabel: (time) => `of ${time}`,
   subsUsedNote: (used, limit) => `Subs used: ${used} / ${limit}`,
-  undoSubBtn: 'Undo the change',
+  undoSubBtn: (what) => `Undo: ${what}`,
+  undoSwapPart: (off, on) => `${off} ↔ ${on}`,
+  undoOffPart: (off) => `${off} off`,
+  undoOnPart: (on) => `${on} on`,
+  undoGoalBtn: (who) => `Undo goal: ${who}`,
   benchTitle: 'Bench',
   benchEmptyNote: 'No substitutes',
   dragHintTitle: 'How to make a change',

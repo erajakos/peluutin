@@ -9,9 +9,31 @@
  * `VERSION` is the version this build is. It must match package.json, and a
  * test says so.
  */
-export const VERSION = '1.8'
+export const VERSION = '1.9'
 
 export const RELEASES = [
+  {
+    version: '1.9',
+    date: '2026-09-14',
+    fi: {
+      title: 'Luotettavampi ruutu',
+      changes: [
+        'Puoliajalla jokaisen pelaajan nykyinen vaihto alkaa alusta, joten vaihtoehdotukset ovat heti oikein toisella puoliajalla.',
+        'Väärälle joukkueelle kirjatun maalin voi kumota heti sen jälkeen.',
+        'Kumoa-painike kertoo, minkä vaihdon tai maalin se kumoaa.',
+        'Puhelin värähtää, kun vaihto tapahtuu (Android).',
+      ],
+    },
+    en: {
+      title: 'A screen to trust',
+      changes: [
+        'At half time every player’s current spell starts again, so the change prompts are right from the first minute of the second half.',
+        'A goal logged for the wrong team can be taken back straight after.',
+        'The undo says which change or goal it will undo.',
+        'The phone gives a short buzz when a change is made (Android).',
+      ],
+    },
+  },
   {
     version: '1.8',
     date: '2026-09-14',

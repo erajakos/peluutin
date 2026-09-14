@@ -1,34 +1,33 @@
 <script setup>
-import { onBeforeUnmount, ref, watch } from 'vue'
+import { computed } from 'vue'
+import { useFadingOffer } from '@/composables/useFadingOffer.js'
 import { useI18n } from '@/i18n/index.js'
 import { useMatchStore } from '@/stores/match.js'
 
 const match = useMatchStore()
 const { t } = useI18n()
 
+/** Changes happen the moment a player is dropped; this is the way back. */
+const undoOffered = useFadingOffer(() => match.lastSub)
+
 /**
- * Changes happen the moment a player is dropped, so this is only the way back
- * from a mis-drop: offered when a change is made, and gone a few seconds later.
- * A coach who meant it never has to dismiss anything, and never taps it by
- * accident either, since by then it is gone.
+ * What the undo will undo, in names. With changes made instantly, "undo" on
+ * its own leaves a coach guessing which change it means — "Aino ↔ Bo" does not.
  */
-const UNDO_WINDOW_MS = 12_000
-const undoOffered = ref(false)
-let undoTimer = null
-
-watch(
-  () => match.lastSub,
-  (last) => {
-    clearTimeout(undoTimer)
-    undoOffered.value = Boolean(last)
-    if (!last) return
-    undoTimer = setTimeout(() => {
-      undoOffered.value = false
-    }, UNDO_WINDOW_MS)
-  },
-)
-
-onBeforeUnmount(() => clearTimeout(undoTimer))
+const undoLabel = computed(() => {
+  const last = match.lastSub
+  if (!last) return ''
+  return last.slots
+    .map(({ id, playerId: offId }) => {
+      const onId = match.slots.find((slot) => slot.id === id)?.playerId ?? null
+      const off = offId === null ? '' : match.playerName(offId)
+      const on = onId === null ? '' : match.playerName(onId)
+      if (off && on) return t('undoSwapPart', off, on)
+      if (off) return t('undoOffPart', off)
+      return t('undoOnPart', on)
+    })
+    .join(', ')
+})
 </script>
 
 <template>
@@ -46,7 +45,7 @@ onBeforeUnmount(() => clearTimeout(undoTimer))
       class="undo"
       @click="match.undoSubstitution()"
     >
-      {{ t('undoSubBtn') }}
+      {{ t('undoSubBtn', undoLabel) }}
     </button>
   </div>
 </template>

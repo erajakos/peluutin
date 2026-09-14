@@ -204,6 +204,49 @@ describe('match store', () => {
     })
   })
 
+  describe('half time', () => {
+    it('starts every spell again, on the pitch and off it', () => {
+      const { match, setup } = startMatch({ twoHalves: true, halfLength: 15 })
+      match.start()
+      match.tick(600)
+      match.pause()
+      match.endFirstHalf()
+      expect(match.players.every((player) => player.stintSeconds === 600)).toBe(true)
+
+      match.startSecondHalf()
+      expect(match.players.every((player) => player.stintSeconds === 0)).toBe(true)
+      // Minutes played are untouched: only the spell starts over.
+      expect(match.playersById.get(ROSTER[1].id).seconds).toBe(600)
+      match.pause()
+      expect(setup.twoHalves).toBe(true)
+    })
+  })
+
+  describe('taking back a goal', () => {
+    it('removes the goal just logged, for either team', () => {
+      const { match } = startMatch()
+      match.beginOurGoal()
+      match.confirmGoal(ROSTER[1].id)
+      match.addOpponentGoal()
+      expect(match.opponentScore).toBe(1)
+
+      expect(match.undoGoal()).toBe(true)
+      expect(match.opponentScore).toBe(0)
+      expect(match.usScore).toBe(1)
+      // Only the last one: the earlier goal stands.
+      expect(match.undoGoal()).toBe(false)
+      expect(match.usScore).toBe(1)
+    })
+
+    it('lapses once that goal has been removed another way', () => {
+      const { match } = startMatch()
+      match.addOpponentGoal()
+      match.removeGoal(match.goals[0].id)
+      expect(match.lastGoalId).toBe(null)
+      expect(match.undoGoal()).toBe(false)
+    })
+  })
+
   describe('players with the same name', () => {
     it('are told apart by number in the squad', () => {
       const setup = useSetupStore()

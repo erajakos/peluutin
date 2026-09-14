@@ -1,11 +1,13 @@
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import DragHintDialog from '@/components/live/DragHintDialog.vue'
 import MatchClock from '@/components/live/MatchClock.vue'
 import MatchEventsSheet from '@/components/live/MatchEventsSheet.vue'
 import PitchPanel from '@/components/live/PitchPanel.vue'
 import ScoreBoard from '@/components/live/ScoreBoard.vue'
 import BallIcon from '@/components/ui/BallIcon.vue'
+import { useFadingOffer } from '@/composables/useFadingOffer.js'
+import { TEAM_US } from '@/domain/scoring.js'
 import { useI18n } from '@/i18n/index.js'
 import { hasSeenDragHint, markDragHintSeen } from '@/services/storage.js'
 import { createScreenWakeLock } from '@/services/wakeLock.js'
@@ -16,6 +18,19 @@ import { useSetupStore } from '@/stores/setup.js'
 const app = useAppStore()
 const match = useMatchStore()
 const setup = useSetupStore()
+
+/**
+ * The two goal buttons sit side by side, so the wrong team is the likeliest
+ * slip on this screen. The goal just logged can be taken back for a few
+ * seconds, named so it is clear which goal that is.
+ */
+const goalUndoOffered = useFadingOffer(() => match.lastGoalId)
+const lastGoalLabel = computed(() => {
+  const goal = match.goals.find((candidate) => candidate.id === match.lastGoalId)
+  if (!goal) return ''
+  if (goal.team !== TEAM_US) return setup.opponentName
+  return goal.playerId ? match.playerName(goal.playerId) : app.teamName
+})
 
 /**
  * The screen stays on for as long as this screen is open — half time included,
@@ -94,6 +109,15 @@ function closeHint() {
         <BallIcon :size="16" /> {{ setup.opponentName }}
       </button>
     </div>
+
+    <button
+      v-if="goalUndoOffered && lastGoalLabel"
+      type="button"
+      class="goal-undo"
+      @click="match.undoGoal()"
+    >
+      {{ t('undoGoalBtn', lastGoalLabel) }}
+    </button>
   </div>
 
   <PitchPanel class="pitch-panel" />
@@ -153,6 +177,32 @@ function closeHint() {
 
 .goal--theirs {
   color: var(--against);
+}
+
+/* Quiet, and gone again on its own: the same way back a substitution has. */
+.goal-undo {
+  display: block;
+  margin: 10px auto 0;
+  padding: 4px 10px;
+  background: none;
+  color: var(--chalk-dim);
+  font-size: 14.5px;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  animation: goal-undo-in 0.25s ease-out;
+}
+
+@keyframes goal-undo-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .goal-undo {
+    animation: none;
+  }
 }
 
 .events:active {

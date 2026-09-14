@@ -69,7 +69,7 @@ export default {
     },
     {
       title: 'Maalit ja kortit',
-      body: 'Maalin kirjaat ottelunäkymästä: paina oman tai vastustajan painiketta tuloksen alla. Omasta maalista kysytään tekijä — napauta pelaajaa kentällä. Kortit sekä maalien korjaukset löytyvät tulostaulua napauttamalla. Kaksi keltaista tarkoittaa ulosajoa, jolloin pelipaikka jää tyhjäksi.',
+      body: 'Maalin kirjaat ottelunäkymästä: paina oman tai vastustajan painiketta tuloksen alla. Omasta maalista kysytään tekijä — napauta pelaajaa kentällä. Väärin kirjatun maalin voi kumota heti sen jälkeen. Kortit sekä maalien korjaukset löytyvät tulostaulua napauttamalla. Kaksi keltaista tarkoittaa ulosajoa, jolloin pelipaikka jää tyhjäksi.',
     },
     {
       title: 'Lopetus',
@@ -191,7 +191,11 @@ export default {
   pauseBtn: 'Tauko',
   ofLabel: (time) => `/ ${time}`,
   subsUsedNote: (used, limit) => `Vaihtoja käytetty: ${used} / ${limit}`,
-  undoSubBtn: 'Kumoa vaihto',
+  undoSubBtn: (what) => `Kumoa: ${what}`,
+  undoSwapPart: (off, on) => `${off} ↔ ${on}`,
+  undoOffPart: (off) => `${off} pois`,
+  undoOnPart: (on) => `${on} kentälle`,
+  undoGoalBtn: (who) => `Kumoa maali: ${who}`,
   benchTitle: 'Vaihtopenkki',
   benchEmptyNote: 'Ei vaihtopelaajia',
   dragHintTitle: 'Näin teet vaihdon',
